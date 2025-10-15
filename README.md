@@ -23,6 +23,9 @@
 
 ---
 
+> **⚠️ PROTOTYPE STATUS**  
+> This is a prototype under active development. While functional, this extension requires further testing and refinement before public release. Features may change and bugs may be present.
+
 # 🌍 AI-Empowered Participatory Governance
 
 **A browser extension that enables validated policy insights using the GyroDiagnostics framework for any AI chat interface.**
