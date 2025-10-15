@@ -1,0 +1,137 @@
+import React, { useState, useEffect } from 'react';
+
+interface ElementPickerProps {
+  onTextCaptured: (text: string) => void;
+}
+
+const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    // Listen for element selection messages
+    const handleMessage = (message: any) => {
+      if (message.action === 'element_captured') {
+        onTextCaptured(message.text);
+        setIsActive(false);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    };
+  }, [onTextCaptured]);
+
+  const activatePicker = async () => {
+    try {
+      // Get current active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (!tab.id) {
+        alert('Could not get active tab');
+        return;
+      }
+
+      // Inject content script if not already injected
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => {
+          let highlighted: HTMLElement | null = null;
+          let tooltip: HTMLElement | null = null;
+
+          function highlightElement(e: MouseEvent) {
+            const target = e.target as HTMLElement;
+            
+            if (highlighted && highlighted !== target) {
+              highlighted.style.outline = '';
+            }
+            
+            target.style.outline = '2px solid #4A90E2';
+            highlighted = target;
+          }
+
+          function selectElement(e: MouseEvent) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const target = e.target as HTMLElement;
+            const text = target.innerText || target.textContent || '';
+            
+            chrome.runtime.sendMessage({
+              action: 'element_selected',
+              text: text
+            });
+            
+            cleanup();
+          }
+
+          function cleanup() {
+            document.removeEventListener('mouseover', highlightElement as any);
+            document.removeEventListener('click', selectElement as any);
+            document.removeEventListener('keydown', handleEscape as any);
+            
+            if (highlighted) {
+              highlighted.style.outline = '';
+              highlighted = null;
+            }
+            
+            if (tooltip) {
+              tooltip.remove();
+              tooltip = null;
+            }
+          }
+
+          function handleEscape(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+              cleanup();
+            }
+          }
+
+          // Create tooltip
+          tooltip = document.createElement('div');
+          tooltip.innerHTML = '🎯 Click on AI response to capture (ESC to cancel)';
+          tooltip.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4A90E2;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            z-index: 2147483647;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: default;
+          `;
+          document.body.appendChild(tooltip);
+          
+          // Add event listeners
+          document.addEventListener('mouseover', highlightElement as any);
+          document.addEventListener('click', selectElement as any);
+          document.addEventListener('keydown', handleEscape as any);
+        }
+      });
+
+      setIsActive(true);
+      
+    } catch (error) {
+      console.error('Error activating element picker:', error);
+      alert('Could not activate element picker. Make sure you are on a web page.');
+    }
+  };
+
+  return (
+    <button
+      onClick={activatePicker}
+      className={`btn-secondary text-sm ${isActive ? 'opacity-50' : ''}`}
+      disabled={isActive}
+    >
+      {isActive ? '🎯 Picker Active...' : '🎯 Pick from Page'}
+    </button>
+  );
+};
+
+export default ElementPicker;
+

@@ -1,0 +1,25 @@
+# AI-Empowered Governance Apps Development Rules
+
+## Project Guidelines
+- This is an MVP - prioritize simplicity over completeness
+- Use TypeScript for type safety
+- Follow React best practices
+- Keep components focused and reusable
+
+## Code Style
+- Use functional components with hooks
+- Prefer const over let
+- Use async/await over promises where possible
+- Keep functions small and focused
+
+## Extension Specifics
+- All storage goes through chrome.storage API
+- No external API calls required
+- Platform-independent (works with any AI chat)
+- Clipboard-based workflow
+
+## Testing
+- Manual testing checklist in plan document
+- Calculations must match Python reference implementation
+- Validate all JSON inputs/outputs
+
