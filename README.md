@@ -30,6 +30,8 @@
 
 **A browser extension that enables validated policy insights using the GyroDiagnostics framework for any AI chat interface.**
 
+![AiE_app](/assets/gyrogovernance_app_screenshot.png)
+
 ## What This Extension Does
 
 Transform everyday AI conversations into rigorous governance analysis. This browser extension applies mathematical validation to AI-generated solutions for UN Sustainable Development Goals and community challenges.
