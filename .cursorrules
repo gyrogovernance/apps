@@ -1,25 +1,73 @@
-# AI-Empowered Governance Apps Development Rules
+# `.cursorrules` for GyroGovernance Browser Extension
 
-## Project Guidelines
-- This is an MVP - prioritize simplicity over completeness
-- Use TypeScript for type safety
-- Follow React best practices
-- Keep components focused and reusable
+This file contains the general rules, principles, and canonical definitions for the AI-Empowered Governance Apps browser extension. As an AI assistant, you MUST adhere to these guidelines when reviewing, refactoring, or generating code for this project.
 
-## Code Style
-- Use functional components with hooks
-- Prefer const over let
-- Use async/await over promises where possible
-- Keep functions small and focused
+## 1. 🌍 Core Principles & Philosophy
 
-## Extension Specifics
-- All storage goes through chrome.storage API
-- No external API calls required
-- Platform-independent (works with any AI chat)
-- Clipboard-based workflow
+- **Mission:** The extension's primary goal is to democratize access to sophisticated AI model evaluation. It translates the complex, mathematical **GyroDiagnostics** framework into an accessible, user-friendly tool.
+- **Platform Agnostic:** The core workflow MUST remain clipboard-based and platform-agnostic. We do not use API keys. The user brings their own access to AI models (ChatGPT, Claude, etc.).
+- **Openness & Community:** All generated insights and evaluation data are intended for a public knowledge commons, licensed under CC0. The code is open-source.
 
-## Testing
-- Manual testing checklist in plan document
-- Calculations must match Python reference implementation
-- Validate all JSON inputs/outputs
+## 2. 📖 Canonical Terminology & Concepts (Non-Negotiable)
 
+These terms are part of the core methodology and MUST NOT be changed, renamed, or reinterpreted.
+
+- **GyroDiagnostics:** The name of the entire evaluation methodology.
+- **Common Governance Model (CGM):** The underlying mathematical-physics theory.
+- **The Three "P"s:** This is the canonical user flow.
+    1.  **Participation:** Selecting or defining a governance challenge.
+    2.  **Preparation:** The synthesis and analysis process (epochs, analysts).
+    3.  **Provision:** The final generated report/insight.
+- **Core Metrics:**
+    - **Quality Index (QI):** The weighted overall performance score (%).
+    - **Alignment Rate (AR):** The temporal efficiency metric. Its units are **quality points per minute (`/min`)**. Its categories (`VALID`, `SUPERFICIAL`, `SLOW`) are fixed.
+    - **Superintelligence Index (SI):** The structural coherence metric derived from K₄ graph topology and the target aperture **A* ≈ 0.02070**.
+- **Process Steps:**
+    - **Epochs:** The two distinct 6-turn synthesis phases. Always refer to them as `Epoch 1` and `Epoch 2`.
+    - **Turns:** Each epoch consists of exactly 6 turns.
+    - **Synthesizer:** The AI model generating responses during an epoch.
+    - **Analyst:** The AI model evaluating the transcripts. There are always two (`Analyst 1`, `Analyst 2`).
+- **Pathologies:** The five canonical failure modes are fixed: `sycophantic_agreement`, `deceptive_coherence`, `goal_misgeneralization`, `superficial_optimization`, `semantic_drift`.
+
+## 3. 🏗️ Code & Architecture Style
+
+- **Single Source of Truth (SSoT):** The application state (`NotebookState`) MUST treat `sessions: Session[]` and `activeSessionId: string` as the source of truth for all in-progress and completed evaluations.
+    - **AVOID** duplicating session data into legacy top-level fields like `challenge`, `epochs`, `analysts`. These are being phased out and should be replaced completely so we dont have dead code or compatibility bloat.
+    - **ALWAYS** derive the active session's data using a helper function like `getActiveSession(state)`.
+- **Atomic Storage Operations:**
+    - All operations that modify stored data (e.g., creating, updating, or deleting sessions/insights in `storage.ts`) should be atomic.
+    - Prefer functions that perform the storage write and then return the complete, updated `NotebookState` to prevent UI/storage desynchronization.
+- **No Polling for State Sync:**
+    - **DO NOT** use `setInterval` or `setTimeout` to periodically refresh state.
+    - **ALWAYS** use the `chrome.storage.onChanged` listener to react to changes from other tabs or contexts. This is the correct pattern for browser extensions.
+- **Modular & Extracted Logic:**
+    - **DO NOT** embed complex business logic (calculations, formatting, progress tracking) directly inside React components.
+    - **ALWAYS** extract logic into utility files in the `src/lib/` directory (e.g., `session-utils.ts`, `ui-utils.ts`, `report-generator.ts`).
+- **App-Based Architecture:**
+    - The UI is structured into "Apps": `WelcomeApp`, `ChallengesApp`, `JournalApp`, `InsightsApp`.
+    - `Notebook.tsx` is the top-level router that switches between these apps.
+    - Each app manages its own internal views (e.g., `ChallengesApp` routes between `TypeSelector`, `SDGGallery`, etc.).
+- **Robust Asynchronous Operations:**
+
+## 4. ✨ User Experience (UX) & Flow
+
+- **From Form to Workspace:** The primary UX goal is to transform the extension from a rigid, linear form into a flexible, multi-session workspace with what we call Apps (inner sections).
+- **Progressive Disclosure:** Hide complexity until it's needed. For example, long prompts should be collapsed by default using `<details>` tags. Show summaries first, then allow users to drill down.
+- **Clarity & Guidance:** While the underlying concepts are complex, the UI must be simple. Use tooltips, helper text, and clear instructions to guide the user through the `Participation -> Preparation -> Provision` flow.
+- **No Dead Ends:** The user should always have a clear path forward or backward. Handle edge cases gracefully (e.g., what happens when an active session is deleted? The UI should reset to the `JournalHome`).
+
+## 5. ✅ Dos and 🛑 Don'ts (Quick Reference)
+
+### Dos:
+
+- ✅ **DO** adhere to the canonical terminology listed in section 2.
+- ✅ **DO** add loading states and use a toast system (not chrome's, a simple visual suffice) for async operations.
+- ✅ **DO** ensure all storage operations are atomic and update state reliably.
+
+### Don'ts:
+
+- 🛑 **DO NOT** change the names or meanings of `GyroDiagnostics`, `QI`, `AR`, `SI`, `Epochs`, etc.
+- 🛑 **DO NOT** re-introduce a linear, single-evaluation workflow. The multi-session model is core.
+- 🛑 **DO NOT** use chrome's toast system because it sits outside our UI and becomes annoying.
+
+> You are encouraged to propose improvements to UX, code quality, and performance, as long as they align with these core principles and canonicals. Your primary role is to help us build a robust, intuitive, and reliable tool based on this established foundation. You may do a user journey and heristic assesment if you like.

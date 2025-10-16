@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NotebookState, GovernanceInsight } from '../types';
+import { insights as insightsStorage, sessions } from '../lib/storage';
+import { useToast } from './shared/Toast';
 import {
   aggregateAnalysts,
   calculateStructureAverage,
@@ -20,18 +22,22 @@ import {
 
 interface ReportSectionProps {
   state: NotebookState;
+  onUpdate: (updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)) => void;
   onBack: () => void;
+  onNavigateToSection?: (section: 'epoch1' | 'epoch2' | 'analyst1' | 'analyst2' | 'report') => void;
 }
 
-const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
+const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, onNavigateToSection }) => {
   const [insight, setInsight] = useState<GovernanceInsight | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showSuiteProgress, setShowSuiteProgress] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     generateReport();
   }, []);
 
-  const generateReport = () => {
+  const generateReport = async () => {
     try {
       if (!state.analysts.analyst1 || !state.analysts.analyst2) {
         throw new Error('Both analysts must complete evaluation');
@@ -63,8 +69,17 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
       // Combine insights from both analysts
       const combinedInsights = `# Analyst 1 Insights\n\n${state.analysts.analyst1.insights}\n\n# Analyst 2 Insights\n\n${state.analysts.analyst2.insights}`;
 
+      // Extract raw transcripts for auditability
+      const transcripts = {
+        epoch1: state.epochs.epoch1.turns.map(t => t.content),
+        epoch2: state.epochs.epoch2.turns.map(t => t.content)
+      };
+
       // Create final insight object
+      const insightId = `insight_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const generatedInsight: GovernanceInsight = {
+        id: insightId,
+        sessionId: state.activeSessionId,
         challenge: {
           title: state.challenge.title,
           description: state.challenge.description,
@@ -78,6 +93,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
           provision: 'Validated through dual-analyst evaluation with quality metrics',
           combined_markdown: combinedInsights
         },
+        transcripts,
         quality: {
           quality_index: qualityIndex,
           alignment_rate: alignmentResult.rate,
@@ -118,16 +134,90 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
           public: true,
           license: 'CC0',
           contributor: 'Anonymous'
-        }
+        },
+        tags: state.challenge.domain,
+        starred: false,
+        notes: ''
       };
 
       setInsight(generatedInsight);
       setLoading(false);
 
+      // Save to insights library
+      await insightsStorage.save(generatedInsight);
+
+      // Update state results for progress tracking
+      onUpdate({ results: generatedInsight });
+
+      // Mark session as complete if there's an active session
+      if (state.activeSessionId) {
+        await sessions.update(state.activeSessionId, { status: 'complete' });
+      }
+
+      // Check if this is part of Gyro Suite
+      if (state.gyroSuiteSessionIds && state.gyroSuiteCurrentIndex !== undefined) {
+        setShowSuiteProgress(true);
+        toast.show(`Challenge ${state.gyroSuiteCurrentIndex + 1}/5 complete`, 'success');
+      } else {
+        toast.show('Insight saved to library', 'success');
+      }
+
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('Error generating report. Please ensure all sections are completed.');
+      toast.show('Error generating report. Please ensure all sections are completed.', 'error');
       setLoading(false);
+    }
+  };
+
+  const handleNextChallenge = async () => {
+    if (!state.gyroSuiteSessionIds || state.gyroSuiteCurrentIndex === undefined) return;
+
+    const nextIndex = state.gyroSuiteCurrentIndex + 1;
+    if (nextIndex >= state.gyroSuiteSessionIds.length) {
+      // Suite complete!
+      toast.show('🎉 GyroDiagnostics Suite Complete! All 5 challenges finished.', 'success');
+      onUpdate({
+        gyroSuiteSessionIds: undefined,
+        gyroSuiteCurrentIndex: undefined,
+        activeSessionId: undefined,
+        ui: {
+          ...state.ui,
+          currentApp: 'insights',
+          currentSection: 'setup'
+        }
+      });
+      return;
+    }
+
+    // Load next session
+    const nextSessionId = state.gyroSuiteSessionIds[nextIndex];
+    const nextSession = await sessions.getById(nextSessionId);
+    if (!nextSession) {
+      toast.show('Error loading next challenge', 'error');
+      return;
+    }
+
+    toast.show(`Starting challenge ${nextIndex + 1}/5`, 'info');
+
+    onUpdate({
+      challenge: nextSession.challenge,
+      process: nextSession.process,
+      activeSessionId: nextSessionId,
+      gyroSuiteCurrentIndex: nextIndex,
+      epochs: nextSession.epochs,
+      analysts: {
+        analyst1: null,
+        analyst2: null
+      },
+      results: null,
+      ui: {
+        ...state.ui,
+        currentSection: 'epoch1'
+      }
+    });
+
+    if (onNavigateToSection) {
+      onNavigateToSection('epoch1');
     }
   };
 
@@ -199,11 +289,23 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
             <div className="text-sm text-gray-600">Quality Index</div>
           </div>
           
-          <div className="text-center p-4 bg-gray-50 rounded">
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded">
             <div className="text-3xl font-bold text-primary">
               {insight.quality.superintelligence_index.toFixed(2)}
             </div>
-            <div className="text-sm text-gray-600">SI Index</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">SI Index</div>
+            <details className="text-xs text-left">
+              <summary className="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline text-center">
+                Details
+              </summary>
+              <div className="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+                <p>Target Aperture: 0.0207 (K=4)</p>
+                <p>Deviation: {insight.quality.si_deviation.toFixed(2)}×</p>
+                <p className="text-xs mt-1">
+                  Measures behavior score spread via K4 spherical geometry
+                </p>
+              </div>
+            </details>
           </div>
           
           <div className="text-center p-4 bg-gray-50 rounded">
@@ -293,6 +395,56 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
         </div>
       </div>
 
+      {/* Gyro Suite Progress */}
+      {showSuiteProgress && state.gyroSuiteSessionIds && state.gyroSuiteCurrentIndex !== undefined && (
+        <div className="section-card bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="text-4xl">🎯</div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                GyroDiagnostics Suite Progress
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Challenge {state.gyroSuiteCurrentIndex + 1} of {state.gyroSuiteSessionIds.length} complete
+              </p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-4">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+              <div
+                className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${((state.gyroSuiteCurrentIndex + 1) / state.gyroSuiteSessionIds.length) * 100}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
+              {['Formal', 'Normative', 'Procedural', 'Strategic', 'Epistemic'].map((name, i) => (
+                <span key={name} className={i <= (state.gyroSuiteCurrentIndex || 0) ? 'text-blue-600 dark:text-blue-400 font-semibold' : ''}>
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {state.gyroSuiteCurrentIndex + 1 < state.gyroSuiteSessionIds.length ? (
+            <button
+              onClick={handleNextChallenge}
+              className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors text-lg"
+            >
+              Continue to Next Challenge ({['Normative', 'Procedural', 'Strategic', 'Epistemic'][state.gyroSuiteCurrentIndex]}) →
+            </button>
+          ) : (
+            <button
+              onClick={handleNextChallenge}
+              className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors text-lg"
+            >
+              🎉 Complete Suite & View All Results
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Export Actions */}
       <div className="section-card">
         <h3 className="text-lg font-semibold mb-3">Export & Share</h3>
@@ -317,6 +469,14 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onBack }) => {
         <button onClick={onBack} className="btn-secondary">
           ← Back
         </button>
+        {!showSuiteProgress && (
+          <button 
+            onClick={() => onUpdate({ ui: { ...state.ui, currentApp: 'insights' } })}
+            className="btn-primary"
+          >
+            View in Insights →
+          </button>
+        )}
       </div>
     </div>
   );

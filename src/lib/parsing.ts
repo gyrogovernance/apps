@@ -122,9 +122,9 @@ export function validateAnalystJSON(
 
     // Score ranges
     const allScores: (number | string)[] = [
-      ...(Object.values(parsed.structure_scores || {})),
-      ...(Object.values(parsed.behavior_scores || {})),
-      ...(Object.values(parsed.specialization_scores || {}))
+      ...(Object.values(parsed.structure_scores || {}) as (number | string)[]),
+      ...(Object.values(parsed.behavior_scores || {}) as (number | string)[]),
+      ...(Object.values(parsed.specialization_scores || {}) as (number | string)[])
     ];
     for (const s of allScores) {
       if (typeof s === 'number' && (s < 1 || s > 10)) errors.push(`Score out of range (1-10): ${s}`);

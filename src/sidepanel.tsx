@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Notebook from './components/Notebook';
+import { ToastProvider } from './components/shared/Toast';
 import './styles/main.css';
 
 // Debug logging
@@ -12,7 +13,11 @@ console.log('Root element found:', root);
 if (root) {
   console.log('Rendering Notebook component...');
   try {
-    createRoot(root).render(<Notebook />);
+    createRoot(root).render(
+      <ToastProvider>
+        <Notebook />
+      </ToastProvider>
+    );
     console.log('Notebook component rendered successfully');
   } catch (error) {
     console.error('Error rendering React:', error);

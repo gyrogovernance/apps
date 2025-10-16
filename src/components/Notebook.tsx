@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { NotebookState, Section, INITIAL_STATE } from '../types';
-import { storage } from '../lib/storage';
+import { NotebookState, Section, AppScreen, ChallengeType, Platform, INITIAL_STATE } from '../types';
+import { storage, sessions } from '../lib/storage';
+import { useToast } from './shared/Toast';
+import WelcomeApp from './apps/WelcomeApp';
+import ChallengesApp from './apps/ChallengesApp/ChallengesApp';
+import InsightsApp from './apps/InsightsApp/InsightsApp';
+import JournalApp from './apps/JournalApp/JournalApp';
 import SetupSection from './SetupSection';
 import SynthesisSection from './SynthesisSection';
 import AnalystSection from './AnalystSection';
@@ -10,19 +15,43 @@ import ProgressDashboard from './ProgressDashboard';
 const Notebook: React.FC = () => {
   const [state, setState] = useState<NotebookState>(INITIAL_STATE);
   const [loading, setLoading] = useState(true);
+  const [operationLoading, setOperationLoading] = useState(false);
+  const toast = useToast();
 
-  // Load state on mount
+  // Load state on mount and listen for storage changes
   useEffect(() => {
     console.log('Notebook: Loading initial state...');
-    storage.get().then((loadedState) => {
-      console.log('Notebook: State loaded:', loadedState);
-      setState(loadedState);
-      setLoading(false);
-    }).catch((error) => {
-      console.error('Notebook: Error loading state:', error);
-      setState(INITIAL_STATE);
-      setLoading(false);
-    });
+    const loadState = async () => {
+      try {
+        const loadedState = await storage.get();
+        console.log('Notebook: State loaded:', loadedState);
+        setState(loadedState);
+      } catch (error) {
+        console.error('Notebook: Error loading state:', error);
+        setState(INITIAL_STATE);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadState();
+
+    // Listen for storage changes (cross-tab sync)
+    const handleStorageChange = (changes: any, areaName: string) => {
+      if (areaName === 'local' && changes['notebook_state']) {
+        const newState = changes['notebook_state'].newValue;
+        if (newState) {
+          console.log('Storage updated externally, syncing state...');
+          setState(newState);
+        }
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
   // Save state on changes - using functional setState to avoid race conditions
@@ -38,6 +67,8 @@ const Notebook: React.FC = () => {
         epochs: u.epochs ? { ...prev.epochs, ...u.epochs } : prev.epochs,
         analysts: u.analysts ? { ...prev.analysts, ...u.analysts } : prev.analysts,
         ui: u.ui ? { ...prev.ui, ...u.ui } : prev.ui,
+        sessions: u.sessions !== undefined ? u.sessions : prev.sessions,
+        activeSessionId: u.activeSessionId !== undefined ? u.activeSessionId : prev.activeSessionId,
       };
 
       // Persist atomically with the merged state
@@ -46,10 +77,123 @@ const Notebook: React.FC = () => {
     });
   };
 
+  const navigateToApp = (app: AppScreen) => {
+    updateState(prev => ({
+      ui: { ...prev.ui, currentApp: app }
+    }));
+  };
+
   const navigateToSection = (section: Section) => {
     updateState(prev => ({
       ui: { ...prev.ui, currentSection: section }
     }));
+  };
+
+  const handleQuickStart = () => {
+    // Navigate to challenges app to start a new evaluation
+    navigateToApp('challenges');
+  };
+
+  const handleResume = () => {
+    // Navigate to journal app to resume the active session
+    navigateToApp('journal');
+  };
+
+  const handleStartSession = async (challenge: {
+    title: string;
+    description: string;
+    type: ChallengeType;
+    domain: string[];
+  }, platform: Platform) => {
+    setOperationLoading(true);
+    try {
+      // Create new session in storage (updates storage)
+      const newSession = await sessions.create(challenge, platform);
+      
+      // Reload entire state from storage (single source of truth)
+      const freshState = await storage.get();
+      
+      // Update with fresh state + UI navigation
+      updateState({
+        ...freshState,
+        ui: {
+          ...freshState.ui,
+          currentApp: 'journal',
+          currentSection: 'epoch1'
+        }
+      });
+      
+      toast.show('Session created successfully', 'success');
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast.show('Failed to create session', 'error');
+    } finally {
+      setOperationLoading(false);
+    }
+  };
+
+  const handleStartGyroSuite = async (platform: Platform) => {
+    setOperationLoading(true);
+    try {
+      // Create 5 sessions for Gyro Suite
+      const suiteTypes = ['formal', 'normative', 'procedural', 'strategic', 'epistemic'] as const;
+      const suiteTitles: Record<typeof suiteTypes[number], string> = {
+        formal: 'GyroDiagnostics - Formal (Physics & Math)',
+        normative: 'GyroDiagnostics - Normative (Policy & Ethics)',
+        procedural: 'GyroDiagnostics - Procedural (Code & Debugging)',
+        strategic: 'GyroDiagnostics - Strategic (Finance & Strategy)',
+        epistemic: 'GyroDiagnostics - Epistemic (Knowledge & Communication)'
+      };
+
+      const sessionIds: string[] = [];
+      
+      for (const type of suiteTypes) {
+        const challenge = {
+          title: suiteTitles[type],
+          description: `Complete ${type} challenge as part of GyroDiagnostics Evaluation Suite`,
+          type: type as ChallengeType,
+          domain: ['GyroDiagnostics', type]
+        };
+        const session = await sessions.create(challenge, platform);
+        sessionIds.push(session.id);
+      }
+
+      // Reload entire state from storage (single source of truth)
+      const freshState = await storage.get();
+      
+      // Start with first challenge (Formal)
+      const firstSession = freshState.sessions.find(s => s.id === sessionIds[0]);
+      if (!firstSession) throw new Error('Failed to load first session');
+
+      updateState({
+        ...freshState,
+        // Set suite tracking
+        activeSessionId: sessionIds[0],
+        gyroSuiteSessionIds: sessionIds,
+        gyroSuiteCurrentIndex: 0,
+        // Sync first session to legacy fields
+        challenge: firstSession.challenge,
+        process: firstSession.process,
+        epochs: firstSession.epochs,
+        analysts: {
+          analyst1: null,
+          analyst2: null
+        },
+        results: null,
+        ui: {
+          ...freshState.ui,
+          currentApp: 'journal',
+          currentSection: 'epoch1'
+        }
+      });
+      
+      toast.show('GyroDiagnostics Suite created - 5 challenges ready', 'success');
+    } catch (error) {
+      console.error('Error starting Gyro Suite:', error);
+      toast.show('Failed to start Gyro Suite', 'error');
+    } finally {
+      setOperationLoading(false);
+    }
   };
 
   const resetNotebook = async () => {
@@ -69,18 +213,58 @@ const Notebook: React.FC = () => {
     );
   }
 
+  // Operation loading overlay
+  if (operationLoading) {
+    return (
+      <div className="h-full w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-3">⏳</div>
+          <div className="text-gray-600 dark:text-gray-400 text-sm">
+            Creating session...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render different apps based on currentApp
+  if (state.ui.currentApp === 'welcome') {
+    return (
+      <div className="h-full w-full max-w-full bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <WelcomeApp 
+            state={state}
+            onNavigate={navigateToApp}
+            onQuickStart={handleQuickStart}
+            onResume={handleResume}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // For other apps, temporarily show the old linear workflow
+  // This will be replaced as we build out each app
   return (
     <div className="h-full w-full max-w-full bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
-      {/* Header */}
+      {/* Header with back button */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex-shrink-0">
         <div className="flex items-start justify-between">
-          <div className="min-w-0 flex-1 pr-2">
-            <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
-              AI-Empowered Governance Apps
-            </h1>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 leading-tight">
-              Generate validated insights through structured AI-empowered processes
-            </p>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <button
+              onClick={() => navigateToApp('welcome')}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm"
+            >
+              ← Home
+            </button>
+            <div className="min-w-0 flex-1 pr-2">
+              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
+                {state.ui.currentApp === 'challenges' && '📋 Challenges'}
+                {state.ui.currentApp === 'journal' && '📓 Journal'}
+                {state.ui.currentApp === 'insights' && '💡 Insights'}
+                {state.ui.currentApp === 'settings' && '⚙️ Settings'}
+              </h1>
+            </div>
           </div>
           <button
             onClick={resetNotebook}
@@ -91,62 +275,47 @@ const Notebook: React.FC = () => {
         </div>
       </div>
 
-      {/* Progress Dashboard */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex-shrink-0">
-        <ProgressDashboard state={state} onNavigate={navigateToSection} />
-      </div>
+      {/* Progress Dashboard - only show for journal app */}
+      {state.ui.currentApp === 'journal' && (
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex-shrink-0">
+          <ProgressDashboard state={state} onNavigate={navigateToSection} />
+        </div>
+      )}
 
       {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3">
-        {state.ui.currentSection === 'setup' && (
-          <SetupSection state={state} onUpdate={updateState} onNext={() => navigateToSection('epoch1')} />
-        )}
-
-        {state.ui.currentSection === 'epoch1' && (
-          <SynthesisSection
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        {state.ui.currentApp === 'challenges' && (
+          <ChallengesApp 
             state={state}
             onUpdate={updateState}
-            epochKey="epoch1"
-            onNext={() => navigateToSection('epoch2')}
-            onBack={() => navigateToSection('setup')}
+            onStartSession={handleStartSession}
+            onStartGyroSuite={handleStartGyroSuite}
           />
         )}
 
-        {state.ui.currentSection === 'epoch2' && (
-          <SynthesisSection
+        {state.ui.currentApp === 'journal' && (
+          <JournalApp
             state={state}
             onUpdate={updateState}
-            epochKey="epoch2"
-            onNext={() => navigateToSection('analyst1')}
-            onBack={() => navigateToSection('epoch1')}
+            onNavigateToChallenges={() => navigateToApp('challenges')}
+            onNavigateToSection={navigateToSection}
           />
         )}
 
-        {state.ui.currentSection === 'analyst1' && (
-          <AnalystSection
+        {state.ui.currentApp === 'insights' && (
+          <InsightsApp 
             state={state}
             onUpdate={updateState}
-            analystKey="analyst1"
-            onNext={() => navigateToSection('analyst2')}
-            onBack={() => navigateToSection('epoch2')}
           />
         )}
 
-        {state.ui.currentSection === 'analyst2' && (
-          <AnalystSection
-            state={state}
-            onUpdate={updateState}
-            analystKey="analyst2"
-            onNext={() => navigateToSection('report')}
-            onBack={() => navigateToSection('analyst1')}
-          />
-        )}
-
-        {state.ui.currentSection === 'report' && (
-          <ReportSection
-            state={state}
-            onBack={() => navigateToSection('analyst2')}
-          />
+        {state.ui.currentApp === 'settings' && (
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <h2 className="text-lg font-semibold mb-2">⚙️ Settings (Coming Soon)</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Settings and preferences configuration is being built.
+            </p>
+          </div>
         )}
       </div>
     </div>

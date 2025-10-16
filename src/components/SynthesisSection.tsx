@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NotebookState, TurnNumber } from '../types';
 import { generateSynthesisPrompt, generateContinuePrompt } from '../lib/prompts';
 import { parseManualPaste } from '../lib/parsing';
+import { sessions } from '../lib/storage';
 import ElementPicker from './ElementPicker';
 
 interface SynthesisSectionProps {
@@ -40,7 +41,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
     }
   };
 
-  const handlePasteTurn = () => {
+  const handlePasteTurn = async () => {
     if (!pastedText.trim()) {
       alert('Please paste some text');
       return;
@@ -59,16 +60,36 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
           [epochKey]: {
             ...currentEpoch,
             turns: updatedTurns,
-            completed
+            completed,
+            status: updatedTurns.length > 0 ? 'in-progress' : 'pending'
           }
         }
       };
     });
 
+    // Sync with session storage if active session exists
+    if (state.activeSessionId) {
+      const currentEpoch = state.epochs[epochKey];
+      const updatedTurns = [...currentEpoch.turns, turn];
+      const completed = updatedTurns.length === 6;
+      
+      sessions.update(state.activeSessionId, {
+        epochs: {
+          ...state.epochs,
+          [epochKey]: {
+            ...currentEpoch,
+            turns: updatedTurns,
+            completed,
+            status: completed ? 'complete' : 'in-progress'
+          }
+        }
+      }).catch(err => console.error('Session sync error:', err));
+    }
+
     setPastedText('');
   };
 
-  const handleSaveDuration = () => {
+  const handleSaveDuration = async () => {
     if (!modelName.trim()) {
       alert('Please enter the model name');
       return;
@@ -79,7 +100,8 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
         ...prev.epochs,
         [epochKey]: {
           ...prev.epochs[epochKey],
-          duration_minutes: duration
+          duration_minutes: duration,
+          status: 'complete'
         }
       },
       process: {
@@ -87,6 +109,24 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
         [epochKey === 'epoch1' ? 'model_epoch1' : 'model_epoch2']: modelName
       }
     }));
+
+    // Sync with session storage
+    if (state.activeSessionId) {
+      sessions.update(state.activeSessionId, {
+        epochs: {
+          ...state.epochs,
+          [epochKey]: {
+            ...state.epochs[epochKey],
+            duration_minutes: duration,
+            status: 'complete'
+          }
+        },
+        process: {
+          ...state.process,
+          [epochKey === 'epoch1' ? 'model_epoch1' : 'model_epoch2']: modelName
+        }
+      }).catch(err => console.error('Session sync error:', err));
+    }
 
     if (epoch.completed) {
       onNext();
@@ -132,30 +172,52 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
       {/* Turn Collection */}
       {!allTurnsComplete ? (
         <div className="space-y-4">
-          {/* Prompt to Copy */}
+          {/* Prompt to Copy - Progressive Disclosure for Turn 1 */}
           <div>
             <label className="label-text">
               Prompt for Turn {currentTurnNumber}
             </label>
-            <div className="relative">
-              <textarea
-                value={getPromptForTurn(currentTurnNumber)}
-                readOnly
-                rows={currentTurnNumber === 1 ? 15 : 3}
-                className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm"
-              />
-              <button
-                onClick={() => copyToClipboard(getPromptForTurn(currentTurnNumber))}
-                className="absolute top-2 right-2 btn-secondary text-xs"
-              >
-                {copyStatus || 'Copy'}
-              </button>
-              {copyStatus && (
-                <div className="absolute top-2 right-16 text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                  {copyStatus}
+            {currentTurnNumber === 1 ? (
+              <details className="border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+                <summary className="cursor-pointer p-3 font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg flex items-center justify-between">
+                  <span>📋 View Full Prompt (click to expand)</span>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      copyToClipboard(getPromptForTurn(currentTurnNumber));
+                    }}
+                    className="btn-secondary text-xs"
+                  >
+                    {copyStatus || 'Copy'}
+                  </button>
+                </summary>
+                <div className="p-4 border-t border-gray-300 dark:border-gray-600">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono bg-white dark:bg-gray-900 p-3 rounded">
+                    {getPromptForTurn(currentTurnNumber)}
+                  </pre>
                 </div>
-              )}
-            </div>
+              </details>
+            ) : (
+              <div className="relative">
+                <textarea
+                  value={getPromptForTurn(currentTurnNumber)}
+                  readOnly
+                  rows={3}
+                  className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm"
+                />
+                <button
+                  onClick={() => copyToClipboard(getPromptForTurn(currentTurnNumber))}
+                  className="absolute top-2 right-2 btn-secondary text-xs"
+                >
+                  {copyStatus || 'Copy'}
+                </button>
+              </div>
+            )}
+            {copyStatus && (
+              <div className="mt-2 text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded inline-block">
+                {copyStatus}
+              </div>
+            )}
           </div>
 
           {/* Paste Area */}

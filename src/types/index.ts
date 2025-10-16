@@ -1,11 +1,19 @@
 // Core data types for the Governance Apps extension
 
+// App-based navigation types
+export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings';
+export type ChallengesView = 'select-type' | 'gyro-suite' | 'sdg-gallery' | 'custom-builder' | 'prompt-workshop';
+export type JournalView = 'home' | 'active-session' | 'synthesis' | 'analysis';
+export type InsightsView = 'library' | 'detail' | 'comparison';
+
 export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedural' | 'formal' | 'custom';
 export type Platform = 'lmarena' | 'chatgpt' | 'claude' | 'poe' | 'custom';
 export type TurnNumber = 1 | 2 | 3 | 4 | 5 | 6;
 export type Confidence = 'high' | 'medium' | 'low';
 export type Section = 'setup' | 'epoch1' | 'epoch2' | 'analyst1' | 'analyst2' | 'report';
 export type AlignmentCategory = 'VALID' | 'SUPERFICIAL' | 'SLOW';
+export type SessionStatus = 'active' | 'paused' | 'analyzing' | 'complete';
+export type EpochStatus = 'pending' | 'in-progress' | 'complete';
 
 export interface Turn {
   number: TurnNumber;
@@ -19,6 +27,7 @@ export interface Epoch {
   turns: Turn[];
   duration_minutes: number;
   completed: boolean;
+  status: EpochStatus;
 }
 
 export interface StructureScores {
@@ -47,7 +56,38 @@ export interface AnalystResponse {
   insights: string;
 }
 
+// Session interface for multi-session support
+export interface Session {
+  id: string;
+  challenge: {
+    title: string;
+    description: string;
+    type: ChallengeType;
+    domain: string[];
+  };
+  status: SessionStatus;
+  process: {
+    platform: Platform;
+    model_epoch1: string;
+    model_epoch2: string;
+    model_analyst1: string;
+    model_analyst2: string;
+    started_at: string;
+  };
+  epochs: {
+    epoch1: Epoch;
+    epoch2: Epoch;
+  };
+  analysts: {
+    analyst1: { status: EpochStatus; data: AnalystResponse | null };
+    analyst2: { status: EpochStatus; data: AnalystResponse | null };
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface NotebookState {
+  // Legacy support - current active session data
   challenge: {
     title: string;
     description: string;
@@ -77,12 +117,26 @@ export interface NotebookState {
   ui: {
     currentSection: Section;
     currentTurn: number;
+    currentApp: AppScreen;
+    challengesView?: ChallengesView;
+    journalView?: JournalView;
+    insightsView?: InsightsView;
   };
+  
+  // New multi-session support
+  sessions: Session[];
+  activeSessionId?: string;
+  
+  // Gyro Suite tracking
+  gyroSuiteSessionIds?: string[]; // IDs of all 5 suite sessions
+  gyroSuiteCurrentIndex?: number; // Current challenge index (0-4)
   
   results: GovernanceInsight | null;
 }
 
 export interface GovernanceInsight {
+  id: string;
+  sessionId?: string;
   challenge: {
     title: string;
     description: string;
@@ -96,6 +150,11 @@ export interface GovernanceInsight {
     preparation: string;
     provision: string;
     combined_markdown: string;
+  };
+  
+  transcripts?: {
+    epoch1: string[];
+    epoch2: string[];
   };
   
   quality: {
@@ -143,6 +202,11 @@ export interface GovernanceInsight {
     license: 'CC0';
     contributor: string;
   };
+  
+  // New metadata for organization
+  tags: string[];
+  starred: boolean;
+  notes: string;
 }
 
 export const INITIAL_STATE: NotebookState = {
@@ -164,12 +228,14 @@ export const INITIAL_STATE: NotebookState = {
     epoch1: {
       turns: [],
       duration_minutes: 0,
-      completed: false
+      completed: false,
+      status: 'pending'
     },
     epoch2: {
       turns: [],
       duration_minutes: 0,
-      completed: false
+      completed: false,
+      status: 'pending'
     }
   },
   analysts: {
@@ -178,8 +244,16 @@ export const INITIAL_STATE: NotebookState = {
   },
   ui: {
     currentSection: 'setup',
-    currentTurn: 1
+    currentTurn: 1,
+    currentApp: 'welcome',
+    challengesView: 'select-type',
+    journalView: 'home',
+    insightsView: 'library'
   },
+  sessions: [],
+  activeSessionId: undefined,
+  gyroSuiteSessionIds: undefined,
+  gyroSuiteCurrentIndex: undefined,
   results: null
 };
 

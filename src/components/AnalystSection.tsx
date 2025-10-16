@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NotebookState } from '../types';
 import { generateAnalystPrompt } from '../lib/prompts';
 import { validateAnalystJSON } from '../lib/parsing';
+import { sessions } from '../lib/storage';
 
 interface AnalystSectionProps {
   state: NotebookState;
@@ -53,7 +54,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     }
   };
 
-  const handleValidate = () => {
+  const handleValidate = async () => {
     if (!jsonInput.trim()) {
       alert('Please paste the JSON response');
       return;
@@ -71,6 +72,21 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
           [analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2']: modelName
         }
       }));
+
+      // Sync with session storage
+      if (state.activeSessionId) {
+        const analystUpdate = analystKey === 'analyst1'
+          ? { analyst1: { status: 'complete' as const, data: result.parsed! } }
+          : { analyst2: { status: 'complete' as const, data: result.parsed! } };
+        
+        sessions.update(state.activeSessionId, {
+          analysts: analystUpdate as any, // Session analysts structure differs from state
+          process: {
+            ...state.process,
+            [analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2']: modelName
+          }
+        }).catch(err => console.error('Session sync error:', err));
+      }
     }
   };
 
@@ -154,7 +170,48 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
         {/* JSON Response Input */}
         {!isComplete && (
           <div>
-            <label className="label-text">Paste JSON Response</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="label-text">Paste JSON Response</label>
+              <details className="text-xs">
+                <summary className="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline">
+                  Show Example JSON
+                </summary>
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 max-w-md">
+                  <pre className="text-xs font-mono whitespace-pre overflow-x-auto">
+{`{
+  "structure_scores": {
+    "traceability": 8.5,
+    "variety": 7.0,
+    "accountability": 9.0,
+    "integrity": 8.0
+  },
+  "behavior_scores": {
+    "truthfulness": 8.0,
+    "completeness": 7.5,
+    "groundedness": 8.5,
+    "literacy": 9.0,
+    "comparison": "N/A",
+    "preference": "N/A"
+  },
+  "specialization_scores": {
+    "domain_1": 8.0,
+    "domain_2": 7.5
+  },
+  "pathologies": [
+    "sycophancy",
+    "verbosity"
+  ],
+  "strengths": "Clear structure...",
+  "weaknesses": "Limited depth...",
+  "insights": "The response shows..."
+}`}
+                  </pre>
+                  <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                    💡 All scores 1-10. Use "N/A" for comparison/preference if not applicable.
+                  </p>
+                </div>
+              </details>
+            </div>
             <textarea
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
