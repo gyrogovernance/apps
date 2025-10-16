@@ -1,3 +1,104 @@
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: dist/, node_modules/, docs/, *.md, LICENSE, assets/, insights/, schema/, public/, package-lock.json, *.png, *.jpg, *.jpeg, *.gif, *.svg, *.ico, *.webp, .DS_Store, Thumbs.db, .vscode/, .idea/, *.swp, *.swo, *.log, npm-debug.log*, *.tmp, .cache/, *.tsbuildinfo, *.map, *.min.js, *.min.css, .git/, webpack.config.js, postcss.config.js, tsconfig.json, tailwind.config.js, src/styles/**, repomix-output.xml, repomix-exlusions.md, repomix-parts/, split-repomix.js, index.html, webpack.dev.config.js
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.cursorrules
+.gitignore
+package.json
+src/background.ts
+src/components/AnalystSection.tsx
+src/components/apps/ChallengesApp/ChallengesApp.tsx
+src/components/apps/ChallengesApp/CustomBuilder.tsx
+src/components/apps/ChallengesApp/GyroSuiteView.tsx
+src/components/apps/ChallengesApp/PromptWorkshop.tsx
+src/components/apps/ChallengesApp/SDGGallery.tsx
+src/components/apps/ChallengesApp/TypeSelector.tsx
+src/components/apps/InsightsApp/InsightDetail.tsx
+src/components/apps/InsightsApp/InsightsApp.tsx
+src/components/apps/InsightsApp/InsightsLibrary.tsx
+src/components/apps/JournalApp/AnalysisView.tsx
+src/components/apps/JournalApp/JournalApp.tsx
+src/components/apps/JournalApp/JournalHome.tsx
+src/components/apps/JournalApp/SessionView.tsx
+src/components/apps/SettingsApp.tsx
+src/components/apps/WelcomeApp.tsx
+src/components/ElementPicker.tsx
+src/components/Notebook.tsx
+src/components/ProgressDashboard.tsx
+src/components/ReportSection.tsx
+src/components/SetupSection.tsx
+src/components/shared/AppCard.tsx
+src/components/shared/ClipboardMonitor.tsx
+src/components/shared/JourneyMap.tsx
+src/components/shared/MetricCard.tsx
+src/components/shared/Modal.tsx
+src/components/shared/PersistentHeader.tsx
+src/components/shared/SmartTooltip.tsx
+src/components/shared/Toast.tsx
+src/components/SynthesisSection.tsx
+src/hooks/useKeyboardShortcuts.ts
+src/hooks/useSettings.ts
+src/lib/calculations.ts
+src/lib/challenges.ts
+src/lib/chrome-mock.ts
+src/lib/clipboard-assistant.ts
+src/lib/export.ts
+src/lib/metric-definitions.ts
+src/lib/parsing.ts
+src/lib/prompts.ts
+src/lib/report-generator.ts
+src/lib/session-helpers.ts
+src/lib/session-utils.ts
+src/lib/storage.ts
+src/lib/text-utils.ts
+src/lib/ui-utils.ts
+src/lib/validation.ts
+src/sidepanel.tsx
+src/types/index.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+<file path="src/types/index.ts">
 // Core data types for the Governance Apps extension
 
 // App-based navigation types
@@ -10,7 +111,7 @@ export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedura
 export type Platform = 'lmarena' | 'chatgpt' | 'claude' | 'poe' | 'custom';
 export type TurnNumber = 1 | 2 | 3 | 4 | 5 | 6;
 export type Confidence = 'high' | 'medium' | 'low';
-export type Section = 'setup' | 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report';
+export type Section = 'setup' | 'epoch1' | 'epoch2' | 'analyst1' | 'analyst2' | 'report';
 export type AlignmentCategory = 'VALID' | 'SUPERFICIAL' | 'SLOW';
 export type SessionStatus = 'active' | 'paused' | 'analyzing' | 'complete';
 export type EpochStatus = 'pending' | 'in-progress' | 'complete';
@@ -262,4 +363,7 @@ export const INITIAL_STATE: NotebookState = {
   gyroSuiteCurrentIndex: undefined,
   results: null
 };
+</file>
 
+
+</files>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { GovernanceInsight, ChallengeType, AlignmentCategory } from '../../../types';
 import { insights as insightsStorage } from '../../../lib/storage';
 import { getQIColor, getAlignmentColor } from '../../../lib/ui-utils';
+import { exportAsJSON, exportAsMarkdown, downloadFile, generateFilename } from '../../../lib/export';
+import { useToast } from '../../shared/Toast';
 
 interface InsightsLibraryProps {
   onSelectInsight: (insightId: string) => void;
@@ -15,8 +17,10 @@ interface Filters {
 }
 
 const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) => {
+  const toast = useToast();
   const [allInsights, setAllInsights] = useState<GovernanceInsight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     search: '',
     challengeType: 'all',
@@ -29,6 +33,15 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     loadInsights();
   }, []);
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null);
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openMenuId]);
+
   const loadInsights = async () => {
     setLoading(true);
     try {
@@ -39,6 +52,33 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteInsight = async (insightId: string, title: string) => {
+    if (!confirm(`Delete insight "${title}"?`)) return;
+    
+    try {
+      await insightsStorage.delete(insightId);
+      toast.show('Insight deleted', 'success');
+      await loadInsights();
+    } catch (error) {
+      console.error('Error deleting insight:', error);
+      toast.show('Failed to delete insight', 'error');
+    }
+  };
+
+  const handleDownloadJSON = (insight: GovernanceInsight) => {
+    const json = exportAsJSON(insight);
+    const filename = generateFilename(insight.challenge.title, 'json');
+    downloadFile(filename, json, 'application/json');
+    toast.show('Downloaded as JSON', 'success');
+  };
+
+  const handleDownloadMarkdown = (insight: GovernanceInsight) => {
+    const md = exportAsMarkdown(insight);
+    const filename = generateFilename(insight.challenge.title, 'md');
+    downloadFile(filename, md, 'text/markdown');
+    toast.show('Downloaded as Markdown', 'success');
   };
 
   // Filter insights
@@ -172,72 +212,135 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
         </div>
       ) : (
         <div className="space-y-4">
-          {sortedInsights.map((insight) => (
-            <button
-              key={insight.id}
-              onClick={() => onSelectInsight(insight.id)}
-              className="w-full p-5 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all text-left"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                    {insight.challenge.title}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                      {insight.challenge.type}
-                    </span>
-                    {insight.challenge.domain.slice(0, 3).map(d => (
-                      <span key={d} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
-                        {d}
-                      </span>
-                    ))}
-                    {insight.challenge.domain.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
-                        +{insight.challenge.domain.length - 3} more
-                      </span>
-                    )}
+          {sortedInsights.map((insight) => {
+            const shortId = insight.id.slice(-8);
+            return (
+              <div
+                key={insight.id}
+                className="relative w-full p-5 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all"
+              >
+                {/* Main content - clickable */}
+                <div 
+                  onClick={() => onSelectInsight(insight.id)}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                          {insight.challenge.title}
+                        </h3>
+                        <span className="text-xs font-mono text-gray-400 dark:text-gray-500" title={insight.id}>
+                          #{shortId}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                          {insight.challenge.type}
+                        </span>
+                        {insight.challenge.domain.slice(0, 3).map(d => (
+                          <span key={d} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
+                            {d}
+                          </span>
+                        ))}
+                        {insight.challenge.domain.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
+                            +{insight.challenge.domain.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(insight.process.created_at).toLocaleDateString()}
+                    </div>
                   </div>
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(insight.process.created_at).toLocaleDateString()}
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                <div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Quality Index</div>
-                  <div className={`text-xl font-bold ${getQIColor(insight.quality.quality_index)}`}>
-                    {insight.quality.quality_index.toFixed(1)}%
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Quality Index</div>
+                      <div className={`text-xl font-bold ${getQIColor(insight.quality.quality_index)}`}>
+                        {insight.quality.quality_index.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">SI</div>
+                      <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                        {(insight.quality.superintelligence_index == null || isNaN(insight.quality.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(1)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Alignment</div>
+                      <div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlignmentColor(insight.quality.alignment_rate_category)}`}>
+                          {insight.quality.alignment_rate_category}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Pathologies</div>
+                      <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {insight.quality.pathologies.detected.length}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">SI</div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                    {insight.quality.superintelligence_index.toFixed(1)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Alignment</div>
-                  <div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlignmentColor(insight.quality.alignment_rate_category)}`}>
-                      {insight.quality.alignment_rate_category}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Pathologies</div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {insight.quality.pathologies.detected.length}
-                  </div>
-                </div>
-              </div>
 
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Models: {insight.process.models_used.synthesis_epoch1}, {insight.process.models_used.analyst1}
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Models: {insight.process.models_used.synthesis_epoch1}, {insight.process.models_used.analyst1}
+                  </div>
+                </div>
+
+                {/* Action menu */}
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(openMenuId === insight.id ? null : insight.id);
+                    }}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                  </button>
+                  
+                  {openMenuId === insight.id && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadJSON(insight);
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      >
+                        <span>📥</span> Download JSON
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadMarkdown(insight);
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      >
+                        <span>📄</span> Download Markdown
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteInsight(insight.id, insight.challenge.title);
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 rounded-b-lg"
+                      >
+                        <span>🗑️</span> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

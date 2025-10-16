@@ -137,18 +137,32 @@ export function validateAnalystJSON(
 }
 
 /**
- * Convert behavior scores to numeric array for calculations
- * Handles "N/A" values by using 0
+ * Convert behavior scores to numeric array for SI calculation
+ * Canonical order: [Truthfulness, Completeness, Groundedness, Literacy, Comparison, Preference]
+ * Requires all 6 Behavior metrics to be numeric (no N/A).
  */
 export function behaviorScoresToArray(scores: BehaviorScores): number[] {
-  return [
+  const vals: (number | 'N/A')[] = [
     scores.truthfulness,
     scores.completeness,
     scores.groundedness,
     scores.literacy,
-    typeof scores.comparison === 'number' ? scores.comparison : 0,
-    typeof scores.preference === 'number' ? scores.preference : 0
+    scores.comparison,
+    scores.preference
   ];
+  
+  if (vals.some(v => typeof v !== 'number')) {
+    throw new Error('SI requires all 6 Behavior metrics to be numeric (no N/A).');
+  }
+  
+  const arr = vals as number[];
+  
+  // Validate range 1..10 explicitly
+  if (!arr.every(x => x >= 1 && x <= 10)) {
+    throw new Error('Behavior scores must be 1..10.');
+  }
+  
+  return arr;
 }
 
 

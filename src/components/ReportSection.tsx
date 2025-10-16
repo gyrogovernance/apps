@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NotebookState, GovernanceInsight } from '../types';
 import { insights as insightsStorage, sessions } from '../lib/storage';
 import { useToast } from './shared/Toast';
+import { getActiveSession } from '../lib/session-helpers';
 import {
   aggregateAnalysts,
   calculateStructureAverage,
@@ -24,7 +25,7 @@ interface ReportSectionProps {
   state: NotebookState;
   onUpdate: (updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)) => void;
   onBack: () => void;
-  onNavigateToSection?: (section: 'epoch1' | 'epoch2' | 'analyst1' | 'analyst2' | 'report') => void;
+  onNavigateToSection?: (section: 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report') => void;
 }
 
 const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, onNavigateToSection }) => {
@@ -39,55 +40,102 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
 
   const generateReport = async () => {
     try {
-      if (!state.analysts.analyst1 || !state.analysts.analyst2) {
-        throw new Error('Both analysts must complete evaluation');
+      const session = getActiveSession(state);
+      if (!session) {
+        throw new Error('No active session');
       }
 
-      // Aggregate scores from both analysts
-      const aggregated = aggregateAnalysts(state.analysts.analyst1, state.analysts.analyst2);
+      // Helper for median calculation
+      const median = (arr: number[]) => {
+        const sorted = arr.slice().sort((a, b) => a - b);
+        return sorted[Math.floor(sorted.length / 2)];
+      };
 
-      // Calculate averages
-      const structureAvg = calculateStructureAverage(aggregated.structure);
-      const behaviorAvg = calculateBehaviorAverage(aggregated.behavior);
-      const specializationAvg = calculateSpecializationAverage(aggregated.specialization);
+      // Validate per-epoch analyst data
+      const a1e1 = session.analysts.epoch1.analyst1?.data;
+      const a2e1 = session.analysts.epoch1.analyst2?.data;
+      const a1e2 = session.analysts.epoch2.analyst1?.data;
+      const a2e2 = session.analysts.epoch2.analyst2?.data;
 
-      // Calculate Quality Index
-      const qualityIndex = calculateQualityIndex(structureAvg, behaviorAvg, specializationAvg);
+      if (!a1e1 || !a2e1 || !a1e2 || !a2e2) {
+        throw new Error('All analysts must complete evaluation for both epochs');
+      }
 
-      // Calculate Alignment Rate (using total duration from both epochs)
-      const totalDuration = state.epochs.epoch1.duration_minutes + state.epochs.epoch2.duration_minutes;
-      const alignmentResult = calculateAlignmentRate(qualityIndex, totalDuration);
+      // Aggregate and calculate QI per epoch
+      const agg1 = aggregateAnalysts(a1e1, a2e1);
+      const s1 = calculateStructureAverage(agg1.structure);
+      const b1 = calculateBehaviorAverage(agg1.behavior);
+      const sp1 = calculateSpecializationAverage(agg1.specialization);
+      const QI1 = calculateQualityIndex(s1, b1, sp1); // 0..100
 
-      // Calculate Superintelligence Index
-      const behaviorArray = behaviorScoresToArray(aggregated.behavior);
-      const siResult = calculateSuperintelligenceIndex(behaviorArray);
+      const agg2 = aggregateAnalysts(a1e2, a2e2);
+      const s2 = calculateStructureAverage(agg2.structure);
+      const b2 = calculateBehaviorAverage(agg2.behavior);
+      const sp2 = calculateSpecializationAverage(agg2.specialization);
+      const QI2 = calculateQualityIndex(s2, b2, sp2);
 
-      // Calculate pathology frequency
-      const totalPathologies = state.analysts.analyst1.pathologies.length + state.analysts.analyst2.pathologies.length;
+      // Compute medians for AR (spec-compliant)
+      const medianQI = median([QI1, QI2]);
+      const d1 = session.epochs.epoch1.duration_minutes;
+      const d2 = session.epochs.epoch2.duration_minutes;
+      const medianDuration = median([d1, d2]);
+      const alignmentResult = calculateAlignmentRate(medianQI, medianDuration);
+
+      // Compute SI per epoch and use median (optional but recommended)
+      let si1Result = { si: NaN, aperture: NaN, deviation: NaN };
+      let si2Result = { si: NaN, aperture: NaN, deviation: NaN };
+      try {
+        const behaviorArray1 = behaviorScoresToArray(agg1.behavior);
+        si1Result = calculateSuperintelligenceIndex(behaviorArray1);
+      } catch (e) {
+        console.warn('SI unavailable for epoch 1:', e);
+      }
+      try {
+        const behaviorArray2 = behaviorScoresToArray(agg2.behavior);
+        si2Result = calculateSuperintelligenceIndex(behaviorArray2);
+      } catch (e) {
+        console.warn('SI unavailable for epoch 2:', e);
+      }
+
+      // Use median SI if both are valid, otherwise use what's available
+      const validSIs = [si1Result.si, si2Result.si].filter(v => Number.isFinite(v));
+      const siResult = validSIs.length > 0 
+        ? { 
+            si: validSIs.length === 2 ? median(validSIs) : validSIs[0],
+            aperture: si1Result.aperture, // Use epoch 1 for details
+            deviation: si1Result.deviation
+          }
+        : { si: NaN, aperture: NaN, deviation: NaN };
+
+      // Use aggregate of both epochs for display purposes (combine insights, etc.)
+      const aggregated = aggregateAnalysts(a1e1, a2e1); // Using epoch 1 for structure display
+      const structureAvg = s1;
+      const behaviorAvg = b1;
+      const specializationAvg = sp1;
+      const qualityIndex = medianQI; // Use median QI
+
+      // Calculate pathology frequency across all analysts
+      const totalPathologies = a1e1.pathologies.length + a2e1.pathologies.length + 
+                               a1e2.pathologies.length + a2e2.pathologies.length;
       const pathologyFrequency = totalPathologies / 12; // 6 turns per epoch × 2 epochs
 
-      // Combine insights from both analysts
-      const combinedInsights = `# Analyst 1 Insights\n\n${state.analysts.analyst1.insights}\n\n# Analyst 2 Insights\n\n${state.analysts.analyst2.insights}`;
+      // Combine insights from all analyst evaluations
+      const combinedInsights = `# Epoch 1 - Analyst 1\n\n${a1e1.insights}\n\n# Epoch 1 - Analyst 2\n\n${a2e1.insights}\n\n# Epoch 2 - Analyst 1\n\n${a1e2.insights}\n\n# Epoch 2 - Analyst 2\n\n${a2e2.insights}`;
 
       // Extract raw transcripts for auditability
       const transcripts = {
-        epoch1: state.epochs.epoch1.turns.map(t => t.content),
-        epoch2: state.epochs.epoch2.turns.map(t => t.content)
+        epoch1: session.epochs.epoch1.turns.map(t => t.content),
+        epoch2: session.epochs.epoch2.turns.map(t => t.content)
       };
 
       // Create final insight object
       const insightId = `insight_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const generatedInsight: GovernanceInsight = {
         id: insightId,
-        sessionId: state.activeSessionId,
-        challenge: {
-          title: state.challenge.title,
-          description: state.challenge.description,
-          type: state.challenge.type,
-          domain: state.challenge.domain
-        },
+        sessionId: session.id,
+        challenge: session.challenge,
         insights: {
-          summary: `Quality Index: ${qualityIndex.toFixed(1)}%, SI: ${siResult.si.toFixed(2)}, Alignment: ${alignmentResult.category}`,
+          summary: `Quality Index: ${qualityIndex.toFixed(1)}%, SI: ${isNaN(siResult.si) ? 'N/A' : siResult.si.toFixed(2)}, Alignment: ${alignmentResult.category}`,
           participation: 'Generated through structured synthesis protocol',
           preparation: 'Two epochs of 6-turn synthesis with diverse model perspectives',
           provision: 'Validated through dual-analyst evaluation with quality metrics',
@@ -106,8 +154,8 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
             completeness: aggregated.behavior.completeness,
             groundedness: aggregated.behavior.groundedness,
             literacy: aggregated.behavior.literacy,
-            comparison: typeof aggregated.behavior.comparison === 'number' ? aggregated.behavior.comparison : 0,
-            preference: typeof aggregated.behavior.preference === 'number' ? aggregated.behavior.preference : 0
+            comparison: aggregated.behavior.comparison,   // Preserve N/A
+            preference: aggregated.behavior.preference    // Preserve N/A
           },
           specialization_scores: aggregated.specialization,
           pathologies: {
@@ -116,16 +164,16 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
           }
         },
         process: {
-          platform: state.process.platform,
+          platform: session.process.platform,
           models_used: {
-            synthesis_epoch1: state.process.model_epoch1,
-            synthesis_epoch2: state.process.model_epoch2,
-            analyst1: state.process.model_analyst1,
-            analyst2: state.process.model_analyst2
+            synthesis_epoch1: session.process.model_epoch1,
+            synthesis_epoch2: session.process.model_epoch2,
+            analyst1: session.process.model_analyst1,
+            analyst2: session.process.model_analyst2
           },
           durations: {
-            epoch1_minutes: state.epochs.epoch1.duration_minutes,
-            epoch2_minutes: state.epochs.epoch2.duration_minutes
+            epoch1_minutes: session.epochs.epoch1.duration_minutes,
+            epoch2_minutes: session.epochs.epoch2.duration_minutes
           },
           created_at: new Date().toISOString(),
           schema_version: '1.0.0'
@@ -135,7 +183,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
           license: 'CC0',
           contributor: 'Anonymous'
         },
-        tags: state.challenge.domain,
+        tags: session.challenge.domain,
         starred: false,
         notes: ''
       };
@@ -143,8 +191,25 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
       setInsight(generatedInsight);
       setLoading(false);
 
-      // Save to insights library
-      await insightsStorage.save(generatedInsight);
+      // Check for existing insight from same session
+      const allInsights = await insightsStorage.getAll();
+      const existingInsight = session.id 
+        ? allInsights.find(i => i.sessionId === session.id)
+        : null;
+
+      if (existingInsight) {
+        // Update existing insight instead of creating duplicate
+        const updatedInsight = {
+          ...generatedInsight,
+          id: existingInsight.id // Preserve original ID
+        };
+        await insightsStorage.save(updatedInsight);
+        toast.show('Insight updated in library', 'success');
+      } else {
+        // Save new insight
+        await insightsStorage.save(generatedInsight);
+        toast.show('Insight saved to library', 'success');
+      }
 
       // Update state results for progress tracking
       onUpdate({ results: generatedInsight });
@@ -157,9 +222,6 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
       // Check if this is part of Gyro Suite
       if (state.gyroSuiteSessionIds && state.gyroSuiteCurrentIndex !== undefined) {
         setShowSuiteProgress(true);
-        toast.show(`Challenge ${state.gyroSuiteCurrentIndex + 1}/5 complete`, 'success');
-      } else {
-        toast.show('Insight saved to library', 'success');
       }
 
     } catch (error) {
@@ -291,7 +353,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
           
           <div className="text-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded">
             <div className="text-3xl font-bold text-primary">
-              {insight.quality.superintelligence_index.toFixed(2)}
+              {isNaN(insight.quality.superintelligence_index) ? 'N/A' : insight.quality.superintelligence_index.toFixed(2)}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">SI Index</div>
             <details className="text-xs text-left">
@@ -299,10 +361,12 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
                 Details
               </summary>
               <div className="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
-                <p>Target Aperture: 0.0207 (K=4)</p>
-                <p>Deviation: {insight.quality.si_deviation.toFixed(2)}×</p>
+                <p>Target Aperture: 0.020701 (K=4)</p>
+                <p>Deviation: {isNaN(insight.quality.si_deviation) ? 'N/A' : `${insight.quality.si_deviation.toFixed(2)}×`}</p>
                 <p className="text-xs mt-1">
-                  Measures behavior score spread via K4 spherical geometry
+                  {isNaN(insight.quality.superintelligence_index) 
+                    ? 'SI requires all 6 behavior metrics to be numeric (no N/A values)'
+                    : 'Measures behavior score spread via K4 spherical geometry'}
                 </p>
               </div>
             </details>
@@ -471,7 +535,13 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
         </button>
         {!showSuiteProgress && (
           <button 
-            onClick={() => onUpdate({ ui: { ...state.ui, currentApp: 'insights' } })}
+            onClick={() => onUpdate({ 
+              ui: { 
+                ...state.ui, 
+                currentApp: 'insights',
+                insightsView: 'library' // Explicitly set to library view
+              } 
+            })}
             className="btn-primary"
           >
             View in Insights →

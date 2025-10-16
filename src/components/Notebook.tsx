@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { NotebookState, Section, AppScreen, ChallengeType, Platform, INITIAL_STATE } from '../types';
 import { storage, sessions } from '../lib/storage';
+import { chromeAPI } from '../lib/chrome-mock';
 import { useToast } from './shared/Toast';
+import { useConfirm } from './shared/Modal';
+import { PersistentHeader } from './shared/PersistentHeader';
 import WelcomeApp from './apps/WelcomeApp';
 import ChallengesApp from './apps/ChallengesApp/ChallengesApp';
 import InsightsApp from './apps/InsightsApp/InsightsApp';
 import JournalApp from './apps/JournalApp/JournalApp';
+import { SettingsApp } from './apps/SettingsApp';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import SetupSection from './SetupSection';
 import SynthesisSection from './SynthesisSection';
 import AnalystSection from './AnalystSection';
@@ -17,6 +22,16 @@ const Notebook: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [operationLoading, setOperationLoading] = useState(false);
   const toast = useToast();
+  const { confirm, ConfirmModal } = useConfirm();
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    'mod+n': () => navigateToApp('challenges'),
+    'mod+j': () => navigateToApp('journal'),
+    'mod+i': () => navigateToApp('insights'),
+    'mod+h': () => navigateToApp('welcome'),
+    'escape': () => navigateToApp('welcome')
+  });
 
   // Load state on mount and listen for storage changes
   useEffect(() => {
@@ -47,10 +62,10 @@ const Notebook: React.FC = () => {
       }
     };
 
-    chrome.storage.onChanged.addListener(handleStorageChange);
+    chromeAPI.storage.onChanged.addListener(handleStorageChange);
     
     return () => {
-      chrome.storage.onChanged.removeListener(handleStorageChange);
+      chromeAPI.storage.onChanged.removeListener(handleStorageChange);
     };
   }, []);
 
@@ -79,7 +94,14 @@ const Notebook: React.FC = () => {
 
   const navigateToApp = (app: AppScreen) => {
     updateState(prev => ({
-      ui: { ...prev.ui, currentApp: app }
+      ui: { 
+        ...prev.ui, 
+        currentApp: app,
+        // Reset sub-views when changing apps to prevent stuck states
+        insightsView: app === 'insights' ? 'library' : prev.ui.insightsView,
+        challengesView: app === 'challenges' ? 'select-type' : prev.ui.challengesView,
+        journalView: app === 'journal' ? 'home' : prev.ui.journalView
+      }
     }));
   };
 
@@ -197,9 +219,17 @@ const Notebook: React.FC = () => {
   };
 
   const resetNotebook = async () => {
-    if (confirm('Are you sure you want to reset? This will delete all progress.')) {
+    const confirmed = await confirm(
+      'Reset All Data?',
+      'This will delete all sessions, insights, and progress. This action cannot be undone.',
+      { destructive: true, confirmText: 'Reset Everything' }
+    );
+    
+    if (confirmed) {
       await storage.clear();
+      await chromeAPI.storage.local.clear(); // Clear insights too
       setState(INITIAL_STATE);
+      toast.show('All data cleared', 'info');
     }
   };
 
@@ -239,41 +269,20 @@ const Notebook: React.FC = () => {
             onResume={handleResume}
           />
         </div>
+        {ConfirmModal}
       </div>
     );
   }
 
-  // For other apps, temporarily show the old linear workflow
-  // This will be replaced as we build out each app
+  // For other apps, use PersistentHeader
   return (
     <div className="h-full w-full max-w-full bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
-      {/* Header with back button */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex-shrink-0">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <button
-              onClick={() => navigateToApp('welcome')}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm"
-            >
-              ← Home
-            </button>
-            <div className="min-w-0 flex-1 pr-2">
-              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
-                {state.ui.currentApp === 'challenges' && '📋 Challenges'}
-                {state.ui.currentApp === 'journal' && '📓 Journal'}
-                {state.ui.currentApp === 'insights' && '💡 Insights'}
-                {state.ui.currentApp === 'settings' && '⚙️ Settings'}
-              </h1>
-            </div>
-          </div>
-          <button
-            onClick={resetNotebook}
-            className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-2 py-1 whitespace-nowrap"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
+      {/* Persistent Header with breadcrumb and quick nav */}
+      <PersistentHeader 
+        state={state}
+        onNavigateToApp={navigateToApp}
+        onNavigateHome={() => navigateToApp('welcome')}
+      />
 
       {/* Progress Dashboard - only show for journal app */}
       {state.ui.currentApp === 'journal' && (
@@ -310,14 +319,10 @@ const Notebook: React.FC = () => {
         )}
 
         {state.ui.currentApp === 'settings' && (
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <h2 className="text-lg font-semibold mb-2">⚙️ Settings (Coming Soon)</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Settings and preferences configuration is being built.
-            </p>
-          </div>
+          <SettingsApp />
         )}
       </div>
+      {ConfirmModal}
     </div>
   );
 };

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Empowered Governance Apps - Browser Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #F9FAFB;
+    }
+    
+    #root {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .spinner {
+      border: 4px solid rgba(79, 70, 229, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #4F46E5;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- React root -->
+  <div id="root">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div style="color: #6B7280; font-size: 14px;">Loading AI-Empowered Governance Apps...</div>
+    </div>
+  </div>
+  
+  <!-- Load the compiled bundle -->
+  <script src="dist/sidepanel.js"></script>
+  
+  <script>
+    console.log('%c🌍 AI-Empowered Governance Apps', 'font-size: 24px; font-weight: bold; color: #4F46E5; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);');
+    console.log('%cBrowser Preview Mode', 'font-size: 16px; color: #10B981; font-weight: 600;');
+    console.log('');
+    console.log('✓ Using localStorage instead of chrome.storage');
+    console.log('✓ Cross-tab sync works via storage events');
+    console.log('✓ All apps functional (Welcome, Challenges, Journal, Insights, Settings)');
+    console.log('✓ Sessions, insights, and drafts persist in browser localStorage');
+    console.log('⚠ ElementPicker disabled in web mode (extension-only feature)');
+    console.log('');
+    console.log('Try it out:');
+    console.log('- Create a challenge (Challenges app)');
+    console.log('- Start a session (simulated synthesis)');
+    console.log('- View insights library');
+    console.log('- Test keyboard shortcuts (Cmd/Ctrl+N, J, I, H)');
+  </script>
+</body>
+</html>
+

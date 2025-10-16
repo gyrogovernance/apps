@@ -17,7 +17,7 @@ export function exportAsMarkdown(insight: GovernanceInsight): string {
 
 **Generated**: ${new Date(insight.process.created_at).toLocaleString()}  
 **Quality Index**: ${insight.quality.quality_index.toFixed(1)}% (${insight.quality.alignment_rate_category})  
-**Superintelligence Index**: ${insight.quality.superintelligence_index.toFixed(2)} (${insight.quality.si_deviation.toFixed(2)}× deviation)
+**Superintelligence Index**: ${isNaN(insight.quality.superintelligence_index) ? 'N/A' : insight.quality.superintelligence_index.toFixed(2)} ${isNaN(insight.quality.si_deviation) ? '' : `(${insight.quality.si_deviation.toFixed(2)}× deviation)`}
 
 ## Challenge
 

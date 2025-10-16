@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NotebookState } from '../types';
 import { generateAnalystPrompt } from '../lib/prompts';
 import { validateAnalystJSON } from '../lib/parsing';
-import { sessions } from '../lib/storage';
+import { sessions, drafts } from '../lib/storage';
+import { getActiveSession } from '../lib/session-helpers';
+import { useToast } from './shared/Toast';
+import { useSettings } from '../hooks/useSettings';
+import { ClipboardMonitor } from './shared/ClipboardMonitor';
 
 interface AnalystSectionProps {
   state: NotebookState;
-  onUpdate: (updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)) => void;
+  onUpdate: (newState: Partial<NotebookState>) => void;
   analystKey: 'analyst1' | 'analyst2';
+  epochKey: 'epoch1' | 'epoch2';
   onNext: () => void;
   onBack: () => void;
 }
@@ -16,13 +21,24 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
   state,
   onUpdate,
   analystKey,
+  epochKey,
   onNext,
   onBack
 }) => {
+  const toast = useToast();
+  const settings = useSettings();
+  const session = getActiveSession(state);
+  
+  if (!session) {
+    toast.show('No active session found', 'error');
+    return <div>Error: No active session</div>;
+  }
+
   const analystNumber = analystKey === 'analyst1' ? 1 : 2;
+  const epochNumber = epochKey === 'epoch1' ? 1 : 2;
   const [jsonInput, setJsonInput] = useState('');
   const [modelName, setModelName] = useState(
-    analystKey === 'analyst1' ? state.process.model_analyst1 : state.process.model_analyst2
+    analystKey === 'analyst1' ? session.process.model_analyst1 : session.process.model_analyst2
   );
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
@@ -30,17 +46,32 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
   } | null>(null);
   const [copyStatus, setCopyStatus] = useState<string>('');
 
-  // Generate transcript for analyst
-  const getTranscript = (): string => {
-    const epoch1Text = state.epochs.epoch1.turns
+  // Load draft on mount (use combined key for per-epoch drafts)
+  const draftKey = `${analystKey}_${epochKey}`;
+  useEffect(() => {
+    if (settings?.autoSaveDrafts && session.id) {
+      drafts.load(session.id, draftKey).then(draft => {
+        if (draft) setJsonInput(draft);
+      }).catch(() => {/* ignore */});
+    }
+  }, [session.id, draftKey, settings?.autoSaveDrafts]);
+
+  // Auto-save draft
+  useEffect(() => {
+    if (settings?.autoSaveDrafts && jsonInput && session.id) {
+      const timeout = setTimeout(() => {
+        drafts.save(session.id!, draftKey, jsonInput).catch(() => {/* ignore */});
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [jsonInput, session.id, draftKey, settings?.autoSaveDrafts]);
+
+  // Generate transcript for the specific epoch only
+  const getEpochTranscript = (): string => {
+    const epoch = session.epochs[epochKey];
+    return epoch.turns
       .map(t => `{Turn ${t.number}}\n${t.content}`)
       .join('\n\n');
-
-    const epoch2Text = state.epochs.epoch2.turns
-      .map(t => `{Turn ${t.number}}\n${t.content}`)
-      .join('\n\n');
-
-    return `EPOCH 1\n\n${epoch1Text}\n\n---\n\nEPOCH 2\n\n${epoch2Text}`;
   };
 
   const copyToClipboard = async (text: string) => {
@@ -49,73 +80,83 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
       setCopyStatus('Copied!');
       setTimeout(() => setCopyStatus(''), 2000);
     } catch (err) {
-      setCopyStatus('Failed to copy');
-      setTimeout(() => setCopyStatus(''), 2000);
+      toast.show('Failed to copy to clipboard', 'error');
     }
   };
 
   const handleValidate = async () => {
     if (!jsonInput.trim()) {
-      alert('Please paste the JSON response');
+      toast.show('Please paste the JSON response', 'error');
       return;
     }
-    const result = validateAnalystJSON(jsonInput, state.challenge.type);
+    
+    const result = validateAnalystJSON(jsonInput, session.challenge.type);
     setValidationResult(result);
+    
     if (result.valid && result.parsed) {
-      onUpdate(prev => ({
-        analysts: {
-          ...prev.analysts,
-          [analystKey]: result.parsed!
-        },
-        process: {
-          ...prev.process,
-          [analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2']: modelName
-        }
-      }));
-
-      // Sync with session storage
-      if (state.activeSessionId) {
-        const analystUpdate = analystKey === 'analyst1'
-          ? { analyst1: { status: 'complete' as const, data: result.parsed! } }
-          : { analyst2: { status: 'complete' as const, data: result.parsed! } };
-        
-        sessions.update(state.activeSessionId, {
-          analysts: analystUpdate as any, // Session analysts structure differs from state
+      try {
+        // Update the per-epoch analyst slot
+        const newState = await sessions.update(session.id, {
+          analysts: {
+            ...session.analysts,
+            [epochKey]: {
+              ...session.analysts[epochKey],
+              [analystKey]: {
+                status: 'complete' as const,
+                data: result.parsed
+              }
+            }
+          },
           process: {
-            ...state.process,
+            ...session.process,
             [analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2']: modelName
           }
-        }).catch(err => console.error('Session sync error:', err));
+        });
+
+        // Clear draft
+        if (settings?.autoSaveDrafts) {
+          await drafts.clear(session.id, draftKey);
+        }
+
+        // Update parent state immediately
+        onUpdate(newState);
+        toast.show(`Epoch ${epochNumber} - Analyst ${analystNumber} evaluation saved`, 'success');
+      } catch (error) {
+        console.error('Failed to save analyst evaluation:', error);
+        toast.show('Failed to save evaluation', 'error');
       }
+    } else {
+      toast.show(`Validation failed: ${result.errors[0]}`, 'error');
     }
   };
 
   const handleNext = () => {
-    if (!state.analysts[analystKey]) {
-      alert('Please validate and save the analyst response first');
+    const currentAnalyst = session.analysts[epochKey][analystKey];
+    if (!currentAnalyst || currentAnalyst.status !== 'complete') {
+      toast.show('Please validate and save the analyst response first', 'error');
       return;
     }
     onNext();
   };
 
   const analystPrompt = generateAnalystPrompt(
-    [getTranscript()],
-    state.challenge.type
+    [getEpochTranscript()],
+    session.challenge.type
   );
 
-  const isComplete = state.analysts[analystKey] !== null;
+  const isComplete = session.analysts[epochKey][analystKey]?.status === 'complete';
 
   return (
     <div className="section-card">
       <h2 className="section-header">
-        <span>3. Provision: Analyst {analystNumber} Evaluation</span>
+        <span>3. Provision: Epoch {epochNumber} - Analyst {analystNumber} Evaluation</span>
         {isComplete && <span className="success-badge">✓ Completed</span>}
       </h2>
 
       {/* Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-sm">
-        <p className="font-medium mb-1">Instructions:</p>
-        <ol className="list-decimal list-inside space-y-1 text-gray-700">
+      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-3 mb-4 text-sm">
+        <p className="font-medium mb-1 text-gray-900 dark:text-gray-100">Instructions:</p>
+        <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
           <li>Copy the analyst prompt below</li>
           <li>Paste it into a <strong>different AI model</strong> than used for synthesis</li>
           <li>Copy the JSON response and paste it here</li>
@@ -135,7 +176,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
             className="input-field"
             disabled={isComplete}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Use a different model than the synthesis epochs
           </p>
         </div>
@@ -163,7 +204,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
             )}
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            This prompt includes the full transcript from both epochs
+            This prompt includes the full transcript from Epoch {epochNumber}
           </p>
         </div>
 
@@ -194,12 +235,12 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     "preference": "N/A"
   },
   "specialization_scores": {
-    "domain_1": 8.0,
-    "domain_2": 7.5
+    "policy": 8.0,
+    "ethics": 7.5
   },
   "pathologies": [
-    "sycophancy",
-    "verbosity"
+    "semantic_drift",
+    "deceptive_coherence"
   ],
   "strengths": "Clear structure...",
   "weaknesses": "Limited depth...",
@@ -207,7 +248,9 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
 }`}
                   </pre>
                   <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                    💡 All scores 1-10. Use "N/A" for comparison/preference if not applicable.
+                    💡 <strong>All scores 1-10.</strong> Use "N/A" for comparison/preference if not applicable.
+                    <br />
+                    💡 <strong>Valid pathologies:</strong> sycophantic_agreement, deceptive_coherence, goal_misgeneralization, superficial_optimization, semantic_drift
                   </p>
                 </div>
               </details>
@@ -219,87 +262,79 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
               rows={12}
               className="textarea-field font-mono text-sm"
             />
-            <div className="mt-2">
-              <button
-                onClick={handleValidate}
-                className="btn-primary"
-                disabled={!jsonInput.trim() || !modelName.trim()}
-              >
-                Validate & Save
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Validation Result */}
-        {validationResult && (
-          <div className={`p-3 rounded ${validationResult.valid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            {validationResult.valid ? (
-              <div className="text-green-800">
-                <div className="font-medium mb-1">✓ Valid JSON Response</div>
-                <p className="text-sm">All required fields present and properly formatted.</p>
-              </div>
-            ) : (
-              <div className="text-red-800">
-                <div className="font-medium mb-1">✗ Validation Errors</div>
-                <ul className="text-sm list-disc list-inside">
-                  {validationResult.errors.map((error, i) => (
-                    <li key={i}>{error}</li>
-                  ))}
-                </ul>
+            
+            {/* Validation Result */}
+            {validationResult && (
+              <div className={`mt-2 p-3 rounded border ${
+                validationResult.valid
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700'
+                  : 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
+              }`}>
+                {validationResult.valid ? (
+                  <div className="text-sm text-green-800 dark:text-green-200">
+                    ✓ Valid JSON structure
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
+                      Validation Errors:
+                    </div>
+                    <ul className="list-disc list-inside text-sm text-red-700 dark:text-red-300">
+                      {validationResult.errors.map((err, idx) => (
+                        <li key={idx}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
+
+            <button
+              onClick={handleValidate}
+              className="btn-primary mt-3"
+              disabled={!jsonInput.trim() || !modelName.trim()}
+            >
+              Validate & Save
+            </button>
           </div>
         )}
 
-        {/* Preview Saved Response */}
-        {isComplete && state.analysts[analystKey] && (
-          <div className="border rounded p-4 bg-gray-50">
-            <h3 className="font-medium mb-3">Saved Response Summary</h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium">Structure Scores:</span>{' '}
-                {Object.values(state.analysts[analystKey]!.structure_scores).map(s => s.toFixed(1)).join(', ')}
-              </div>
-              <div>
-                <span className="font-medium">Behavior Scores:</span>{' '}
-                {Object.values(state.analysts[analystKey]!.behavior_scores).map(s => typeof s === 'number' ? s.toFixed(1) : s).join(', ')}
-              </div>
-              <div>
-                <span className="font-medium">Pathologies:</span>{' '}
-                {state.analysts[analystKey]!.pathologies.length > 0 
-                  ? state.analysts[analystKey]!.pathologies.join(', ')
-                  : 'None detected'}
-              </div>
-              <details className="mt-2">
-                <summary className="cursor-pointer font-medium text-primary">
-                  View Full Insights
-                </summary>
-                <div className="mt-2 p-3 bg-white rounded text-sm whitespace-pre-wrap">
-                  {state.analysts[analystKey]!.insights}
-                </div>
-              </details>
+        {/* Completed View */}
+        {isComplete && (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded p-4">
+            <div className="flex items-center gap-2 text-green-800 dark:text-green-200 mb-2">
+              <span className="text-lg">✓</span>
+              <span className="font-medium">Analyst {analystNumber} evaluation completed</span>
+            </div>
+            <div className="text-sm text-green-700 dark:text-green-300">
+              Model: {analystKey === 'analyst1' ? session.process.model_analyst1 : session.process.model_analyst2}
             </div>
           </div>
         )}
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t mt-4">
+      <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
         <button onClick={onBack} className="btn-secondary">
           ← Back
         </button>
-        <button
-          onClick={handleNext}
-          className="btn-primary"
-          disabled={!isComplete}
-        >
-          Continue to {analystKey === 'analyst1' ? 'Analyst 2' : 'Report'} →
-        </button>
+        {isComplete && (
+          <button onClick={handleNext} className="btn-primary">
+            Continue to {analystKey === 'analyst1' ? 'Analyst 2' : 'Report'} →
+          </button>
+        )}
       </div>
+
+      {/* Clipboard Monitor */}
+      {settings?.clipboardMonitoring && (
+        <ClipboardMonitor
+          enabled={true}
+          currentContext="analyst"
+          onSuggestPaste={(content) => setJsonInput(content)}
+        />
+      )}
     </div>
   );
 };
 
 export default AnalystSection;
-

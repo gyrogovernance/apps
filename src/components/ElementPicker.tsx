@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from './shared/Toast';
+import { chromeAPI } from '../lib/chrome-mock';
 
 interface ElementPickerProps {
   onTextCaptured: (text: string) => void;
 }
 
 const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
+  const toast = useToast();
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
+    // Only set up listeners if chrome.runtime exists (extension mode)
+    if (!chromeAPI.runtime.onMessage) return;
+
     // Listen for element selection messages
     const handleMessage = (message: any) => {
       if (message.action === 'element_captured') {
@@ -16,10 +22,12 @@ const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
       }
     };
 
-    chrome.runtime.onMessage.addListener(handleMessage);
+    chromeAPI.runtime.onMessage.addListener(handleMessage);
 
     return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage);
+      if (chromeAPI.runtime.onMessage) {
+        chromeAPI.runtime.onMessage.removeListener(handleMessage);
+      }
     };
   }, [onTextCaptured]);
 
@@ -29,7 +37,7 @@ const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
       if (!tab.id) {
-        alert('Could not get active tab');
+        toast.show('Could not get active tab', 'error');
         return;
       }
 
@@ -37,6 +45,12 @@ const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => {
+          // Guard against double-injection
+          // @ts-ignore
+          if ((window as any).__gyroPickerActive) return;
+          // @ts-ignore
+          (window as any).__gyroPickerActive = true;
+
           let highlighted: HTMLElement | null = null;
           let tooltip: HTMLElement | null = null;
 
@@ -80,6 +94,10 @@ const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
               tooltip.remove();
               tooltip = null;
             }
+
+            // Reset guard flag
+            // @ts-ignore
+            (window as any).__gyroPickerActive = false;
           }
 
           function handleEscape(e: KeyboardEvent) {
@@ -118,7 +136,7 @@ const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
       
     } catch (error) {
       console.error('Error activating element picker:', error);
-      alert('Could not activate element picker. Make sure you are on a web page.');
+      toast.show('Could not activate element picker. Make sure you are on a web page.', 'error');
     }
   };
 

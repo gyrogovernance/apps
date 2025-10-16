@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { NotebookState, TurnNumber } from '../types';
 import { generateSynthesisPrompt, generateContinuePrompt } from '../lib/prompts';
 import { parseManualPaste } from '../lib/parsing';
-import { sessions } from '../lib/storage';
+import { sessions, drafts } from '../lib/storage';
+import { getActiveSession, requireActiveSession } from '../lib/session-helpers';
+import { useToast } from './shared/Toast';
+import { useSettings } from '../hooks/useSettings';
+import { ClipboardMonitor } from './shared/ClipboardMonitor';
+import { countWords, estimateTokens, formatTokenCount } from '../lib/text-utils';
 import ElementPicker from './ElementPicker';
 
 interface SynthesisSectionProps {
   state: NotebookState;
-  onUpdate: (updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)) => void;
+  onUpdate: (newState: Partial<NotebookState>) => void;
   epochKey: 'epoch1' | 'epoch2';
   onNext: () => void;
   onBack: () => void;
@@ -20,15 +25,44 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
   onNext,
   onBack
 }) => {
-  const epoch = state.epochs[epochKey];
+  const toast = useToast();
+  const settings = useSettings();
+  const session = getActiveSession(state);
+  
+  if (!session) {
+    toast.show('No active session found', 'error');
+    return <div>Error: No active session</div>;
+  }
+
+  const epoch = session.epochs[epochKey];
   const currentTurnNumber = (epoch.turns.length + 1) as TurnNumber;
   const [pastedText, setPastedText] = useState('');
   const [modelName, setModelName] = useState(
-    epochKey === 'epoch1' ? state.process.model_epoch1 : state.process.model_epoch2
+    epochKey === 'epoch1' ? session.process.model_epoch1 : session.process.model_epoch2
   );
   const [duration, setDuration] = useState(epoch.duration_minutes);
-
   const [copyStatus, setCopyStatus] = useState<string>('');
+
+  // Load draft on mount
+  useEffect(() => {
+    if (settings?.autoSaveDrafts && session.id) {
+      const draftKey = `${epochKey}_turn_${currentTurnNumber}`;
+      drafts.load(session.id, draftKey).then(draft => {
+        if (draft) setPastedText(draft);
+      }).catch(() => {/* ignore */});
+    }
+  }, [session.id, epochKey, currentTurnNumber, settings?.autoSaveDrafts]);
+
+  // Auto-save draft
+  useEffect(() => {
+    if (settings?.autoSaveDrafts && pastedText && session.id) {
+      const timeout = setTimeout(() => {
+        const draftKey = `${epochKey}_turn_${currentTurnNumber}`;
+        drafts.save(session.id!, draftKey, pastedText).catch(() => {/* ignore */});
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [pastedText, session.id, epochKey, currentTurnNumber, settings?.autoSaveDrafts]);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -36,109 +70,88 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
       setCopyStatus('Copied!');
       setTimeout(() => setCopyStatus(''), 2000);
     } catch (err) {
-      setCopyStatus('Failed to copy');
-      setTimeout(() => setCopyStatus(''), 2000);
+      toast.show('Failed to copy to clipboard', 'error');
     }
   };
 
   const handlePasteTurn = async () => {
     if (!pastedText.trim()) {
-      alert('Please paste some text');
+      toast.show('Please paste some text', 'error');
       return;
     }
 
     const turn = parseManualPaste(pastedText, currentTurnNumber);
-    
-    onUpdate(prev => {
-      const currentEpoch = prev.epochs[epochKey];
-      const updatedTurns = [...currentEpoch.turns, turn];
-      const completed = updatedTurns.length === 6;
-      
-      return {
-        epochs: {
-          ...prev.epochs,
-          [epochKey]: {
-            ...currentEpoch,
-            turns: updatedTurns,
-            completed,
-            status: updatedTurns.length > 0 ? 'in-progress' : 'pending'
-          }
-        }
-      };
-    });
+    const updatedTurns = [...epoch.turns, turn];
+    const completed = updatedTurns.length === 6;
 
-    // Sync with session storage if active session exists
-    if (state.activeSessionId) {
-      const currentEpoch = state.epochs[epochKey];
-      const updatedTurns = [...currentEpoch.turns, turn];
-      const completed = updatedTurns.length === 6;
-      
-      sessions.update(state.activeSessionId, {
+    try {
+      // Update session storage (returns full updated state)
+      const newState = await sessions.update(session.id, {
         epochs: {
-          ...state.epochs,
+          ...session.epochs,
           [epochKey]: {
-            ...currentEpoch,
+            ...epoch,
             turns: updatedTurns,
             completed,
-            status: completed ? 'complete' : 'in-progress'
+            status: completed ? ('complete' as const) : ('in-progress' as const)
           }
         }
-      }).catch(err => console.error('Session sync error:', err));
+      });
+
+      // Clear draft
+      if (settings?.autoSaveDrafts) {
+        const draftKey = `${epochKey}_turn_${currentTurnNumber}`;
+        await drafts.clear(session.id, draftKey);
+      }
+
+      // Update parent state immediately (don't wait for storage listener)
+      onUpdate(newState);
+      setPastedText('');
+      toast.show(`Turn ${currentTurnNumber} saved`, 'success');
+    } catch (error) {
+      console.error('Failed to save turn:', error);
+      toast.show('Failed to save turn', 'error');
     }
-
-    setPastedText('');
   };
 
   const handleSaveDuration = async () => {
     if (!modelName.trim()) {
-      alert('Please enter the model name');
+      toast.show('Please enter the model name', 'error');
       return;
     }
 
-    onUpdate(prev => ({
-      epochs: {
-        ...prev.epochs,
-        [epochKey]: {
-          ...prev.epochs[epochKey],
-          duration_minutes: duration,
-          status: 'complete'
-        }
-      },
-      process: {
-        ...prev.process,
-        [epochKey === 'epoch1' ? 'model_epoch1' : 'model_epoch2']: modelName
-      }
-    }));
-
-    // Sync with session storage
-    if (state.activeSessionId) {
-      sessions.update(state.activeSessionId, {
+    try {
+      const newState = await sessions.update(session.id, {
         epochs: {
-          ...state.epochs,
+          ...session.epochs,
           [epochKey]: {
-            ...state.epochs[epochKey],
+            ...epoch,
             duration_minutes: duration,
-            status: 'complete'
+            status: 'complete' as const
           }
         },
         process: {
-          ...state.process,
+          ...session.process,
           [epochKey === 'epoch1' ? 'model_epoch1' : 'model_epoch2']: modelName
         }
-      }).catch(err => console.error('Session sync error:', err));
-    }
+      });
 
-    if (epoch.completed) {
+      // Update parent state immediately
+      onUpdate(newState);
+      toast.show(`${epochKey === 'epoch1' ? 'Epoch 1' : 'Epoch 2'} completed`, 'success');
       onNext();
+    } catch (error) {
+      console.error('Failed to save epoch metadata:', error);
+      toast.show('Failed to save', 'error');
     }
   };
 
   const getPromptForTurn = (turnNum: number): string => {
     if (turnNum === 1) {
       return generateSynthesisPrompt(
-        state.challenge.description, // Used for custom type, ignored for predefined types
-        state.challenge.type, 
-        state.challenge.title
+        session.challenge.description,
+        session.challenge.type,
+        session.challenge.title
       );
     } else {
       return generateContinuePrompt(turnNum);
@@ -237,7 +250,11 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
             />
             <div className="flex justify-between items-center mt-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                Word count: {pastedText.trim().split(/\s+/).filter(w => w.length > 0).length}
+                {(() => {
+                  const words = countWords(pastedText);
+                  const tokens = estimateTokens(words);
+                  return `${words} words (~${formatTokenCount(tokens)} tokens)`;
+                })()}
               </span>
               <button
                 onClick={handlePasteTurn}
@@ -254,17 +271,23 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <h3 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Completed Turns:</h3>
               <div className="space-y-2">
-                {epoch.turns.map((turn) => (
-                  <div key={turn.number} className="flex items-center gap-2 text-sm">
-                    <span className="success-badge">Turn {turn.number}</span>
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {turn.word_count} words
-                    </span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      {new Date(turn.captured_at).toLocaleTimeString()}
-                    </span>
-                  </div>
-                ))}
+                {epoch.turns.map((turn) => {
+                  const estimatedTokens = estimateTokens(turn.word_count);
+                  return (
+                    <div key={turn.number} className="flex items-center gap-2 text-sm">
+                      <span className="success-badge">Turn {turn.number}</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {turn.word_count} words
+                      </span>
+                      <span className="text-gray-500 dark:text-gray-400">
+                        ~{formatTokenCount(estimatedTokens)} tokens
+                      </span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        {new Date(turn.captured_at).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -308,16 +331,19 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
               View Full Transcript
             </summary>
             <div className="mt-3 space-y-3 max-h-96 overflow-y-auto">
-              {epoch.turns.map((turn) => (
-                <div key={turn.number} className="border-l-2 border-primary pl-3">
-                  <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Turn {turn.number} ({turn.word_count} words)
+              {epoch.turns.map((turn) => {
+                const estimatedTokens = estimateTokens(turn.word_count);
+                return (
+                  <div key={turn.number} className="border-l-2 border-primary pl-3">
+                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                      Turn {turn.number} ({turn.word_count} words, ~{formatTokenCount(estimatedTokens)} tokens)
+                    </div>
+                    <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                      {turn.content.substring(0, 200)}...
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                    {turn.content.substring(0, 200)}...
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </details>
         </div>
@@ -334,13 +360,21 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
             className="btn-primary"
             disabled={!modelName.trim() || duration === 0}
           >
-            Continue to {epochKey === 'epoch1' ? 'Epoch 2' : 'Analysis'} →
+            Continue to {epochKey === 'epoch1' ? 'Epoch 2' : 'Analyst 1'} →
           </button>
         )}
       </div>
+
+      {/* Clipboard Monitor */}
+      {settings?.clipboardMonitoring && (
+        <ClipboardMonitor
+          enabled={true}
+          currentContext="synthesis"
+          onSuggestPaste={(content) => setPastedText(content)}
+        />
+      )}
     </div>
   );
 };
 
 export default SynthesisSection;
-

@@ -10,7 +10,7 @@ interface JournalAppProps {
   state: NotebookState;
   onUpdate: (updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)) => void;
   onNavigateToChallenges: () => void;
-  onNavigateToSection: (section: 'epoch1' | 'epoch2' | 'analyst1' | 'analyst2' | 'report') => void;
+  onNavigateToSection: (section: 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report') => void;
 }
 
 const JournalApp: React.FC<JournalAppProps> = ({ 
@@ -26,30 +26,33 @@ const JournalApp: React.FC<JournalAppProps> = ({
     const session = state.sessions.find(s => s.id === sessionId);
     if (!session) return;
 
-    // Update activeSessionId
-    onUpdate({ activeSessionId: sessionId });
-
     // Determine which section to navigate to based on session progress
     const epoch1Done = session.epochs.epoch1.completed;
     const epoch2Done = session.epochs.epoch2.completed;
-    const analyst1Done = session.analysts.analyst1.status === 'complete';
-    const analyst2Done = session.analysts.analyst2.status === 'complete';
+    const a1e1Done = session.analysts.epoch1.analyst1.status === 'complete';
+    const a1e2Done = session.analysts.epoch2.analyst1.status === 'complete';
+    const a2e1Done = session.analysts.epoch1.analyst2.status === 'complete';
+    const a2e2Done = session.analysts.epoch2.analyst2.status === 'complete';
 
-    let targetSection: 'epoch1' | 'epoch2' | 'analyst1' | 'analyst2' | 'report' = 'epoch1';
+    let targetSection: 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report' = 'epoch1';
     if (!epoch1Done) targetSection = 'epoch1';
     else if (!epoch2Done) targetSection = 'epoch2';
-    else if (!analyst1Done) targetSection = 'analyst1';
-    else if (!analyst2Done) targetSection = 'analyst2';
+    else if (!a1e1Done) targetSection = 'analyst1_epoch1';
+    else if (!a1e2Done) targetSection = 'analyst1_epoch2';
+    else if (!a2e1Done) targetSection = 'analyst2_epoch1';
+    else if (!a2e2Done) targetSection = 'analyst2_epoch2';
     else targetSection = 'report';
 
-    // Also sync session data to legacy state fields for existing components
+    // Update state with selected session and navigate to appropriate section
+    // Note: Legacy analyst fields maintained for backward compatibility
     onUpdate({
+      activeSessionId: sessionId,
       challenge: session.challenge,
       process: session.process,
       epochs: session.epochs,
       analysts: {
-        analyst1: session.analysts.analyst1.data,
-        analyst2: session.analysts.analyst2.data
+        analyst1: session.analysts.epoch1.analyst1.data,
+        analyst2: session.analysts.epoch2.analyst2.data
       },
       ui: {
         ...state.ui,
@@ -62,8 +65,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
     onNavigateToChallenges();
   };
 
-  // Show JournalHome if no active session or on setup section
-  if (currentView === 'home' || !state.activeSessionId || state.ui.currentSection === 'setup') {
+  // Show JournalHome if no active session or explicitly on home view
+  if (!state.activeSessionId || state.ui.currentSection === 'setup') {
     return (
       <JournalHome
         sessions={state.sessions}
@@ -94,30 +97,56 @@ const JournalApp: React.FC<JournalAppProps> = ({
           state={state}
           onUpdate={onUpdate}
           epochKey="epoch2"
-          onNext={() => onNavigateToSection('analyst1')}
+          onNext={() => onNavigateToSection('analyst1_epoch1')}
           onBack={() => onNavigateToSection('epoch1')}
         />
       );
     
-    case 'analyst1':
+    case 'analyst1_epoch1':
       return (
         <AnalysisView
           state={state}
           onUpdate={onUpdate}
           analystKey="analyst1"
-          onNext={() => onNavigateToSection('analyst2')}
+          epochKey="epoch1"
+          onNext={() => onNavigateToSection('analyst1_epoch2')}
           onBack={() => onNavigateToSection('epoch2')}
         />
       );
     
-    case 'analyst2':
+    case 'analyst1_epoch2':
+      return (
+        <AnalysisView
+          state={state}
+          onUpdate={onUpdate}
+          analystKey="analyst1"
+          epochKey="epoch2"
+          onNext={() => onNavigateToSection('analyst2_epoch1')}
+          onBack={() => onNavigateToSection('analyst1_epoch1')}
+        />
+      );
+    
+    case 'analyst2_epoch1':
       return (
         <AnalysisView
           state={state}
           onUpdate={onUpdate}
           analystKey="analyst2"
+          epochKey="epoch1"
+          onNext={() => onNavigateToSection('analyst2_epoch2')}
+          onBack={() => onNavigateToSection('analyst1_epoch2')}
+        />
+      );
+    
+    case 'analyst2_epoch2':
+      return (
+        <AnalysisView
+          state={state}
+          onUpdate={onUpdate}
+          analystKey="analyst2"
+          epochKey="epoch2"
           onNext={() => onNavigateToSection('report')}
-          onBack={() => onNavigateToSection('analyst1')}
+          onBack={() => onNavigateToSection('analyst2_epoch1')}
         />
       );
     
@@ -126,7 +155,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
         <ReportSection
           state={state}
           onUpdate={onUpdate}
-          onBack={() => onNavigateToSection('analyst2')}
+          onBack={() => onNavigateToSection('analyst2_epoch2')}
           onNavigateToSection={onNavigateToSection}
         />
       );

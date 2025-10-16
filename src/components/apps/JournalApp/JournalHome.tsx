@@ -3,6 +3,7 @@ import { Session } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
 import { getSessionProgress, formatSessionDuration } from '../../../lib/session-utils';
 import { useToast } from '../../shared/Toast';
+import { useConfirm } from '../../shared/Modal';
 
 interface JournalHomeProps {
   sessions: Session[];
@@ -21,6 +22,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
 }) => {
   const [operationLoading, setOperationLoading] = React.useState<string | null>(null);
   const toast = useToast();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const handlePauseSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -54,7 +56,15 @@ const JournalHome: React.FC<JournalHomeProps> = ({
 
   const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Delete this session? This cannot be undone.')) return;
+    
+    const confirmed = await confirm(
+      'Delete Session?',
+      'This will permanently delete this session and all its data. This action cannot be undone.',
+      { destructive: true, confirmText: 'Delete' }
+    );
+    
+    if (!confirmed) return;
+    
     setOperationLoading(sessionId);
     try {
       const newState = await sessionsStorage.delete(sessionId);
@@ -64,6 +74,23 @@ const JournalHome: React.FC<JournalHomeProps> = ({
     } catch (error) {
       console.error('Error deleting session:', error);
       toast.show('Failed to delete session', 'error');
+    } finally {
+      setOperationLoading(null);
+    }
+  };
+
+  const handleCloneSession = async (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOperationLoading(sessionId);
+    try {
+      const clonedSession = await sessionsStorage.clone(sessionId);
+      // Reload sessions from storage
+      const freshState = await sessionsStorage.getAll();
+      onUpdate({ sessions: freshState });
+      toast.show('Session cloned - ready to start', 'success');
+    } catch (error) {
+      console.error('Error cloning session:', error);
+      toast.show('Failed to clone session', 'error');
     } finally {
       setOperationLoading(null);
     }
@@ -168,7 +195,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
                   </button>
 
                   {/* Action Buttons */}
-                  <div className="absolute top-3 right-3 flex gap-2">
+                  <div className="absolute top-3 right-3 flex gap-1">
                     {session.status === 'active' ? (
                       <button
                         onClick={(e) => handlePauseSession(session.id, e)}
@@ -188,6 +215,14 @@ const JournalHome: React.FC<JournalHomeProps> = ({
                         {operationLoading === session.id ? '⏳' : '▶️'}
                       </button>
                     ) : null}
+                    <button
+                      onClick={(e) => handleCloneSession(session.id, e)}
+                      disabled={operationLoading === session.id}
+                      className="p-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Clone session (reuse challenge)"
+                    >
+                      {operationLoading === session.id ? '⏳' : '📋'}
+                    </button>
                     <button
                       onClick={(e) => handleDeleteSession(session.id, e)}
                       disabled={operationLoading === session.id}
@@ -274,6 +309,8 @@ const JournalHome: React.FC<JournalHomeProps> = ({
           </button>
         </div>
       )}
+
+      {ConfirmModal}
     </div>
   );
 };

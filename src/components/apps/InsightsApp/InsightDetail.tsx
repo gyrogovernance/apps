@@ -2,6 +2,10 @@ import React from 'react';
 import { GovernanceInsight, AlignmentCategory } from '../../../types';
 import { exportAsMarkdown, exportAsJSON } from '../../../lib/export';
 import { getScoreColor, getAlignmentBadgeColor } from '../../../lib/ui-utils';
+import { countWords, estimateTokens, formatTokenCount } from '../../../lib/text-utils';
+import { CORE_METRICS, STRUCTURE_METRICS, BEHAVIOR_METRICS, METRIC_CATEGORIES } from '../../../lib/metric-definitions';
+import { MetricCard, MetricSectionHeader } from '../../shared/MetricCard';
+import { useToast } from '../../shared/Toast';
 
 interface InsightDetailProps {
   insight: GovernanceInsight;
@@ -10,6 +14,7 @@ interface InsightDetailProps {
 
 const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
   const [activeTab, setActiveTab] = React.useState<'overview' | 'structure' | 'behavior' | 'specialization' | 'transcript'>('overview');
+  const toast = useToast();
 
   const handleExportMarkdown = () => {
     const markdown = exportAsMarkdown(insight);
@@ -20,6 +25,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
     a.download = `insight_${insight.challenge.title.replace(/\s+/g, '_')}.md`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.show('Markdown exported successfully', 'success');
   };
 
   const handleExportJSON = () => {
@@ -31,12 +37,13 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
     a.download = `insight_${insight.challenge.title.replace(/\s+/g, '_')}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.show('JSON exported successfully', 'success');
   };
 
   const handleCopyJSON = async () => {
     const json = exportAsJSON(insight);
     await navigator.clipboard.writeText(json);
-    alert('JSON copied to clipboard!');
+    toast.show('JSON copied to clipboard', 'success');
   };
 
   return (
@@ -70,46 +77,87 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
 
       {/* Quality Metrics Cards */}
       <div className="grid md:grid-cols-3 gap-4 mb-6">
+        {/* Quality Index */}
         <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">Quality Index</div>
-          <div className={`text-3xl font-bold mb-1 ${getScoreColor(insight.quality.quality_index / 10)}`}>
-            {insight.quality.quality_index.toFixed(1)}%
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Quality Index</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{CORE_METRICS.qi.shortDesc}</div>
+            </div>
+            <div className={`text-3xl font-bold ml-3 ${getScoreColor(insight.quality.quality_index / 10)}`}>
+              {insight.quality.quality_index.toFixed(1)}%
+            </div>
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Overall quality score
-          </div>
+          <details className="mt-2">
+            <summary className="cursor-pointer text-xs text-blue-700 dark:text-blue-300 hover:underline">
+              Learn more
+            </summary>
+            <div className="mt-2 p-3 bg-white/50 dark:bg-gray-900/30 rounded text-xs text-gray-700 dark:text-gray-300 whitespace-pre-line">
+              {CORE_METRICS.qi.fullDesc}
+              <div className="mt-2 pt-2 border-t border-blue-300 dark:border-blue-700 font-mono text-xs">
+                <strong>Formula:</strong> {CORE_METRICS.qi.formula}
+              </div>
+            </div>
+          </details>
         </div>
 
+        {/* Superintelligence Index */}
         <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">Superintelligence Index</div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-            {insight.quality.superintelligence_index.toFixed(2)}
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Superintelligence Index</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{CORE_METRICS.si.shortDesc}</div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 ml-3">
+              {(insight.quality.superintelligence_index == null || isNaN(insight.quality.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(2)}
+            </div>
           </div>
-          <details className="text-xs mt-2">
-            <summary className="cursor-pointer text-green-700 dark:text-green-300 hover:underline">
-              Show SI Details
+          <details className="mt-2">
+            <summary className="cursor-pointer text-xs text-green-700 dark:text-green-300 hover:underline">
+              Show calculations
             </summary>
-            <div className="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
-              <p>Target Aperture: 0.0207 (K=4)</p>
-              <p>Deviation: {insight.quality.si_deviation.toFixed(2)}× from target</p>
-              <p className="text-xs mt-2">
-                SI measures behavior score spread using K4 spherical aperture geometry.
-                Lower deviation indicates more balanced performance.
-              </p>
+            <div className="mt-2 p-3 bg-white/50 dark:bg-gray-900/30 rounded text-xs space-y-2">
+              <div className="text-gray-700 dark:text-gray-300">
+                <p className="font-medium mb-1">Current Values:</p>
+                <p>• Target Aperture A*: 0.020701 (K=4)</p>
+                <p>• Deviation: {(insight.quality.si_deviation == null || isNaN(insight.quality.si_deviation)) ? 'N/A' : `${insight.quality.si_deviation.toFixed(2)}×`} from target</p>
+                {(insight.quality.superintelligence_index == null || isNaN(insight.quality.superintelligence_index)) && (
+                  <p className="text-yellow-600 dark:text-yellow-400 mt-2">⚠ SI requires all 6 behavior metrics to be numeric (no N/A values)</p>
+                )}
+              </div>
+              <div className="pt-2 border-t border-green-300 dark:border-green-700 text-gray-600 dark:text-gray-400 whitespace-pre-line">
+                {CORE_METRICS.si.fullDesc}
+              </div>
             </div>
           </details>
         </div>
 
         <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-          <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">Alignment</div>
-          <div className="mb-2">
-            <span className={`px-3 py-1 text-sm font-bold rounded-full border ${getAlignmentBadgeColor(insight.quality.alignment_rate_category)}`}>
-              {insight.quality.alignment_rate_category}
-            </span>
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Alignment Rate</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{CORE_METRICS.ar.shortDesc}</div>
+            </div>
+            <div className="ml-3">
+              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${getAlignmentBadgeColor(insight.quality.alignment_rate_category)}`}>
+                {insight.quality.alignment_rate_category}
+              </span>
+            </div>
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Rate: {insight.quality.alignment_rate.toFixed(4)}/min
+          <div className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            {insight.quality.alignment_rate.toFixed(4)}/min
           </div>
+          <details className="mt-2">
+            <summary className="cursor-pointer text-xs text-purple-700 dark:text-purple-300 hover:underline">
+              Learn more
+            </summary>
+            <div className="mt-2 p-3 bg-white/50 dark:bg-gray-900/30 rounded text-xs text-gray-700 dark:text-gray-300 whitespace-pre-line">
+              {CORE_METRICS.ar.fullDesc}
+              <div className="mt-2 pt-2 border-t border-purple-300 dark:border-purple-700 font-mono text-xs">
+                <strong>Formula:</strong> {CORE_METRICS.ar.formula}
+              </div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -193,38 +241,48 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
         )}
 
         {activeTab === 'structure' && (
-          <div className="grid md:grid-cols-2 gap-4">
-            {Object.entries(insight.quality.structure_scores).map(([key, value]) => (
-              <div key={key} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 capitalize">
-                  {key}
-                </div>
-                <div className={`text-2xl font-bold ${getScoreColor(value)}`}>
-                  {value.toFixed(1)}
-                </div>
-              </div>
-            ))}
+          <div>
+            <MetricSectionHeader 
+              title="Structure Metrics"
+              definition={METRIC_CATEGORIES.structure}
+              emoji="🏗️"
+            />
+            <div className="grid md:grid-cols-2 gap-4">
+              {Object.entries(insight.quality.structure_scores).map(([key, value]) => (
+                <MetricCard
+                  key={key}
+                  label={key}
+                  value={value}
+                  valueColor={getScoreColor(value)}
+                  definition={STRUCTURE_METRICS[key as keyof typeof STRUCTURE_METRICS]}
+                />
+              ))}
+            </div>
           </div>
         )}
 
         {activeTab === 'behavior' && (
           <div>
+            <MetricSectionHeader 
+              title="Behavior Metrics"
+              definition={METRIC_CATEGORIES.behavior}
+              emoji="🧠"
+            />
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               {Object.entries(insight.quality.behavior_scores).map(([key, value]) => (
-                <div key={key} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 capitalize">
-                    {key}
-                  </div>
-                  <div className={`text-2xl font-bold ${typeof value === 'number' ? getScoreColor(value) : 'text-gray-500 dark:text-gray-400'}`}>
-                    {typeof value === 'number' ? value.toFixed(1) : value}
-                  </div>
-                </div>
+                <MetricCard
+                  key={key}
+                  label={key}
+                  value={value}
+                  valueColor={typeof value === 'number' ? getScoreColor(value) : 'text-gray-500 dark:text-gray-400'}
+                  definition={BEHAVIOR_METRICS[key as keyof typeof BEHAVIOR_METRICS]}
+                />
               ))}
             </div>
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>ℹ️ N/A Handling:</strong> Comparison and Preference scores may be "N/A" when not applicable to the challenge.
-                N/A metrics are <strong>excluded from QI calculation</strong> and <strong>zero-filled in SI vector</strong> as required by geometry.
+                <strong>ℹ️ N/A Handling:</strong> Behavior metrics must be fully scored (6/6) to compute SI. 
+                If any metric is N/A, SI is not computed. N/A metrics are excluded from QI normalization.
               </p>
             </div>
           </div>
@@ -232,22 +290,35 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
 
         {activeTab === 'specialization' && (
           <div>
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
-              {Object.entries(insight.quality.specialization_scores).map(([key, value]) => (
-                <div key={key} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    {key}
+            <MetricSectionHeader 
+              title="Specialization Metrics"
+              definition={METRIC_CATEGORIES.specialization}
+              emoji="🎯"
+            />
+            {Object.keys(insight.quality.specialization_scores).length > 0 ? (
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                {Object.entries(insight.quality.specialization_scores).map(([key, value]) => (
+                  <div key={key} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-0.5 capitalize">
+                          {key}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Domain-specific metric for {insight.challenge.type} challenge
+                        </div>
+                      </div>
+                      <div className={`text-2xl font-bold ml-3 ${getScoreColor(value)}`}>
+                        {value.toFixed(1)}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`text-2xl font-bold ${getScoreColor(value)}`}>
-                    {value.toFixed(1)}
-                  </div>
-                </div>
-              ))}
-            </div>
-            {Object.keys(insight.quality.specialization_scores).length === 0 && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400">
-                <p>
-                  ℹ️ No specialization scores recorded. When empty, the average defaults to 7.0 per GyroDiagnostics spec.
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm">
+                <p className="text-gray-700 dark:text-gray-300">
+                  ℹ️ <strong>No specialization scores recorded.</strong> When empty, specialization contributes 0 to Quality Index (per GyroDiagnostics spec).
                 </p>
               </div>
             )}
@@ -265,16 +336,23 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                     <span>Epoch 1 Synthesis</span>
                   </h3>
                   <div className="space-y-4">
-                    {insight.transcripts.epoch1.map((turn, i) => (
-                      <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                        <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                          Turn {i + 1}
+                    {insight.transcripts.epoch1.map((turn, i) => {
+                      const words = countWords(turn);
+                      const tokens = estimateTokens(words);
+                      return (
+                        <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center justify-between">
+                            <span>Turn {i + 1}</span>
+                            <span className="text-gray-500 dark:text-gray-400 font-normal">
+                              {words} words • ~{formatTokenCount(tokens)} tokens
+                            </span>
+                          </div>
+                          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                            {turn}
+                          </pre>
                         </div>
-                        <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
-                          {turn}
-                        </pre>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -284,16 +362,23 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                     <span>Epoch 2 Synthesis</span>
                   </h3>
                   <div className="space-y-4">
-                    {insight.transcripts.epoch2.map((turn, i) => (
-                      <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                        <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                          Turn {i + 1}
+                    {insight.transcripts.epoch2.map((turn, i) => {
+                      const words = countWords(turn);
+                      const tokens = estimateTokens(words);
+                      return (
+                        <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center justify-between">
+                            <span>Turn {i + 1}</span>
+                            <span className="text-gray-500 dark:text-gray-400 font-normal">
+                              {words} words • ~{formatTokenCount(tokens)} tokens
+                            </span>
+                          </div>
+                          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                            {turn}
+                          </pre>
                         </div>
-                        <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
-                          {turn}
-                        </pre>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

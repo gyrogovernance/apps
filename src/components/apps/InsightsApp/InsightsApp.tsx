@@ -15,6 +15,14 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
 
   const currentView = state.ui.insightsView || 'library';
 
+  // Clear selection when returning to library view
+  useEffect(() => {
+    if (currentView === 'library') {
+      setSelectedInsightId(null);
+      setSelectedInsight(null);
+    }
+  }, [currentView]);
+
   useEffect(() => {
     if (selectedInsightId) {
       loadInsight(selectedInsightId);

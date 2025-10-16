@@ -1,203 +1,201 @@
 # Development Guide
 
-## Getting Started
+## Web Preview Mode
 
-### Prerequisites
+### What is it?
+The extension can run as a **standalone webpage** for rapid UI testing without needing to reload the browser extension. This uses a mock Chrome API that simulates extension storage using `localStorage`.
 
-- Node.js 18+ and npm
-- Chrome browser (for testing)
-- Basic understanding of React and TypeScript
+### Why?
+- **Faster iteration**: No extension reload needed
+- **Better debugging**: Full browser DevTools access
+- **Visual testing**: Easier to test UI changes
+- **Cross-platform**: Test on any browser, not just Chrome
 
-### Initial Setup
+### How it works
 
-```bash
-# Install dependencies
-npm install
-
-# Start development build (with watch)
-npm run dev
-```
-
-### Load Extension in Chrome
-
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" (toggle in top-right)
-3. Click "Load unpacked"
-4. Select the `dist/` folder from this project
-5. The extension icon should appear in your toolbar
-
-## Development Workflow
-
-### Making Changes
-
-1. Edit source files in `src/`
-2. Webpack will automatically rebuild (if `npm run dev` is running)
-3. Click the refresh icon on the extension card in `chrome://extensions/`
-4. Reopen the extension popup to see changes
-
-### Project Structure
-
-```
-src/
-├── components/          # React components
-│   ├── Notebook.tsx    # Main app shell
-│   ├── SetupSection.tsx
-│   ├── SynthesisSection.tsx
-│   ├── AnalystSection.tsx
-│   ├── ReportSection.tsx
-│   ├── ProgressDashboard.tsx
-│   └── ElementPicker.tsx
-├── lib/                # Core utilities
-│   ├── calculations.ts # Quality metrics
-│   ├── parsing.ts      # Input parsing
-│   ├── prompts.ts      # Prompt templates
-│   ├── storage.ts      # Chrome storage wrapper
-│   └── export.ts       # Export utilities
-├── types/              # TypeScript definitions
-│   └── index.ts
-├── styles/             # Tailwind CSS
-│   └── main.css
-├── popup.tsx           # React entry point
-├── background.ts       # Service worker
-└── content.ts          # Content script
-```
-
-## Key Concepts
-
-### State Management
-
-All state is managed through `NotebookState` interface and persisted to `chrome.storage.local`:
-
+#### 1. Chrome API Mock (`src/lib/chrome-mock.ts`)
 ```typescript
-const [state, setState] = useState<NotebookState>(INITIAL_STATE);
+// Detects if we're in extension context
+const isExtension = typeof chrome !== 'undefined' && chrome.storage;
 
-// Update state
-const updateState = (updates: Partial<NotebookState>) => {
-  const newState = { ...state, ...updates };
-  setState(newState);
-  storage.set(newState);
+// If in web context, uses localStorage
+export const chromeAPI = {
+  storage: {
+    local: {
+      get: async (keys) => JSON.parse(localStorage.getItem('chrome_storage') || '{}'),
+      set: async (items) => localStorage.setItem('chrome_storage', JSON.stringify(items)),
+      remove: async (keys) => { /* removes from localStorage */ },
+      clear: async () => localStorage.removeItem('chrome_storage')
+    },
+    onChanged: {
+      addListener: (callback) => {
+        // Listens to 'storage' events for cross-tab sync
+      }
+    }
+  },
+  runtime: {
+    lastError: undefined
+  },
+  permissions: {
+    request: async () => true // Auto-grants in mock
+  }
 };
 ```
 
-### Navigation Flow
+#### 2. Storage Layer (`src/lib/storage.ts`)
+```typescript
+import { chromeAPI } from './chrome-mock';
 
-1. **Setup** → Define challenge
-2. **Epoch 1** → First synthesis (6 turns)
-3. **Epoch 2** → Second synthesis (6 turns)
-4. **Analyst 1** → First evaluation
-5. **Analyst 2** → Second evaluation
-6. **Report** → View insights & export
-
-### Calculation Engine
-
-Three main metrics calculated in `src/lib/calculations.ts`:
-
-1. **Quality Index**: Weighted average of structure, behavior, specialization
-2. **Alignment Rate**: Quality per minute (with VALID/SLOW/SUPERFICIAL categories)
-3. **Superintelligence Index**: K4 graph topology analysis of behavior scores
-
-### Element Picker
-
-Content script injected into web pages to allow users to click on AI responses:
-
-1. User clicks "Pick from Page" button
-2. Content script injected into active tab
-3. Mouseover highlights elements
-4. Click captures element text
-5. Text sent back to popup via message passing
-
-## Testing
-
-### Manual Testing Checklist
-
-- [ ] Create new challenge
-- [ ] Complete Epoch 1 (6 turns via paste)
-- [ ] Complete Epoch 2 (6 turns via element picker)
-- [ ] Complete Analyst 1 evaluation
-- [ ] Complete Analyst 2 evaluation
-- [ ] View generated report
-- [ ] Download JSON
-- [ ] Download Markdown
-- [ ] Test GitHub share link
-- [ ] Reset and start new process
-- [ ] Reload extension (state persists)
-
-### Type Checking
-
-```bash
-npm run type-check
+// All storage operations use chromeAPI instead of chrome directly
+export const storage = {
+  get: async () => {
+    const result = await chromeAPI.storage.local.get(STORAGE_KEY);
+    return result[STORAGE_KEY] || INITIAL_STATE;
+  },
+  // ... other methods
+};
 ```
 
-## Common Issues
+#### 3. Single Entry Point (`index.html`)
+The root `index.html` file serves as the **only** web preview entry point:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI-Empowered Governance Apps - Browser Preview</title>
+  <style>/* Minimal styling + loading spinner */</style>
+</head>
+<body>
+  <div id="root"><!-- Loading indicator --></div>
+  <script src="dist/sidepanel.js"></script>
+</body>
+</html>
+```
 
-### Extension Not Loading
+**Note:** The same build serves both extension (`public/sidepanel.html`) and web preview (`index.html`). No separate dev/production HTML files needed.
 
-- Make sure you built the project (`npm run build` or `npm run dev`)
-- Check that `dist/` folder exists and contains files
-- Look for errors in `chrome://extensions/` page
+### Usage
 
-### Changes Not Appearing
-
-- Refresh the extension in `chrome://extensions/`
-- Close and reopen the extension popup
-- Check the console for errors (F12 in popup)
-
-### Storage Issues
-
-- Open extension popup
-- Click "Reset" to clear all data
-- Or manually clear via: `chrome://extensions/` → Extension details → "Remove extension data"
-
-### Element Picker Not Working
-
-- Make sure you're on a regular web page (not chrome:// URLs)
-- Check browser console for errors (F12)
-- Ensure `activeTab` and `scripting` permissions are granted
-
-## Production Build
-
+#### Development workflow:
 ```bash
-# Build optimized version
+# 1. Build the extension
 npm run build
 
-# The dist/ folder is ready for Chrome Web Store submission
+# 2. Serve locally and open in browser
+python -m http.server 8080
+# Then navigate to: http://localhost:8080/index.html
+
+# 3. Make changes to src/
+# 4. Rebuild (npm run build) and refresh browser
 ```
 
-## Architecture Notes
+**Note:** Use a local server instead of `file://` URLs to avoid CORS issues with localStorage and proper module loading.
 
-### Manifest V3
+#### HTML Entry Points:
 
-Uses service workers instead of background pages. Key differences:
+The project has **two HTML files** for different contexts:
 
-- Background script must be a service worker
-- No DOM access in background
-- Content scripts for page interaction
-- Message passing for communication
+| File | Purpose | Context | Bundle |
+|------|---------|---------|--------|
+| `index.html` | Web preview | Browser testing | `dist/sidepanel.js` |
+| `public/sidepanel.html` | Extension UI | Chrome extension | `dist/sidepanel.js` (copied to `dist/`) |
 
-### No Host Permissions
+**Same JavaScript bundle, different entry points.** The extension loads `dist/sidepanel.html`, while web preview loads root `index.html`.
 
-Extension operates entirely standalone:
+#### Building for production:
+```bash
+# Extension (dist/ folder)
+npm run build
 
-- No API calls
-- No web scraping
-- User manually copies/pastes from AI chats
-- Element picker is opt-in per page
+# The same build works for both extension and web!
+```
 
-### Cross-Browser Compatibility
+### Key Differences: Extension vs Web
 
-Currently Chrome-focused, but designed for portability:
+| Feature | Extension Mode | Web Mode |
+|---------|---------------|----------|
+| Storage | `chrome.storage.local` | `localStorage` |
+| Cross-tab sync | `chrome.storage.onChanged` | `window.storage` event |
+| Permissions | Real Chrome permissions | Auto-granted |
+| Element Picker | `chrome.scripting` API | ⚠️ Not available |
+| File Access | Extension sandbox | Normal web context |
 
-- Uses `chrome.*` APIs (Firefox supports via polyfill)
-- No Chrome-specific features
-- Can be adapted for Firefox with minimal changes
+### Limitations in Web Mode
 
-## Contributing
+1. **Element Picker won't work** (requires `chrome.scripting` API)
+2. **Clipboard read** may require manual permission
+3. **No side panel** (obviously - it's a standalone page)
+4. **localStorage limits** (~5-10MB vs unlimited extension storage)
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for knowledge base contributions.
+### Storage Structure
 
-For code contributions, open an issue first to discuss the change.
+Both modes use the same data structure:
+```typescript
+{
+  "gyrogovernance_notebook_v1": {
+    sessions: Session[],
+    activeSessionId: string,
+    ui: { currentApp: 'welcome' | 'challenges' | ... },
+    // ... rest of NotebookState
+  }
+}
+```
 
-## Questions?
+Web mode stores this in:
+```
+localStorage['chrome_storage'] = JSON.stringify({ gyrogovernance_notebook_v1: {...} })
+```
 
-Open an issue: https://github.com/gyrogovernance/apps/issues
+### Debugging Tips
 
+**Clear all data:**
+```javascript
+// In browser console (web mode)
+localStorage.clear();
+location.reload();
+```
+
+**Inspect storage:**
+```javascript
+// Extension
+chrome.storage.local.get(console.log);
+
+// Web mode
+console.log(JSON.parse(localStorage.getItem('chrome_storage')));
+```
+
+**Test cross-tab sync:**
+1. Open `index.html` in two tabs
+2. Create a session in tab 1
+3. Tab 2 should auto-update (via storage event listener)
+
+### Architecture Decision
+
+We chose **conditional runtime detection** instead of separate builds:
+- ✅ Single codebase
+- ✅ No build configuration duplication  
+- ✅ Easy to maintain
+- ✅ Same bundle works everywhere
+
+The `chromeAPI` object abstracts the difference, so components never need to know which context they're in.
+
+---
+
+## Quick Reference
+
+**Start web preview:**
+```bash
+npm run build && open index.html
+```
+
+**Toggle dark mode:**  
+Extension respects system preferences automatically.
+
+**Reset all data:**
+- Extension: Use Settings → Clear All Data
+- Web: `localStorage.clear()` in console
+
+**Check which mode:**
+```javascript
+console.log(typeof chrome !== 'undefined' && chrome.storage ? 'Extension' : 'Web');
+```
