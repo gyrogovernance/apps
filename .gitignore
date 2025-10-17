@@ -27,3 +27,6 @@ Thumbs.db
 
 # Results
 results/
+repomix-parts/
+repomix-output.xml
+repomix-exlusions.md
