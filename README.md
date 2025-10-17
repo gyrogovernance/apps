@@ -30,7 +30,15 @@
 > **⚠️ ALPHA RELEASE**  
 > Core features are implemented but may have bugs. See [CHANGELOG](/CHANGELOG.md) for updates.
 
+---
+
 ![AiE_app](/assets/gyrogovernance_app_screenshot.png)
+
+![AiE_app](/assets/app_pages_overview_1.png)
+
+![AiE_app](/assets/app_pages_overview_2.png)
+
+---
 
 ## What You Get
 
