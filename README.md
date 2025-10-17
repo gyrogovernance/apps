@@ -23,168 +23,159 @@
 
 ---
 
-# 🚀 Quick Start (2 Minutes)
-
-> **⚠️ ALPHA RELEASE**  
-> This extension is currently in active development with all core features implemented but may have bugs and incomplete functionality. For updates, read our [CHANGELOG](/CHANGELOG.md)
-
-## Step 1: Install in Chrome (30 seconds)
-
-### Option A: Download Pre-Built Extension (Recommended)
-1. **Download the latest release**:
-   - Go to [Releases](https://github.com/gyrogovernance/apps/releases)
-   - Download `gyrogovernance-extension-v0.2.1.zip`
-   - Extract the ZIP file
-
-2. **Add to Chrome**:
-   - Open Chrome and go to `chrome://extensions/`
-   - Toggle **"Developer mode"** (top right)
-   - Click **"Load unpacked"**
-   - Select the extracted folder
-   - ✅ Extension is now installed!
-
-### Option B: Build from Source (For Developers)
-1. **Clone and build**:
-   ```bash
-   git clone https://github.com/gyrogovernance/apps.git
-   cd apps
-   npm install
-   npm run build
-   ```
-2. **Load the `dist/` folder** in Chrome extensions
-
-## Step 2: Start Your First Evaluation (90 seconds)
-
-1. **Open the extension**: Click the GyroGovernance icon in your Chrome toolbar
-2. **Choose a challenge**: Select from 5 governance domains or create custom
-3. **Follow the guide**: The extension will walk you through the 3-step process
-4. **Export results**: Get validated insights in JSON or Markdown format
-
----
-
 # 🌍 AI-Empowered Participatory Governance
 
-**A browser extension that enables validated policy insights using the GyroDiagnostics framework for any AI chat interface.**
+**Transform everyday AI conversations into rigorous governance analysis.** This browser extension validates AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
+
+> **⚠️ ALPHA RELEASE**  
+> Core features are implemented but may have bugs. See [CHANGELOG](/CHANGELOG.md) for updates.
 
 ![AiE_app](/assets/gyrogovernance_app_screenshot.png)
 
-## What This Extension Does
-
-Transform everyday AI conversations into rigorous governance analysis. This browser extension applies mathematical validation to AI-generated solutions for UN Sustainable Development Goals and community challenges.
+## What You Get
 
 **You provide**: A governance challenge  
 **AI provides**: Structured reasoning through synthesis  
 **We provide**: Mathematical quality assessment  
 **Community receives**: Public knowledge repository
 
-## 🎯 The Access Problem
+---
 
-The Future of Life Institute's [2025 AI Safety Index](https://futureoflife.org/ai-safety-index-summer-2025/) documents how meaningful AI evaluation remains gated behind employee-level permissions. Communities tackling real issues, from energy transitions to healthcare equity, need reliable validation tools.
+## 🚀 Quick Start (30 seconds)
 
-Our response: leverage whatever AI services you already access through a clipboard-based workflow compatible with ChatGPT, Claude, LMArena, Poe, or any chat interface.
+1. **Download**: Get `gyrogovernance-extension-v0.2.1.zip` from [Releases](https://github.com/gyrogovernance/apps/releases)
+2. **Extract**: Unzip to any folder
+3. **Install**: Open `chrome://extensions/` → Enable "Developer mode" → "Load unpacked" → Select folder
+4. **Launch**: Click extension icon in toolbar ✅
+
+---
+
+## 📖 How to Use
+
+1. **Open the extension** side panel by clicking the icon
+2. **Select a challenge** (or create your own):
+   - Energy transition policy
+   - Healthcare equity
+   - Climate adaptation
+   - Any SDG-aligned topic
+3. **Copy prompts** to your AI chat (ChatGPT, Claude, etc.)
+4. **Capture responses** using the element picker
+5. **Get validated analysis** with three key metrics:
+   - Quality Index (overall performance)
+   - Alignment Rate (reasoning efficiency)
+   - Superintelligence Index (structural coherence)
+6. **Export results** as JSON/Markdown or share to Knowledge Commons
+
+**No API keys needed** - works with any AI chat interface through clipboard.
+
+---
 
 ## ✨ Core Capabilities
 
 ### 🔬 Mathematical Validation
-GyroDiagnostics evaluation across Structure, Behavior, and Specialization dimensions, producing three key indices:
-- **Quality Index**: Weighted performance metric
-- **Alignment Rate (AR)**: Temporal efficiency measure  
-- **Superintelligence Index (SI)**: Structural coherence via K₄ topology
+Evaluates AI responses across 20 metrics in three dimensions:
+- **Structure**: Reasoning coherence and integrity
+- **Behavior**: Accuracy and reliability patterns
+- **Specialization**: Domain-specific expertise
 
-### 🌐 Platform Agnostic
-No API keys required. The extension guides you through:
-- Clipboard-based prompt management
-- Response capture via element picker
-- Platform-specific navigation tips
+### 📊 Three Key Indices
+- **Quality Index**: Weighted performance score (0-100%)
+- **Alignment Rate**: Quality per minute (detects rushed vs. thorough reasoning)
+- **Superintelligence Index**: Geometric balance measure (theoretical optimum = 100)
 
-### 📊 Three-Step Protocol
-1. **Participation**: Frame your challenge
-2. **Preparation**: Orchestrate synthesis and analysis phases
-3. **Provision**: Generate validated reports
+### 🌐 Works Everywhere
+Compatible with ChatGPT, Claude, Gemini, LMArena, Poe, or any chat interface - no special access required.
 
 ### 🤝 Knowledge Commons
-Export findings as JSON, Markdown, or contribute directly to GitHub under CC0 license.
+Export validated findings to contribute to open governance research under CC0 license.
 
-## 🔧 Development Installation
+---
 
-For developers wanting to modify or contribute to the extension:
+## 📚 Who This Helps
+
+**Communities**: Evidence-based policy development  
+**Researchers**: Reproducible governance experiments  
+**Policy Makers**: Quality assessment of AI recommendations  
+**NGOs**: Validated advocacy proposals  
+**Citizens**: Direct participation in AI governance
+
+---
+
+## 🎯 Why This Matters
+
+The [2025 AI Safety Index](https://futureoflife.org/ai-safety-index-summer-2025/) shows meaningful AI evaluation remains restricted to corporate insiders. Communities tackling real challenges need accessible validation tools.
+
+Our solution: Use whatever AI you can access, add mathematical rigor to validate the outputs.
+
+---
+
+## 📈 What Makes This Different
+
+| Conventional AI Tools | GyroGovernance Framework |
+|----------------------|--------------------------|
+| Requires enterprise access | Uses your existing chat access |
+| Tests capabilities | Validates governance alignment |
+| Proprietary black box | Open-source transparency |
+| Binary pass/fail | Nuanced quality spectrum |
+| Expert-only | Citizen-accessible |
+
+---
+
+## 🎓 How It Works
+
+### Three-Phase Protocol
+1. **Participation**: Frame your governance challenge
+2. **Preparation**: AI generates 6 reasoning cycles across 2 epochs
+3. **Provision**: Mathematical analysis produces validated report
+
+### Tensegrity Geometry
+The framework uses tetrahedral (K₄) topology to eliminate bias:
+- Maps reasoning to geometric structure
+- Decomposes into coherence vs. adaptation components
+- Measures against theoretical optimum (A* ≈ 0.02070)
+
+This isn't subjective judgment - it's mathematical measurement of reasoning structure.
+
+---
+
+## 🔧 For Developers
+
+### Development Setup
 
 ```bash
 git clone https://github.com/gyrogovernance/apps.git
 cd apps
 npm install
-npm run build
+npm run dev    # Start development mode
 ```
 
-**Chrome Setup**:
-1. Navigate to `chrome://extensions/`
-2. Toggle "Developer mode"
-3. Select "Load unpacked" → choose `dist/` folder
+Load `dist/` folder in Chrome as unpacked extension.
 
-**Development Mode**:
-```bash
-npm run dev     # Watch mode for development
-npm run build   # Production build
-npm run type-check
-```
-
-## 📈 Distinctive Approach
-
-| Conventional AI Tools | This Framework |
-|----------------------|----------------|
-| Requires enterprise access | Uses existing chat interfaces |
-| Focuses on capabilities | Addresses governance needs |
-| Proprietary methods | Open-source validation |
-| Binary safety checks | Nuanced quality spectrum |
-
-## 🎓 Technical Foundation
-
-### Participation → Preparation → Provision
-
-The extension orchestrates a structured dialogue where AI explores your challenge through six reasoning cycles across two epochs. Independent AI evaluators then assess the output using 20 distinct metrics.
-
-### Tensegrity Geometry
-
-Behavioral metrics map to edges of a tetrahedral graph, decomposing into:
-- Gradient components (global coherence)
-- Residual components (local variation)
-- Aperture measurement against theoretical optimum (A* ≈ 0.02070)
-
-This eliminates hierarchical bias through pure geometric assessment.
-
-## 🏗️ Architecture
+### Architecture
 
 ```
 src/
-├── components/          # React interface modules
-├── lib/                # Validation engine
-│   ├── calculations.ts # Mathematical computations
-│   ├── prompts.ts     # Challenge templates
-│   └── parsing.ts     # Response processing
-└── types/             # Data structures
+├── components/     # React UI modules
+├── lib/           # Validation engine
+│   ├── calculations.ts  # Mathematical core
+│   ├── prompts.ts      # Challenge templates
+│   └── parsing.ts      # Response processing
+└── types/         # TypeScript definitions
 ```
 
 **Stack**: Manifest V3 • React • TypeScript • Tailwind • math.js
 
-## 📚 Applications
+### Contributing
 
-**Communities**: Evidence-based policy development  
-**Researchers**: Reproducible governance experiments  
-**Policy Makers**: Quality assessment of AI recommendations  
-**NGOs**: Validated advocacy proposals
+Priority areas:
+- Firefox/Edge compatibility
+- Multilingual templates
+- Additional SDG challenges
+- UI/UX improvements
 
-## 🤝 Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-Contributions welcome! Priority areas include Firefox compatibility, multilingual support, and additional SDG templates.
-
-**Development Commands**:
-```bash
-npm run dev     # Watch mode for development
-npm run build   # Production build  
-npm run type-check
-```
-
-**Setup**: See [Development Installation](#-development-installation) section above.
+---
 
 ## 📖 Citation
 
@@ -201,7 +192,7 @@ npm run type-check
 
 ---
 
-### Collaboration & Media
+## 🤝 Collaboration
 
 **Research Integration**: Incorporate our validation framework  
 **Advocacy Support**: Generate evidence-based proposals  
