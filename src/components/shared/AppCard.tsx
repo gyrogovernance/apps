@@ -7,6 +7,7 @@ interface AppCardProps {
   badge?: string;
   onClick: () => void;
   disabled?: boolean;
+  className?: string;
 }
 
 const AppCard: React.FC<AppCardProps> = ({ 
@@ -15,14 +16,15 @@ const AppCard: React.FC<AppCardProps> = ({
   description, 
   badge, 
   onClick, 
-  disabled = false 
+  disabled = false,
+  className = ""
 }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className="relative p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 
+    className={`relative p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 
                hover:border-blue-500 hover:shadow-lg transition-all duration-200 disabled:opacity-50 
-               disabled:cursor-not-allowed text-left w-full group"
+               disabled:cursor-not-allowed text-left w-full group ${className}`}
   >
     <div className="text-4xl mb-3">{icon}</div>
     <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">

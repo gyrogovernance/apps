@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '../shared/Toast';
 import { useConfirm } from '../shared/Modal';
 import { chromeAPI } from '../../lib/chrome-mock';
-import { importGyroDiagnosticsFile } from '../../lib/import';
+import { importGyroDiagnostics } from '../../lib/import';
 import { insights as insightsStorage } from '../../lib/storage';
 
 interface Settings {
@@ -14,7 +14,7 @@ interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  clipboardMonitoring: false,
+  clipboardMonitoring: true,
   autoSaveDrafts: true,
   darkMode: 'auto',
   defaultPlatform: 'custom',
@@ -127,13 +127,13 @@ export const SettingsApp: React.FC = () => {
   const handleImportGyroDiagnostics = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
+    input.accept = '.json,.zip';
     input.onchange = async (e: any) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
       try {
-        const result = await importGyroDiagnosticsFile(file);
+        const result = await importGyroDiagnostics(file);
         
         if (!result.success) {
           toast.show(result.error || 'Import failed', 'error');
@@ -146,7 +146,13 @@ export const SettingsApp: React.FC = () => {
           await insightsStorage.save(insight);
         }
         
-        toast.show(`Imported ${insights.length} insight(s) from ${file.name}`, 'success');
+        // Show detailed message for ZIP files
+        if (file.name.toLowerCase().endsWith('.zip')) {
+          const message = `Imported ${insights.length} insight(s) from ${result.filesProcessed}/${result.filesFound} file(s) in ${file.name}`;
+          toast.show(message, 'success');
+        } else {
+          toast.show(`Imported ${insights.length} insight(s) from ${file.name}`, 'success');
+        }
       } catch (error) {
         console.error('Import failed:', error);
         toast.show('Failed to import file. Please check the format.', 'error');
@@ -280,7 +286,7 @@ export const SettingsApp: React.FC = () => {
               className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <span>📤</span>
-              <span>Import GyroDiagnostics JSON</span>
+              <span>Import GyroDiagnostics (JSON/ZIP)</span>
             </button>
             <button 
               onClick={handleExportInsights}
@@ -305,7 +311,7 @@ export const SettingsApp: React.FC = () => {
             </button>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            💡 Tip: Import GyroDiagnostics JSON files directly (e.g., claude_4_5_sonnet_analysis_data.json)
+            💡 Tip: Import JSON files (e.g., model_analysis_data.json) or ZIP archives containing multiple *data.json files
           </p>
         </div>
 

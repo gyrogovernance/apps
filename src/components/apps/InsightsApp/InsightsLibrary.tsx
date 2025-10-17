@@ -4,6 +4,7 @@ import { insights as insightsStorage } from '../../../lib/storage';
 import { getQIColor, getAlignmentColor } from '../../../lib/ui-utils';
 import { exportAsJSON, exportAsMarkdown, downloadFile, generateFilename } from '../../../lib/export';
 import { useToast } from '../../shared/Toast';
+import { SmartTooltip } from '../../shared/SmartTooltip';
 
 interface InsightsLibraryProps {
   onSelectInsight: (insightId: string) => void;
@@ -12,6 +13,7 @@ interface InsightsLibraryProps {
 interface Filters {
   search: string;
   challengeType: ChallengeType | 'all';
+  synthesizer: string;
   alignmentCategory: AlignmentCategory | 'all';
   minQI: number;
 }
@@ -24,6 +26,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
   const [filters, setFilters] = useState<Filters>({
     search: '',
     challengeType: 'all',
+    synthesizer: 'all',
     alignmentCategory: 'all',
     minQI: 0
   });
@@ -81,6 +84,17 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     toast.show('Downloaded as Markdown', 'success');
   };
 
+  // Get unique synthesizer models for filter dropdown
+  const uniqueSynthesizers = React.useMemo(() => {
+    const models = new Set<string>();
+    allInsights.forEach(insight => {
+      const model = insight.process?.models_used?.synthesis_epoch1 || 
+                   insight.process?.models_used?.synthesis_epoch2;
+      if (model) models.add(model);
+    });
+    return Array.from(models).sort();
+  }, [allInsights]);
+
   // Filter insights
   const filteredInsights = allInsights.filter(insight => {
     // Safely access challenge and quality properties
@@ -88,11 +102,16 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     const type = insight.challenge?.type || 'custom';
     const alignmentCategory = insight.quality?.alignment_rate_category;
     const qualityIndex = insight.quality?.quality_index || 0;
+    const synthesizer = insight.process?.models_used?.synthesis_epoch1 || 
+                        insight.process?.models_used?.synthesis_epoch2 || '';
     
     if (filters.search && !title.toLowerCase().includes(filters.search.toLowerCase())) {
       return false;
     }
     if (filters.challengeType !== 'all' && type !== filters.challengeType) {
+      return false;
+    }
+    if (filters.synthesizer !== 'all' && synthesizer !== filters.synthesizer) {
       return false;
     }
     if (filters.alignmentCategory !== 'all' && alignmentCategory !== filters.alignmentCategory) {
@@ -120,216 +139,194 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+    <div className="h-full flex flex-col p-4">
+      {/* Header */}
+      <div className="mb-4">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <span>💡</span>
           <span>Insights Library</span>
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Browse, organize, and share your completed evaluations
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          {sortedInsights.length} of {allInsights.length} evaluations
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 space-y-4">
+      {/* Filters - Compact Layout */}
+      <div className="mb-4 space-y-2">
         {/* Search */}
-        <div>
-          <input
-            type="text"
-            placeholder="🔍 Search insights..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+        <input
+          type="text"
+          placeholder="🔍 Search..."
+          value={filters.search}
+          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+
+        {/* Filter Selects - Stacked vertically for sidebar */}
+        <div className="space-y-2">
+          <select
+            value={filters.synthesizer}
+            onChange={(e) => setFilters({ ...filters, synthesizer: e.target.value })}
+            className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="all">All Models</option>
+            {uniqueSynthesizers.map(model => (
+              <option key={model} value={model}>{model}</option>
+            ))}
+          </select>
+
+          <select
+            value={filters.challengeType}
+            onChange={(e) => setFilters({ ...filters, challengeType: e.target.value as ChallengeType | 'all' })}
+            className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="all">All Challenges</option>
+            <option value="formal">Formal</option>
+            <option value="normative">Normative</option>
+            <option value="procedural">Procedural</option>
+            <option value="strategic">Strategic</option>
+            <option value="epistemic">Epistemic</option>
+            <option value="custom">Custom</option>
+          </select>
         </div>
 
-        {/* Filter buttons */}
-        <div className="flex flex-wrap gap-3">
-          <div>
-            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Challenge Type</label>
-            <select
-              value={filters.challengeType}
-              onChange={(e) => setFilters({ ...filters, challengeType: e.target.value as ChallengeType | 'all' })}
-              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            >
-              <option value="all">All Types</option>
-              <option value="formal">Formal</option>
-              <option value="normative">Normative</option>
-              <option value="procedural">Procedural</option>
-              <option value="strategic">Strategic</option>
-              <option value="epistemic">Epistemic</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Alignment</label>
-            <select
-              value={filters.alignmentCategory}
-              onChange={(e) => setFilters({ ...filters, alignmentCategory: e.target.value as AlignmentCategory | 'all' })}
-              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            >
-              <option value="all">All</option>
-              <option value="VALID">Valid</option>
-              <option value="SUPERFICIAL">Superficial</option>
-              <option value="SLOW">Slow</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Min QI</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={filters.minQI}
-              onChange={(e) => setFilters({ ...filters, minQI: Number(e.target.value) })}
-              className="w-20 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            />
-          </div>
-
-          {(filters.search || filters.challengeType !== 'all' || filters.alignmentCategory !== 'all' || filters.minQI > 0) && (
-            <button
-              onClick={() => setFilters({ search: '', challengeType: 'all', alignmentCategory: 'all', minQI: 0 })}
-              className="px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-            >
-              Clear Filters
-            </button>
-          )}
-        </div>
+        {/* Clear Filters */}
+        {(filters.search || filters.challengeType !== 'all' || filters.synthesizer !== 'all' || filters.alignmentCategory !== 'all' || filters.minQI > 0) && (
+          <button
+            onClick={() => setFilters({ search: '', challengeType: 'all', synthesizer: 'all', alignmentCategory: 'all', minQI: 0 })}
+            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            ✕ Clear filters
+          </button>
+        )}
       </div>
 
-      {/* Results Count */}
-      <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        Showing {sortedInsights.length} of {allInsights.length} insights
-      </div>
+      {/* Insights List - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        {sortedInsights.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-4xl mb-3">📭</div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+              {allInsights.length === 0 ? 'No insights yet' : 'No insights match'}
+            </h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {allInsights.length === 0 
+                ? 'Complete an evaluation first'
+                : 'Try adjusting filters'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sortedInsights.map((insight) => {
+              const shortId = insight.id ? insight.id.slice(-8) : 'unknown';
+              const synthesizer = insight.process?.models_used?.synthesis_epoch1 || 
+                                 insight.process?.models_used?.synthesis_epoch2 || 'Unknown';
+              const qi = insight.quality?.quality_index || 0;
+              const si = insight.quality?.superintelligence_index;
+              const alignment = insight.quality?.alignment_rate_category || 'N/A';
+              const pathologyCount = insight.quality?.pathologies?.detected?.length || 0;
+              const date = insight.process?.created_at 
+                ? new Date(insight.process.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                : 'N/A';
 
-      {/* Insights List */}
-      {sortedInsights.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-5xl mb-4">📭</div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            {allInsights.length === 0 ? 'No insights yet' : 'No insights match your filters'}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {allInsights.length === 0 
-              ? 'Complete an evaluation to see insights here'
-              : 'Try adjusting your filters'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {sortedInsights.map((insight) => {
-            const shortId = insight.id ? insight.id.slice(-8) : 'unknown';
-            const domains = Array.isArray(insight.challenge?.domain) ? insight.challenge.domain : [];
-            return (
-              <div
-                key={insight.id}
-                className="relative w-full p-5 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all"
-              >
-                {/* Main content - clickable */}
-                <div 
+              return (
+                <div
+                  key={insight.id}
+                  className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
                   onClick={() => onSelectInsight(insight.id)}
-                  className="cursor-pointer"
                 >
-                  <div className="flex items-start justify-between mb-3 pr-12">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {insight.challenge?.title || 'Untitled'}
-                        </h3>
+                  {/* Compact Card Content */}
+                  <div className="p-3">
+                    {/* Title Row */}
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1 pr-2">
+                        {insight.challenge?.title || 'Untitled'}
+                      </h3>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === insight.id ? null : insight.id);
+                        }}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+                      >
+                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Meta Row */}
+                    <div className="flex items-center gap-2 mb-2 text-xs">
+                      <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded">
+                        {insight.challenge?.type || 'custom'}
+                      </span>
+                      <span className="text-gray-500 dark:text-gray-400">•</span>
+                      <span className="text-gray-500 dark:text-gray-400 truncate flex-1" title={synthesizer}>
+                        {synthesizer}
+                      </span>
+                      <span className="text-gray-400 dark:text-gray-500">{date}</span>
+                    </div>
+
+                    {/* Metrics Row - Compact Grid */}
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                          <SmartTooltip term="QI">
+                            <span className="cursor-help">QI</span>
+                          </SmartTooltip>
+                        </div>
+                        <div className={`font-bold ${getQIColor(qi)}`}>
+                          {qi.toFixed(0)}%
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2 mb-1">
-                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                          {insight.challenge?.type || 'custom'}
-                        </span>
-                        {domains.slice(0, 3).map(d => (
-                          <span key={d} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
-                            {d}
-                          </span>
-                        ))}
-                        {domains.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
-                            +{domains.length - 3} more
-                          </span>
-                        )}
+                      <div className="text-center">
+                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                          <SmartTooltip term="SI">
+                            <span className="cursor-help">SI</span>
+                          </SmartTooltip>
+                        </div>
+                        <div className="font-bold text-gray-900 dark:text-gray-100">
+                          {(si == null || isNaN(si)) ? '-' : si.toFixed(1)}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-                        <span className="font-mono" title={insight.id}>
-                          #{shortId}
+                      <div className="text-center">
+                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                          <SmartTooltip term="AR">
+                            <span className="cursor-help">AR</span>
+                          </SmartTooltip>
+                        </div>
+                        <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${getAlignmentColor(alignment)}`}>
+                          {alignment === 'VALID' ? 'V' : alignment === 'SUPERFICIAL' ? 'S' : 'L'}
                         </span>
-                        <span>•</span>
-                        <span>
-                          {insight.process?.created_at 
-                            ? new Date(insight.process.created_at).toLocaleDateString()
-                            : 'N/A'}
-                        </span>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                          <SmartTooltip term="P">
+                            <span className="cursor-help">P</span>
+                          </SmartTooltip>
+                        </div>
+                        <div className="font-bold text-gray-900 dark:text-gray-100">
+                          {pathologyCount}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Quality Index</div>
-                      <div className={`text-xl font-bold ${getQIColor(insight.quality?.quality_index || 0)}`}>
-                        {insight.quality?.quality_index ? insight.quality.quality_index.toFixed(1) : '0.0'}%
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">SI</div>
-                      <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                        {(insight.quality?.superintelligence_index == null || isNaN(insight.quality?.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(1)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Alignment</div>
-                      <div>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlignmentColor(insight.quality?.alignment_rate_category || 'SLOW')}`}>
-                          {insight.quality?.alignment_rate_category || 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Pathologies</div>
-                      <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {insight.quality?.pathologies?.detected?.length || 0}
-                      </div>
-                    </div>
-                  </div>
-
-                  {insight.process?.models_used && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Models: {insight.process.models_used.synthesis_epoch1 || 'N/A'}, {insight.process.models_used.analyst1 || 'N/A'}
-                    </div>
-                  )}
-                </div>
-
-                {/* Action menu */}
-                <div className="absolute top-4 right-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId(openMenuId === insight.id ? null : insight.id);
-                    }}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                    </svg>
-                  </button>
-                  
+                  {/* Action Menu Dropdown */}
                   {openMenuId === insight.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                    <div 
+                      className="absolute right-0 top-10 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDownloadJSON(insight);
                           setOpenMenuId(null);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 rounded-t-lg"
                       >
-                        <span>📥</span> Download JSON
+                        <span>📥</span> JSON
                       </button>
                       <button
                         onClick={(e) => {
@@ -337,9 +334,9 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                           handleDownloadMarkdown(insight);
                           setOpenMenuId(null);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                       >
-                        <span>📄</span> Download Markdown
+                        <span>📄</span> Markdown
                       </button>
                       <button
                         onClick={(e) => {
@@ -347,18 +344,18 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                           handleDeleteInsight(insight.id, insight.challenge.title);
                           setOpenMenuId(null);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 rounded-b-lg"
+                        className="w-full px-3 py-2 text-left text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 rounded-b-lg"
                       >
                         <span>🗑️</span> Delete
                       </button>
                     </div>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

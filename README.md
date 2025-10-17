@@ -23,8 +23,44 @@
 
 ---
 
+# 🚀 Quick Start (2 Minutes)
+
 > **⚠️ ALPHA RELEASE**  
 > This extension is currently in active development with all core features implemented but may have bugs and incomplete functionality. For updates, read our [CHANGELOG](/CHANGELOG.md)
+
+## Step 1: Install in Chrome (30 seconds)
+
+### Option A: Download Pre-Built Extension (Recommended)
+1. **Download the latest release**:
+   - Go to [Releases](https://github.com/gyrogovernance/apps/releases)
+   - Download `gyrogovernance-extension-v0.2.1.zip`
+   - Extract the ZIP file
+
+2. **Add to Chrome**:
+   - Open Chrome and go to `chrome://extensions/`
+   - Toggle **"Developer mode"** (top right)
+   - Click **"Load unpacked"**
+   - Select the extracted folder
+   - ✅ Extension is now installed!
+
+### Option B: Build from Source (For Developers)
+1. **Clone and build**:
+   ```bash
+   git clone https://github.com/gyrogovernance/apps.git
+   cd apps
+   npm install
+   npm run build
+   ```
+2. **Load the `dist/` folder** in Chrome extensions
+
+## Step 2: Start Your First Evaluation (90 seconds)
+
+1. **Open the extension**: Click the GyroGovernance icon in your Chrome toolbar
+2. **Choose a challenge**: Select from 5 governance domains or create custom
+3. **Follow the guide**: The extension will walk you through the 3-step process
+4. **Export results**: Get validated insights in JSON or Markdown format
+
+---
 
 # 🌍 AI-Empowered Participatory Governance
 
@@ -69,7 +105,9 @@ No API keys required. The extension guides you through:
 ### 🤝 Knowledge Commons
 Export findings as JSON, Markdown, or contribute directly to GitHub under CC0 license.
 
-## 🚀 Installation
+## 🔧 Development Installation
+
+For developers wanting to modify or contribute to the extension:
 
 ```bash
 git clone https://github.com/gyrogovernance/apps.git
@@ -83,11 +121,12 @@ npm run build
 2. Toggle "Developer mode"
 3. Select "Load unpacked" → choose `dist/` folder
 
-**First Use**:
-1. Click extension icon for side panel
-2. Select or define a challenge template
-3. Follow guided workflow
-4. Export your validated analysis
+**Development Mode**:
+```bash
+npm run dev     # Watch mode for development
+npm run build   # Production build
+npm run type-check
+```
 
 ## 📈 Distinctive Approach
 
@@ -134,15 +173,18 @@ src/
 **Policy Makers**: Quality assessment of AI recommendations  
 **NGOs**: Validated advocacy proposals
 
-## 🤝 Development
+## 🤝 Contributing
 
+Contributions welcome! Priority areas include Firefox compatibility, multilingual support, and additional SDG templates.
+
+**Development Commands**:
 ```bash
-npm run dev     # Watch mode
-npm run build   # Production
+npm run dev     # Watch mode for development
+npm run build   # Production build  
 npm run type-check
 ```
 
-Contributions welcome. Priority areas include Firefox compatibility, multilingual support, and additional SDG templates.
+**Setup**: See [Development Installation](#-development-installation) section above.
 
 ## 📖 Citation
 

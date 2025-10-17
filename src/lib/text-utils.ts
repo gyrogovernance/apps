@@ -47,3 +47,14 @@ export function formatWordTokenCount(words: number): string {
   return `${words} words (~${formatTokenCount(tokens)} tokens)`;
 }
 
+/**
+ * Format pathology names from metadata format to human-readable
+ * e.g., "sycophantic_agreement" → "Sycophantic Agreement"
+ */
+export function formatPathologyName(pathology: string): string {
+  return pathology
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+

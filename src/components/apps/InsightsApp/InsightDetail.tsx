@@ -1,8 +1,9 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { GovernanceInsight, AlignmentCategory } from '../../../types';
 import { exportAsMarkdown, exportAsJSON } from '../../../lib/export';
 import { getScoreColor, getAlignmentBadgeColor } from '../../../lib/ui-utils';
-import { countWords, estimateTokens, formatTokenCount } from '../../../lib/text-utils';
+import { countWords, estimateTokens, formatTokenCount, formatPathologyName } from '../../../lib/text-utils';
 import { CORE_METRICS, STRUCTURE_METRICS, BEHAVIOR_METRICS, METRIC_CATEGORIES } from '../../../lib/metric-definitions';
 import { MetricCard, MetricSectionHeader } from '../../shared/MetricCard';
 import { useToast } from '../../shared/Toast';
@@ -75,6 +76,62 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               : 'N/A'}
           </span>
         </div>
+        {insight.challenge?.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            {insight.challenge.description}
+          </p>
+        )}
+      </div>
+
+      {/* THE INSIGHTS - Main Content */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border-2 border-green-300 dark:border-green-700 rounded-lg">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">💡</span>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              Insights on the Governance Challenge
+            </h2>
+          </div>
+        </div>
+
+        {/* Analyst Insights - THE MAIN CONTENT */}
+        {insight.insights?.combined_markdown && (
+          <>
+            <div className="prose prose-sm dark:prose-invert max-w-none mb-4">
+              <ReactMarkdown
+                components={{
+                  h1: ({node, ...props}) => <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-5 mb-2" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2" {...props} />,
+                  p: ({node, ...props}) => <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1" {...props} />,
+                  li: ({node, ...props}) => <li className="text-gray-700 dark:text-gray-300" {...props} />,
+                  strong: ({node, ...props}) => <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />,
+                  em: ({node, ...props}) => <em className="italic text-gray-800 dark:text-gray-200" {...props} />,
+                  code: ({node, inline, ...props}: any) => 
+                    inline 
+                      ? <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono" {...props} />
+                      : <code className="block p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono overflow-x-auto" {...props} />,
+                  blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-green-400 dark:border-green-600 pl-4 italic text-gray-700 dark:text-gray-300 my-3" {...props} />,
+                }}
+              >
+                {insight.insights.combined_markdown}
+              </ReactMarkdown>
+            </div>
+            
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(insight.insights.combined_markdown);
+                toast.show('Insights copied to clipboard', 'success');
+              }}
+              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white text-sm rounded-full transition-colors flex items-center gap-2"
+            >
+              <span>📋</span>
+              <span>Copy Insights Text</span>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Quality Metrics Cards */}
@@ -192,13 +249,6 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
       <div className="mb-6">
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Summary</h3>
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {insight.insights?.summary || 'No summary available'}
-              </p>
-            </div>
-
             {insight.quality?.pathologies?.detected && insight.quality.pathologies.detected.length > 0 && (
               <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
@@ -209,7 +259,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                   {insight.quality.pathologies.detected.map((pathology, idx) => (
                     <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex gap-2">
                       <span className="text-red-600 dark:text-red-400">•</span>
-                      <span>{pathology}</span>
+                      <span>{formatPathologyName(pathology)}</span>
                     </li>
                   ))}
                 </ul>

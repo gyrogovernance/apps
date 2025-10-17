@@ -5,6 +5,99 @@ All notable changes to the AI-Empowered Governance Apps browser extension will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
+## [0.2.1-Alpha] - 2025-10-17
+
+### Added
+
+**Welcome Page Visual Improvements**
+- **Subtitle styling:** Made smaller (text-base) and bold (font-semibold) for better readability
+- **Colored app cards:** Each app now has its own themed gradient background:
+  - 📋 Challenges: Blue gradient (blue-50 to indigo-50)
+  - 📓 Journal: Purple gradient (purple-50 to pink-50) 
+  - 💡 Insights: Green gradient (green-50 to emerald-50)
+  - ⚙️ Settings: Gray gradient (gray-50 to slate-50)
+- Enhanced AppCard component to accept custom className for themed backgrounds
+- Full dark mode support for all colored gradients
+- **Fixed double title issue:** Removed redundant title from welcome page (extension title bar already shows it)
+- **Consolidated redundant sections:** Moved "New Evaluation" and "Resume Session" buttons into the Quick Start Guide, removed duplicate "Quick Start" section
+- **Better flow:** Now there's just the guide (with action buttons) and the "Getting Started" help section
+
+**Quick Start Guide on Welcome Page**
+- Added collapsible Quick Start Guide placed after app cards (less intrusive)
+- **Entire block is clickable** to expand/collapse, not just the header
+- Arrow indicator on right side (▶ when collapsed, ▼ when expanded)
+- **Persistent state:** Guide remembers if you closed it (uses localStorage)
+- Once closed, stays closed even when navigating away and back to Welcome page
+- **Content organization:** Four apps overview first, then Smart Paste Detection guide below
+- "Close Guide" pill button at bottom for explicit dismissal
+- Instructions for enabling Chrome clipboard permissions for Smart Paste Detection
+- Brief overview of all four apps (Challenges, Journal, Insights, Settings) in 2x2 grid
+- Compact design with green/blue gradient styling
+- Opens by default on first visit for better onboarding
+- **Fixed description:** Insights are about governance solutions from AI, not model evaluation
+
+**Enhanced Import with ZIP Support**
+- Added support for importing ZIP archives containing multiple GyroDiagnostics data files
+- Automatically searches ZIP files for any file ending with `data.json` (e.g., `analysis_data.json`, `evaluation_data.json`, `model_data.json`)
+- Batch imports all valid files found in a ZIP archive with detailed feedback
+- Shows number of files processed vs. found (e.g., "Imported 15 insights from 3/3 files")
+- Maintains backward compatibility with single JSON file imports
+
+### Improved
+
+**Insight Detail Page - Content-First Redesign**
+- **Governance challenge insights now displayed prominently at the top**, before metric cards
+- Added dedicated "Insights on the Governance Challenge" section with green gradient styling
+- **Markdown rendering** for analyst evaluations with proper formatting (headings, lists, emphasis, code blocks)
+- Added **"Copy Insights Text" button** at bottom of insights section for easy clipboard access
+- Analyst evaluations (the actual insights about the challenge) are now immediately visible and prominent
+- Removed pathologies from insights section (they remain in Overview tab and metric cards)
+- Removed generic metadata (participation/preparation/provision) that was incorrectly labeled as "insights"
+- Fixed critical UX issue: the actual substantive insights about governance challenges are now the star
+- Better visual hierarchy: 💡 Icon and clear heading makes insights section unmissable
+- Metrics (QI, SI, AR) remain below as supporting quantitative data
+- Custom markdown styling with green-themed code blocks and proper dark mode support
+
+**Insights Library UX Overhaul**
+- Redesigned with compact cards optimized for sidebar constraints
+- Added synthesizer model filter for easier model comparison
+- Reduced card size by ~70% while maintaining key information visibility
+- Improved filter organization: search, model, challenge type stacked vertically
+- Added scrollable list container for better space management
+- Compact metric display: QI, SI, AR (abbreviated), and Pathology count
+- Abbreviated alignment categories (V/S/L) to save space
+- Streamlined action menu with smaller buttons
+- Added interactive tooltips to all metric labels (QI, SI, AR, P) with canonical definitions
+- Fixed tooltip positioning: now anchored to bottom of viewport to prevent clipping in scrollable lists
+
+**Import UX**
+- Updated button label to "Import GyroDiagnostics (JSON/ZIP)" for clarity
+- Enhanced tooltip to mention both JSON and ZIP file support
+- Better error reporting for ZIP files (shows which files failed and why)
+
+**Smart Paste Detection**
+- **Now enabled by default** for better out-of-box experience
+- Users can easily disable in Settings if they prefer manual workflow
+
+**README Restructuring for Better User Experience**
+- **Quick Start section moved to top** with clear 2-minute setup guide
+- **Chrome installation prominently featured** with step-by-step instructions
+- **Development section moved to bottom** as it's less relevant for common users
+- **Better flow**: Install → Use → Learn more → Contribute
+- **Clear time estimates**: "30 seconds" for installation, "90 seconds" for first evaluation
+
+**Fixed Installation Inconsistency - No More npm Required for Users**
+- **Added pre-built release option**: Users can now download ready-to-install extension from GitHub releases
+- **Two installation paths**: Option A (download ZIP) for users, Option B (build from source) for developers
+- **Release automation**: Added `npm run release` script to create distributable packages
+- **Version alignment**: Updated package.json version to match CHANGELOG (v0.2.1)
+- **Chrome Web Store ready**: Extension can now be distributed without requiring npm knowledge
+- **Better user experience**: Eliminates the technical barrier for non-developers
+
+---
+
 ## [0.2-Alpha] - 2025-10-16
 
 > **GyroGovernance Apps enter Alpha Release** 

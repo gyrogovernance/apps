@@ -1,5 +1,6 @@
 // Import utilities for GyroDiagnostics evaluation data
 
+import JSZip from 'jszip';
 import { GovernanceInsight, ChallengeType } from '../types';
 
 /**
@@ -365,7 +366,7 @@ export function transformGyroDiagnosticsToInsights(
 }
 
 /**
- * Validate and import GyroDiagnostics file
+ * Validate and import GyroDiagnostics file (JSON)
  */
 export async function importGyroDiagnosticsFile(file: File): Promise<{
   success: boolean;
@@ -400,6 +401,119 @@ export async function importGyroDiagnosticsFile(file: File): Promise<{
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to parse file'
+    };
+  }
+}
+
+/**
+ * Extract and import GyroDiagnostics files from a ZIP archive
+ */
+export async function importGyroDiagnosticsZip(file: File): Promise<{
+  success: boolean;
+  insights?: GovernanceInsight[];
+  error?: string;
+  filesProcessed?: number;
+  filesFound?: number;
+}> {
+  try {
+    const zip = await JSZip.loadAsync(file);
+    const allInsights: GovernanceInsight[] = [];
+    const dataFiles: Array<{ filename: string; file: JSZip.JSZipObject }> = [];
+    
+    // Find all files ending with 'data.json' (case-insensitive)
+    zip.forEach((relativePath, zipEntry) => {
+      if (!zipEntry.dir && relativePath.toLowerCase().endsWith('data.json')) {
+        dataFiles.push({ filename: relativePath, file: zipEntry });
+      }
+    });
+    
+    if (dataFiles.length === 0) {
+      return {
+        success: false,
+        error: 'No files ending with "data.json" found in the ZIP archive.',
+        filesFound: 0,
+        filesProcessed: 0
+      };
+    }
+    
+    console.log(`Found ${dataFiles.length} data.json file(s) in ZIP`);
+    
+    // Process each data.json file
+    let successCount = 0;
+    const errors: string[] = [];
+    
+    for (const { filename, file: zipEntry } of dataFiles) {
+      try {
+        const text = await zipEntry.async('text');
+        const data = JSON.parse(text);
+        
+        if (!isGyroDiagnosticsFormat(data)) {
+          console.warn(`Skipping ${filename}: Invalid format`);
+          errors.push(`${filename}: Invalid format`);
+          continue;
+        }
+        
+        const insights = transformGyroDiagnosticsToInsights(data, filename);
+        
+        if (insights.length > 0) {
+          allInsights.push(...insights);
+          successCount++;
+          console.log(`Imported ${insights.length} insight(s) from ${filename}`);
+        } else {
+          errors.push(`${filename}: No valid challenges found`);
+        }
+      } catch (error) {
+        console.error(`Error processing ${filename}:`, error);
+        errors.push(`${filename}: ${error instanceof Error ? error.message : 'Parse error'}`);
+      }
+    }
+    
+    if (allInsights.length === 0) {
+      return {
+        success: false,
+        error: `No valid insights could be imported. Errors: ${errors.join('; ')}`,
+        filesFound: dataFiles.length,
+        filesProcessed: 0
+      };
+    }
+    
+    return {
+      success: true,
+      insights: allInsights,
+      filesFound: dataFiles.length,
+      filesProcessed: successCount
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to process ZIP file',
+      filesFound: 0,
+      filesProcessed: 0
+    };
+  }
+}
+
+/**
+ * Import GyroDiagnostics data from JSON or ZIP file
+ * Automatically detects file type and processes accordingly
+ */
+export async function importGyroDiagnostics(file: File): Promise<{
+  success: boolean;
+  insights?: GovernanceInsight[];
+  error?: string;
+  filesProcessed?: number;
+  filesFound?: number;
+}> {
+  const fileName = file.name.toLowerCase();
+  
+  if (fileName.endsWith('.zip')) {
+    return await importGyroDiagnosticsZip(file);
+  } else if (fileName.endsWith('.json')) {
+    return await importGyroDiagnosticsFile(file);
+  } else {
+    return {
+      success: false,
+      error: 'Unsupported file type. Please select a JSON or ZIP file.'
     };
   }
 }

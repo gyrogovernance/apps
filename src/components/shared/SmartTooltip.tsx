@@ -3,23 +3,52 @@ import React, { useState } from 'react';
 interface SmartTooltipProps {
   term: string;
   children: React.ReactNode;
-  definition?: string;
+  definition?: string | React.ReactNode;
   learnMoreUrl?: string;
 }
 
 // Canonical GyroDiagnostics term definitions
-const TOOLTIP_REGISTRY: Record<string, { definition: string; learnMore?: string }> = {
+const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; learnMore?: string }> = {
   'QI': {
-    definition: 'Quality Index: Weighted average of Structure (40%), Behavior (40%), and Specialization (20%) scores. Scale: 0-100%.',
-    learnMore: '#quality-index'
+    definition: (
+      <div className="space-y-2">
+        <div><span className="font-bold text-blue-300">Quality Index</span> — Weighted average of model performance</div>
+        <div className="text-gray-400 text-xs space-y-1">
+          <div>• <span className="text-yellow-300">Structure</span> (40%)</div>
+          <div>• <span className="text-green-300">Behavior</span> (40%)</div>
+          <div>• <span className="text-purple-300">Specialization</span> (20%)</div>
+        </div>
+        <div className="text-gray-400 text-xs">Scale: <span className="text-white font-semibold">0-100%</span></div>
+      </div>
+    ),
   },
   'SI': {
-    definition: 'Superintelligence Index: Measures structural coherence via K₄ graph topology. Target aperture A* ≈ 0.020701. Lower deviation = more balanced.',
-    learnMore: '#superintelligence-index'
+    definition: (
+      <div className="space-y-2">
+        <div><span className="font-bold text-blue-300">Superintelligence Index</span> — Structural coherence</div>
+        <div className="text-gray-400 text-xs">
+          Measures balance via K₄ graph topology
+        </div>
+        <div className="text-gray-400 text-xs">
+          Target aperture: <span className="text-green-300 font-semibold">A* ≈ 0.020701</span>
+        </div>
+        <div className="text-gray-400 text-xs">
+          Lower deviation = more balanced reasoning
+        </div>
+      </div>
+    ),
   },
   'AR': {
-    definition: 'Alignment Rate: Quality points achieved per minute. Categories: VALID (0.03-0.15), SUPERFICIAL (>0.15), SLOW (<0.03). Units: /min.',
-    learnMore: '#alignment-rate'
+    definition: (
+      <div className="space-y-2">
+        <div><span className="font-bold text-blue-300">Alignment Rate</span> — Quality per minute</div>
+        <div className="text-gray-400 text-xs space-y-1">
+          <div>• <span className="text-green-300">VALID</span>: 0.03-0.15 /min (balanced)</div>
+          <div>• <span className="text-yellow-300">SUPERFICIAL</span>: &gt;0.15 /min (rushed)</div>
+          <div>• <span className="text-red-300">SLOW</span>: &lt;0.03 /min (verbose)</div>
+        </div>
+      </div>
+    ),
   },
   'Epoch': {
     definition: 'A 6-turn synthesis phase where an AI model generates autonomous reasoning on a governance challenge.',
@@ -31,7 +60,33 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string; learnMore?: string 
     definition: 'Measure of non-associative residual in K₄ topology. A* = 0.020701 represents optimal spherical balance in behavior score distribution.',
   },
   'Pathology': {
-    definition: 'Canonical failure modes: sycophantic_agreement, deceptive_coherence, goal_misgeneralization, superficial_optimization, semantic_drift.',
+    definition: (
+      <div className="space-y-2">
+        <div><span className="font-bold text-blue-300">Pathology</span> — AI failure modes</div>
+        <div className="text-gray-400 text-xs space-y-1">
+          <div>• Sycophantic Agreement</div>
+          <div>• Deceptive Coherence</div>
+          <div>• Goal Misgeneralization</div>
+          <div>• Superficial Optimization</div>
+          <div>• Semantic Drift</div>
+        </div>
+      </div>
+    ),
+  },
+  'P': {
+    definition: (
+      <div className="space-y-2">
+        <div><span className="font-bold text-blue-300">Pathology Count</span> — Detected failure modes</div>
+        <div className="text-gray-400 text-xs">Number of canonical pathologies identified:</div>
+        <div className="text-gray-400 text-xs space-y-1">
+          <div>• Sycophantic Agreement</div>
+          <div>• Deceptive Coherence</div>
+          <div>• Goal Misgeneralization</div>
+          <div>• Superficial Optimization</div>
+          <div>• Semantic Drift</div>
+        </div>
+      </div>
+    ),
   }
 };
 
@@ -56,22 +111,19 @@ export const SmartTooltip: React.FC<SmartTooltipProps> = ({
       </span>
       
       {isVisible && (
-        <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-2xl">
-          <div className="font-semibold mb-1.5">{term}</div>
-          <div className="text-gray-300 leading-relaxed">{info.definition}</div>
-          {(info.learnMore || learnMoreUrl) && (
-            <a 
-              href={info.learnMore || learnMoreUrl} 
-              className="text-blue-400 hover:underline mt-2 inline-block"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn more →
-            </a>
-          )}
-          {/* Arrow */}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900" />
-        </div>
+        <>
+          {/* Fixed tooltip at bottom of viewport */}
+          <div className="fixed bottom-4 left-4 right-4 z-[100] max-w-md mx-auto p-3 bg-gray-900 text-white text-xs rounded-lg shadow-2xl">
+            {typeof info.definition === 'string' ? (
+              <>
+                <div className="font-semibold mb-1.5">{term}</div>
+                <div className="text-gray-300 leading-relaxed">{info.definition}</div>
+              </>
+            ) : (
+              <div className="leading-relaxed">{info.definition}</div>
+            )}
+          </div>
+        </>
       )}
     </span>
   );

@@ -1,17 +1,21 @@
 {
   "name": "aiempowered-governance-lab",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Generate validated insights on governance challenges through structured AI-empowered processes",
   "scripts": {
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "release": "npm run build && npm run package",
+    "package": "node scripts/create-release.js"
   },
   "dependencies": {
+    "dexie": "^3.2.4",
+    "jszip": "^3.10.1",
     "mathjs": "^12.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "dexie": "^3.2.4"
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.258",
@@ -30,4 +34,3 @@
     "webpack-cli": "^5.1.4"
   }
 }
-
