@@ -8,6 +8,24 @@ export interface ValidationResult {
 }
 
 /**
+ * Check if a session is completely empty (no content)
+ */
+export function isSessionEmpty(session: Session): boolean {
+  // Check if epochs have any turns
+  const epoch1HasTurns = session.epochs.epoch1.turns.length > 0;
+  const epoch2HasTurns = session.epochs.epoch2.turns.length > 0;
+  
+  // Check if any analyst has data
+  const hasAnalystData = 
+    session.analysts.epoch1.analyst1.data !== null ||
+    session.analysts.epoch1.analyst2.data !== null ||
+    session.analysts.epoch2.analyst1.data !== null ||
+    session.analysts.epoch2.analyst2.data !== null;
+  
+  return !epoch1HasTurns && !epoch2HasTurns && !hasAnalystData;
+}
+
+/**
  * Validate that a session is complete and ready for report generation
  */
 export function validateSessionComplete(session: Session): ValidationResult {

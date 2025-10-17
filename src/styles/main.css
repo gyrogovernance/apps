@@ -20,7 +20,7 @@
   }
   
   .section-card {
-    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-3;
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-3 mx-3 mt-4;
   }
   
   .section-header {

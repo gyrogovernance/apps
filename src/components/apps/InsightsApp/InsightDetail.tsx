@@ -58,19 +58,21 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
-          {insight.challenge.title}
+          {insight.challenge?.title || 'Untitled Insight'}
         </h1>
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-sm rounded-full">
-            {insight.challenge.type}
+            {insight.challenge?.type || 'custom'}
           </span>
-          {insight.challenge.domain.map(d => (
+          {Array.isArray(insight.challenge?.domain) && insight.challenge.domain.map(d => (
             <span key={d} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full">
               {d}
             </span>
           ))}
           <span className="px-3 py-1 text-gray-600 dark:text-gray-400 text-sm">
-            {new Date(insight.process.created_at).toLocaleString()}
+            {insight.process?.created_at 
+              ? new Date(insight.process.created_at).toLocaleString()
+              : 'N/A'}
           </span>
         </div>
       </div>
@@ -84,8 +86,8 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Quality Index</div>
               <div className="text-xs text-gray-600 dark:text-gray-400">{CORE_METRICS.qi.shortDesc}</div>
             </div>
-            <div className={`text-3xl font-bold ml-3 ${getScoreColor(insight.quality.quality_index / 10)}`}>
-              {insight.quality.quality_index.toFixed(1)}%
+            <div className={`text-3xl font-bold ml-3 ${getScoreColor((insight.quality?.quality_index || 0) / 10)}`}>
+              {insight.quality?.quality_index ? insight.quality.quality_index.toFixed(1) : '0.0'}%
             </div>
           </div>
           <details className="mt-2">
@@ -109,7 +111,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               <div className="text-xs text-gray-600 dark:text-gray-400">{CORE_METRICS.si.shortDesc}</div>
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 ml-3">
-              {(insight.quality.superintelligence_index == null || isNaN(insight.quality.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(2)}
+              {(insight.quality?.superintelligence_index == null || isNaN(insight.quality?.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(2)}
             </div>
           </div>
           <details className="mt-2">
@@ -120,8 +122,8 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               <div className="text-gray-700 dark:text-gray-300">
                 <p className="font-medium mb-1">Current Values:</p>
                 <p>• Target Aperture A*: 0.020701 (K=4)</p>
-                <p>• Deviation: {(insight.quality.si_deviation == null || isNaN(insight.quality.si_deviation)) ? 'N/A' : `${insight.quality.si_deviation.toFixed(2)}×`} from target</p>
-                {(insight.quality.superintelligence_index == null || isNaN(insight.quality.superintelligence_index)) && (
+                <p>• Deviation: {(insight.quality?.si_deviation == null || isNaN(insight.quality?.si_deviation)) ? 'N/A' : `${insight.quality.si_deviation.toFixed(2)}×`} from target</p>
+                {(insight.quality?.superintelligence_index == null || isNaN(insight.quality?.superintelligence_index)) && (
                   <p className="text-yellow-600 dark:text-yellow-400 mt-2">⚠ SI requires all 6 behavior metrics to be numeric (no N/A values)</p>
                 )}
               </div>
@@ -139,13 +141,13 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               <div className="text-xs text-gray-600 dark:text-gray-400">{CORE_METRICS.ar.shortDesc}</div>
             </div>
             <div className="ml-3">
-              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${getAlignmentBadgeColor(insight.quality.alignment_rate_category)}`}>
-                {insight.quality.alignment_rate_category}
+              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${getAlignmentBadgeColor(insight.quality?.alignment_rate_category || 'SLOW')}`}>
+                {insight.quality?.alignment_rate_category || 'N/A'}
               </span>
             </div>
           </div>
           <div className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-            {insight.quality.alignment_rate.toFixed(4)}/min
+            {insight.quality?.alignment_rate ? insight.quality.alignment_rate.toFixed(4) : '0.0000'}/min
           </div>
           <details className="mt-2">
             <summary className="cursor-pointer text-xs text-purple-700 dark:text-purple-300 hover:underline">
@@ -193,11 +195,11 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Summary</h3>
               <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {insight.insights.summary}
+                {insight.insights?.summary || 'No summary available'}
               </p>
             </div>
 
-            {insight.quality.pathologies.detected.length > 0 && (
+            {insight.quality?.pathologies?.detected && insight.quality.pathologies.detected.length > 0 && (
               <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                   <span>🔬</span>
@@ -214,29 +216,31 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               </div>
             )}
 
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Models Used</h3>
-              <div className="grid md:grid-cols-2 gap-3">
-                <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Synthesis Epochs</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Epoch 1: {insight.process.models_used.synthesis_epoch1}
+            {insight.process?.models_used && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Models Used</h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Synthesis Epochs</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Epoch 1: {insight.process.models_used.synthesis_epoch1 || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Epoch 2: {insight.process.models_used.synthesis_epoch2 || 'N/A'}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Epoch 2: {insight.process.models_used.synthesis_epoch2}
-                  </div>
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Analyst Models</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Analyst 1: {insight.process.models_used.analyst1}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Analyst 2: {insight.process.models_used.analyst2}
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Analyst Models</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Analyst 1: {insight.process.models_used.analyst1 || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Analyst 2: {insight.process.models_used.analyst2 || 'N/A'}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -248,7 +252,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               emoji="🏗️"
             />
             <div className="grid md:grid-cols-2 gap-4">
-              {Object.entries(insight.quality.structure_scores).map(([key, value]) => (
+              {Object.entries(insight.quality?.structure_scores || {}).map(([key, value]) => (
                 <MetricCard
                   key={key}
                   label={key}
@@ -269,7 +273,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               emoji="🧠"
             />
             <div className="grid md:grid-cols-2 gap-4 mb-4">
-              {Object.entries(insight.quality.behavior_scores).map(([key, value]) => (
+              {Object.entries(insight.quality?.behavior_scores || {}).map(([key, value]) => (
                 <MetricCard
                   key={key}
                   label={key}
@@ -295,9 +299,9 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               definition={METRIC_CATEGORIES.specialization}
               emoji="🎯"
             />
-            {Object.keys(insight.quality.specialization_scores).length > 0 ? (
+            {Object.keys(insight.quality?.specialization_scores || {}).length > 0 ? (
               <div className="grid md:grid-cols-2 gap-4 mb-4">
-                {Object.entries(insight.quality.specialization_scores).map(([key, value]) => (
+                {Object.entries(insight.quality?.specialization_scores || {}).map(([key, value]) => (
                   <div key={key} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">

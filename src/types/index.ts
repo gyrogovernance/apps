@@ -3,7 +3,7 @@
 // App-based navigation types
 export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings';
 export type ChallengesView = 'select-type' | 'gyro-suite' | 'sdg-gallery' | 'custom-builder' | 'prompt-workshop';
-export type JournalView = 'home' | 'active-session' | 'synthesis' | 'analysis';
+export type JournalView = 'home' | 'session' | 'active-session' | 'synthesis' | 'analysis';
 export type InsightsView = 'library' | 'detail' | 'comparison';
 
 export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedural' | 'formal' | 'custom';
@@ -213,6 +213,26 @@ export interface GovernanceInsight {
   tags: string[];
   starred: boolean;
   notes: string;
+  
+  // Optional metadata for imports and extended information
+  metadata?: {
+    model_name?: string;
+    evaluation_method?: string;
+    challenge_type?: string;
+    epochs_analyzed?: number;
+    source_file?: string;
+    import_date?: string;
+    pathology_frequency?: Record<string, number>;
+    statistics?: {
+      mean_qi?: number;
+      std_qi?: number;
+      min_qi?: number;
+      max_qi?: number;
+      mean_duration?: number;
+      std_duration?: number;
+    };
+    [key: string]: any; // Allow additional custom metadata
+  };
 }
 
 export const INITIAL_STATE: NotebookState = {

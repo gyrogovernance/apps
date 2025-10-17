@@ -1,7 +1,10 @@
 // Mock Chrome Extension APIs for web development/preview
 // This allows the app to run in a regular browser without the extension context
 
-const IS_EXTENSION = typeof chrome !== 'undefined' && !!chrome.storage && !!chrome.storage.local;
+const IS_EXTENSION = typeof chrome !== 'undefined' && 
+                     chrome.storage !== undefined && 
+                     chrome.storage.local !== undefined &&
+                     typeof chrome.storage.local.get === 'function';
 
 // Mock chrome.storage.local using localStorage
 const mockStorage = {
@@ -80,7 +83,12 @@ const mockOnChanged = {
 export const chromeAPI = IS_EXTENSION
   ? {
       storage: {
-        local: chrome.storage.local,
+        local: {
+          get: chrome.storage.local.get.bind(chrome.storage.local),
+          set: chrome.storage.local.set.bind(chrome.storage.local),
+          remove: chrome.storage.local.remove.bind(chrome.storage.local),
+          clear: chrome.storage.local.clear.bind(chrome.storage.local)
+        },
         onChanged: chrome.storage.onChanged
       },
       runtime: chrome.runtime,

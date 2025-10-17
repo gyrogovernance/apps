@@ -23,8 +23,8 @@
 
 ---
 
-> **⚠️ PROTOTYPE STATUS**  
-> This is a prototype under active development. While functional, this extension requires further testing and refinement before public release. Features may change and bugs may be present.
+> **⚠️ ALPHA RELEASE**  
+> This extension is currently in active development with all core features implemented but may have bugs and incomplete functionality. For updates, read our [CHANGELOG](/CHANGELOG.md)
 
 # 🌍 AI-Empowered Participatory Governance
 

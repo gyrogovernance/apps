@@ -76,7 +76,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
   const currentSection = sections[currentIndex];
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mx-3 mb-3 mt-4">
       {/* Progress bar with percentage */}
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
@@ -98,13 +98,13 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
       </div>
 
       {/* Section indicators with icons */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+      <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-thin">
         {sections.map((section, index) => (
           <button
             key={section.key}
             onClick={() => onNavigate(section.key)}
             disabled={!section.completed && index > currentIndex + 1}
-            className={`flex flex-col items-center px-2 py-1.5 rounded transition-all min-w-[60px] ${
+            className={`flex flex-col items-center px-1.5 py-1.5 rounded transition-all flex-shrink-0 ${
               index === currentIndex
                 ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-300 dark:ring-blue-700'
                 : section.completed
@@ -113,8 +113,8 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
             } disabled:cursor-not-allowed disabled:opacity-40`}
             title={`${section.label} - ${section.estimate}`}
           >
-            <span className="text-base mb-0.5">{section.completed ? '✓' : section.icon}</span>
-            <span className="text-xs font-medium">{section.label}</span>
+            <span className="text-lg mb-0.5">{section.completed ? '✓' : section.icon}</span>
+            <span className="text-[10px] font-medium whitespace-nowrap leading-tight">{section.label}</span>
           </button>
         ))}
       </div>

@@ -143,10 +143,14 @@ const ElementPicker: React.FC<ElementPickerProps> = ({ onTextCaptured }) => {
   return (
     <button
       onClick={activatePicker}
-      className={`btn-secondary text-sm ${isActive ? 'opacity-50' : ''}`}
+      className={`btn-secondary flex items-center gap-1.5 px-2 py-1.5 text-xs ${
+        isActive ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300 dark:hover:bg-gray-600'
+      }`}
       disabled={isActive}
+      title="Click to select text from the current webpage"
     >
-      {isActive ? '🎯 Picker Active...' : '🎯 Pick from Page'}
+      <span className="text-sm">🎯</span>
+      <span>{isActive ? 'Picker Active...' : 'Pick from Page'}</span>
     </button>
   );
 };

@@ -6,6 +6,8 @@ import { chromeAPI } from './chrome-mock';
 
 const STORAGE_KEY = 'notebook_state';
 const INSIGHTS_KEY = 'insights_library';
+const SCHEMA_VERSION = '2.0'; // Per-epoch analyst structure
+const VERSION_KEY = 'schema_version';
 
 export const storage = {
   /**
@@ -13,7 +15,17 @@ export const storage = {
    */
   async get(): Promise<NotebookState> {
     try {
-      const result = await chromeAPI.storage.local.get(STORAGE_KEY);
+      const result = await chromeAPI.storage.local.get([STORAGE_KEY, VERSION_KEY]);
+      const storedVersion = result[VERSION_KEY];
+      
+      // If version mismatch, clear old data and start fresh
+      if (storedVersion !== SCHEMA_VERSION) {
+        console.warn(`Schema version mismatch (stored: ${storedVersion}, current: ${SCHEMA_VERSION}). Clearing storage for clean start.`);
+        await chromeAPI.storage.local.clear();
+        await chromeAPI.storage.local.set({ [VERSION_KEY]: SCHEMA_VERSION });
+        return INITIAL_STATE;
+      }
+      
       return result[STORAGE_KEY] || INITIAL_STATE;
     } catch (error) {
       console.error('Error loading state:', error);
@@ -26,7 +38,10 @@ export const storage = {
    */
   async set(state: NotebookState): Promise<void> {
     try {
-      await chromeAPI.storage.local.set({ [STORAGE_KEY]: state });
+      await chromeAPI.storage.local.set({ 
+        [STORAGE_KEY]: state,
+        [VERSION_KEY]: SCHEMA_VERSION 
+      });
     } catch (error) {
       console.error('Error saving state:', error);
       throw error;

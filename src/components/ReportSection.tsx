@@ -430,7 +430,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
         </div>
 
         {/* Pathologies */}
-        {insight.quality.pathologies.detected.length > 0 && (
+        {insight.quality?.pathologies?.detected && insight.quality.pathologies.detected.length > 0 && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
             <h4 className="font-medium text-yellow-900 mb-2">Detected Pathologies</h4>
             <div className="flex flex-wrap gap-2">

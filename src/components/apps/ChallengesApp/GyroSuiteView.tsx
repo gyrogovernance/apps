@@ -10,7 +10,7 @@ interface GyroSuiteViewProps {
 
 const GyroSuiteView: React.FC<GyroSuiteViewProps> = ({ onStart, onBack }) => {
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-3 mt-4">
       <button
         onClick={onBack}
         className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-6 text-sm flex items-center gap-1"

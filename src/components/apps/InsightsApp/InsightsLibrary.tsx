@@ -83,25 +83,33 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
 
   // Filter insights
   const filteredInsights = allInsights.filter(insight => {
-    if (filters.search && !insight.challenge.title.toLowerCase().includes(filters.search.toLowerCase())) {
+    // Safely access challenge and quality properties
+    const title = insight.challenge?.title || '';
+    const type = insight.challenge?.type || 'custom';
+    const alignmentCategory = insight.quality?.alignment_rate_category;
+    const qualityIndex = insight.quality?.quality_index || 0;
+    
+    if (filters.search && !title.toLowerCase().includes(filters.search.toLowerCase())) {
       return false;
     }
-    if (filters.challengeType !== 'all' && insight.challenge.type !== filters.challengeType) {
+    if (filters.challengeType !== 'all' && type !== filters.challengeType) {
       return false;
     }
-    if (filters.alignmentCategory !== 'all' && insight.quality.alignment_rate_category !== filters.alignmentCategory) {
+    if (filters.alignmentCategory !== 'all' && alignmentCategory !== filters.alignmentCategory) {
       return false;
     }
-    if (insight.quality.quality_index < filters.minQI) {
+    if (qualityIndex < filters.minQI) {
       return false;
     }
     return true;
   });
 
   // Sort by date (most recent first)
-  const sortedInsights = [...filteredInsights].sort((a, b) => 
-    new Date(b.process.created_at).getTime() - new Date(a.process.created_at).getTime()
-  );
+  const sortedInsights = [...filteredInsights].sort((a, b) => {
+    const dateA = a.process?.created_at ? new Date(a.process.created_at).getTime() : 0;
+    const dateB = b.process?.created_at ? new Date(b.process.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
 
   if (loading) {
     return (
@@ -213,7 +221,8 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
       ) : (
         <div className="space-y-4">
           {sortedInsights.map((insight) => {
-            const shortId = insight.id.slice(-8);
+            const shortId = insight.id ? insight.id.slice(-8) : 'unknown';
+            const domains = Array.isArray(insight.challenge?.domain) ? insight.challenge.domain : [];
             return (
               <div
                 key={insight.id}
@@ -224,69 +233,76 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                   onClick={() => onSelectInsight(insight.id)}
                   className="cursor-pointer"
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between mb-3 pr-12">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {insight.challenge.title}
+                          {insight.challenge?.title || 'Untitled'}
                         </h3>
-                        <span className="text-xs font-mono text-gray-400 dark:text-gray-500" title={insight.id}>
-                          #{shortId}
-                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 mb-1">
                         <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                          {insight.challenge.type}
+                          {insight.challenge?.type || 'custom'}
                         </span>
-                        {insight.challenge.domain.slice(0, 3).map(d => (
+                        {domains.slice(0, 3).map(d => (
                           <span key={d} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
                             {d}
                           </span>
                         ))}
-                        {insight.challenge.domain.length > 3 && (
+                        {domains.length > 3 && (
                           <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
-                            +{insight.challenge.domain.length - 3} more
+                            +{domains.length - 3} more
                           </span>
                         )}
                       </div>
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(insight.process.created_at).toLocaleDateString()}
+                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                        <span className="font-mono" title={insight.id}>
+                          #{shortId}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {insight.process?.created_at 
+                            ? new Date(insight.process.created_at).toLocaleDateString()
+                            : 'N/A'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                     <div>
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Quality Index</div>
-                      <div className={`text-xl font-bold ${getQIColor(insight.quality.quality_index)}`}>
-                        {insight.quality.quality_index.toFixed(1)}%
+                      <div className={`text-xl font-bold ${getQIColor(insight.quality?.quality_index || 0)}`}>
+                        {insight.quality?.quality_index ? insight.quality.quality_index.toFixed(1) : '0.0'}%
                       </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">SI</div>
                       <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                        {(insight.quality.superintelligence_index == null || isNaN(insight.quality.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(1)}
+                        {(insight.quality?.superintelligence_index == null || isNaN(insight.quality?.superintelligence_index)) ? 'N/A' : insight.quality.superintelligence_index.toFixed(1)}
                       </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Alignment</div>
                       <div>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlignmentColor(insight.quality.alignment_rate_category)}`}>
-                          {insight.quality.alignment_rate_category}
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlignmentColor(insight.quality?.alignment_rate_category || 'SLOW')}`}>
+                          {insight.quality?.alignment_rate_category || 'N/A'}
                         </span>
                       </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Pathologies</div>
                       <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {insight.quality.pathologies.detected.length}
+                        {insight.quality?.pathologies?.detected?.length || 0}
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Models: {insight.process.models_used.synthesis_epoch1}, {insight.process.models_used.analyst1}
-                  </div>
+                  {insight.process?.models_used && (
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Models: {insight.process.models_used.synthesis_epoch1 || 'N/A'}, {insight.process.models_used.analyst1 || 'N/A'}
+                    </div>
+                  )}
                 </div>
 
                 {/* Action menu */}

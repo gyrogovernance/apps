@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '../shared/Toast';
 import { useConfirm } from '../shared/Modal';
 import { chromeAPI } from '../../lib/chrome-mock';
+import { importGyroDiagnosticsFile } from '../../lib/import';
+import { insights as insightsStorage } from '../../lib/storage';
 
 interface Settings {
   clipboardMonitoring: boolean;
@@ -56,6 +58,101 @@ export const SettingsApp: React.FC = () => {
       console.error('Export failed:', error);
       toast.show('Failed to export data', 'error');
     }
+  };
+
+  const handleExportInsights = async () => {
+    try {
+      const result = await chromeAPI.storage.local.get('insights_library');
+      const insights = result.insights_library || [];
+      
+      // Group insights by model name and challenge type to create GyroDiagnostics format
+      const modelData: any = {};
+      
+      insights.forEach((insight: any) => {
+        const modelName = insight.metadata?.model_name || 'Unknown Model';
+        const challengeType = insight.metadata?.challenge_type || insight.challenge?.type || 'unknown';
+        
+        if (!modelData[modelName]) {
+          modelData[modelName] = {};
+        }
+        
+        // Create GyroDiagnostics challenge structure
+        modelData[modelName][challengeType] = {
+          challenge_type: challengeType,
+          task_name: `${challengeType}_challenge`,
+          median_quality_index: insight.quality.quality_index / 100,
+          alignment_rate: insight.quality.alignment_rate,
+          alignment_rate_status: insight.quality.alignment_rate_category,
+          superintelligence_stats: {
+            median_superintelligence_index: insight.quality.superintelligence_index,
+            median_deviation_factor: insight.quality.si_deviation,
+            target_aperture: 0.020701
+          },
+          median_duration_minutes: insight.quality.duration_minutes,
+          pathology_counts: insight.pathology_frequency || {},
+          epochs_analyzed: insight.metadata?.epochs_analyzed || 2,
+          epoch_results: [
+            {
+              structure_scores: insight.structure_scores,
+              behavior_scores: insight.behavior_scores,
+              specialization_scores: insight.specialization_scores,
+              pathologies: insight.pathologies || [],
+              insights: insight.insights || '',
+              analyst_count: 2
+            }
+          ]
+        };
+      });
+      
+      // Export each model as a separate file
+      for (const [modelName, data] of Object.entries(modelData)) {
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const filename = modelName.toLowerCase().replace(/\s+/g, '_');
+        a.download = `${filename}_analysis_data.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      
+      toast.show(`Exported data for ${Object.keys(modelData).length} model(s)`, 'success');
+    } catch (error) {
+      console.error('Export insights failed:', error);
+      toast.show('Failed to export insights', 'error');
+    }
+  };
+
+  const handleImportGyroDiagnostics = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const result = await importGyroDiagnosticsFile(file);
+        
+        if (!result.success) {
+          toast.show(result.error || 'Import failed', 'error');
+          return;
+        }
+
+        // Add insights to storage
+        const insights = result.insights!;
+        for (const insight of insights) {
+          await insightsStorage.save(insight);
+        }
+        
+        toast.show(`Imported ${insights.length} insight(s) from ${file.name}`, 'success');
+      } catch (error) {
+        console.error('Import failed:', error);
+        toast.show('Failed to import file. Please check the format.', 'error');
+      }
+    };
+    input.click();
   };
 
   const handleClearAllData = async () => {
@@ -179,11 +276,25 @@ export const SettingsApp: React.FC = () => {
           </h3>
           <div className="space-y-3">
             <button 
+              onClick={handleImportGyroDiagnostics}
+              className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <span>📤</span>
+              <span>Import GyroDiagnostics JSON</span>
+            </button>
+            <button 
+              onClick={handleExportInsights}
+              className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <span>📥</span>
+              <span>Export GyroDiagnostics JSON</span>
+            </button>
+            <button 
               onClick={handleExportData}
               className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <span>📥</span>
-              <span>Export All Data (JSON)</span>
+              <span>Export All Data (Full Backup)</span>
             </button>
             <button 
               onClick={handleClearAllData}
@@ -194,7 +305,7 @@ export const SettingsApp: React.FC = () => {
             </button>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            💡 Tip: Export your data regularly to backup your insights and sessions
+            💡 Tip: Import GyroDiagnostics JSON files directly (e.g., claude_4_5_sonnet_analysis_data.json)
           </p>
         </div>
 

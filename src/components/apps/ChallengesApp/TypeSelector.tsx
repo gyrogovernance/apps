@@ -7,40 +7,40 @@ interface TypeSelectorProps {
 
 const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+    <div className="max-w-4xl mx-auto p-3 mt-4">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
         📋 Select Challenge Type
       </h2>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
+      <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
         Choose how you want to evaluate your AI model
       </p>
 
       {/* GyroDiagnostics Suite - Featured */}
-      <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-800">
-        <div className="flex items-start gap-4">
-          <div className="text-5xl">🎯</div>
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+        <div className="flex items-start gap-3">
+          <div className="text-3xl">🎯</div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
               GyroDiagnostics Evaluation Suite
             </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-3">
+            <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm">
               Complete 5-challenge assessment across all governance dimensions: 
               Formal, Normative, Procedural, Strategic, and Epistemic.
             </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-sm rounded-full">
-                ⏱️ 2-4 hours
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                ⏱️ 1h
               </span>
-              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 text-sm rounded-full">
-                📊 Comprehensive Report
+              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 text-xs rounded-full">
+                📊 Full Report
               </span>
-              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200 text-sm rounded-full">
+              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200 text-xs rounded-full">
                 ✓ Recommended
               </span>
             </div>
             <button
               onClick={() => onNavigate('gyro-suite')}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
             >
               Start Full Suite →
             </button>

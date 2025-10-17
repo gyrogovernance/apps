@@ -4,6 +4,24 @@ import Notebook from './components/Notebook';
 import { ToastProvider } from './components/shared/Toast';
 import './styles/main.css';
 
+// Add global error handler for unhandled errors
+window.addEventListener('error', (event) => {
+  console.error('Global error caught:', event.error);
+  const root = document.getElementById('root');
+  if (root && !root.querySelector('.error-boundary')) {
+    root.innerHTML = `
+      <div class="error-boundary" style="padding: 20px; font-family: system-ui; background: #ffebee; color: #c62828;">
+        <h2>Application Error</h2>
+        <p>${event.error?.message || 'Unknown error occurred'}</p>
+        <details style="margin-top: 10px; cursor: pointer;">
+          <summary>Stack trace</summary>
+          <pre style="font-size: 12px; overflow: auto; background: white; padding: 10px; border-radius: 4px;">${event.error?.stack || 'No stack available'}</pre>
+        </details>
+      </div>
+    `;
+  }
+});
+
 // Debug logging
 console.log('Side panel script loading...');
 
@@ -14,9 +32,11 @@ if (root) {
   console.log('Rendering Notebook component...');
   try {
     createRoot(root).render(
-      <ToastProvider>
-        <Notebook />
-      </ToastProvider>
+      <React.StrictMode>
+        <ToastProvider>
+          <Notebook />
+        </ToastProvider>
+      </React.StrictMode>
     );
     console.log('Notebook component rendered successfully');
   } catch (error) {

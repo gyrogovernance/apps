@@ -69,11 +69,11 @@ ${Object.entries(insight.quality.specialization_scores).map(([key, value]) => `-
 
 ### Pathologies Detected
 
-${insight.quality.pathologies.detected.length > 0 
+${insight.quality?.pathologies?.detected && insight.quality.pathologies.detected.length > 0 
   ? insight.quality.pathologies.detected.map(p => `- ${p}`).join('\n')
   : '_None detected_'}
 
-**Frequency**: ${insight.quality.pathologies.frequency.toFixed(2)} (across epochs)
+**Frequency**: ${insight.quality?.pathologies?.frequency ? insight.quality.pathologies.frequency.toFixed(2) : '0.00'} (across epochs)
 
 ### Alignment Rate
 

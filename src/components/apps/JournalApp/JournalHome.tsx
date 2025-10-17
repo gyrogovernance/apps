@@ -2,6 +2,7 @@ import React from 'react';
 import { Session } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
 import { getSessionProgress, formatSessionDuration } from '../../../lib/session-utils';
+import { isSessionEmpty } from '../../../lib/validation';
 import { useToast } from '../../shared/Toast';
 import { useConfirm } from '../../shared/Modal';
 
@@ -95,21 +96,24 @@ const JournalHome: React.FC<JournalHomeProps> = ({
       setOperationLoading(null);
     }
   };
-  const activeSessions = sessions.filter(s => s.status === 'active' || s.status === 'paused');
-  const recentSessions = sessions
+  // Filter out empty sessions from display
+  const nonEmptySessions = sessions.filter(s => !isSessionEmpty(s));
+  
+  const activeSessions = nonEmptySessions.filter(s => s.status === 'active' || s.status === 'paused');
+  const recentSessions = nonEmptySessions
     .filter(s => s.status !== 'active' && s.status !== 'paused')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 5);
 
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+    <div className="max-w-5xl mx-auto p-3 mt-4">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
           <span>📓</span>
           <span>Journal</span>
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-gray-400 text-sm">
           Manage your active synthesis sessions and review recent work
         </p>
       </div>
