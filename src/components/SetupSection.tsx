@@ -180,7 +180,7 @@ const SetupSection: React.FC<SetupSectionProps> = ({ state, onUpdate, onNext }) 
         {/* Next Button */}
         <div className="flex justify-end pt-2">
           <button onClick={handleNext} className="btn-primary">
-            Continue to Synthesis →
+            Next →
           </button>
         </div>
       </div>

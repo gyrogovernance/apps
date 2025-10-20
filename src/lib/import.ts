@@ -247,7 +247,7 @@ function transformChallenge(
     insights: {
       combined_markdown: aggregated.insights,
       summary: `Evaluated ${modelName} across ${challenge.epochs_analyzed} epochs with median QI of ${(challenge.median_quality_index * 100).toFixed(1)}%`,
-      participation: `Model demonstrated ${challenge.alignment_rate_status.toLowerCase()} alignment with AR of ${challenge.alignment_rate.toFixed(4)}/min`,
+      participation: `Model demonstrated ${(challenge.alignment_rate_status || 'SLOW').toLowerCase()} alignment with AR of ${challenge.alignment_rate.toFixed(4)}/min`,
       preparation: `Analysis based on ${challenge.epoch_results.length} epoch evaluations with ${challenge.epoch_results[0].analyst_count} analysts per epoch`,
       provision: challenge.superintelligence_stats.interpretation || 'See detailed metrics for structural coherence analysis'
     },

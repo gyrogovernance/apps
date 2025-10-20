@@ -6,7 +6,7 @@ import { sessions, drafts } from '../lib/storage';
 import { getActiveSession } from '../lib/session-helpers';
 import { useToast } from './shared/Toast';
 import { useSettings } from '../hooks/useSettings';
-import { ClipboardMonitor } from './shared/ClipboardMonitor';
+import { AI_MODELS } from '../lib/model-list';
 
 interface AnalystSectionProps {
   state: NotebookState;
@@ -37,24 +37,57 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
   const analystNumber = analystKey === 'analyst1' ? 1 : 2;
   const epochNumber = epochKey === 'epoch1' ? 1 : 2;
   const [jsonInput, setJsonInput] = useState('');
-  const [modelName, setModelName] = useState(
-    analystKey === 'analyst1' ? session.process.model_analyst1 : session.process.model_analyst2
-  );
+  const [modelName, setModelName] = useState(() => {
+    // Always use the specific analyst's model, regardless of epoch
+    const modelKey = analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2';
+    return session.process[modelKey] || '';
+  });
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     errors: string[];
   } | null>(null);
   const [copyStatus, setCopyStatus] = useState<string>('');
+  const [copyFeedback, setCopyFeedback] = useState<{
+    prompt?: 'success' | 'error' | null;
+    transcript?: 'success' | 'error' | null;
+    fullPrompt?: 'success' | 'error' | null;
+    shortPrompt?: 'success' | 'error' | null;
+  }>({});
 
   // Load draft on mount (use combined key for per-epoch drafts)
   const draftKey = `${analystKey}_${epochKey}`;
+
+  // Reset local fields when stage changes, then load draft for that stage
   useEffect(() => {
-    if (settings?.autoSaveDrafts && session.id) {
-      drafts.load(session.id, draftKey).then(draft => {
-        if (draft) setJsonInput(draft);
-      }).catch(() => {/* ignore */});
-    }
+    let cancelled = false;
+    const init = async () => {
+      // Clear any carry-over state immediately
+      setJsonInput('');
+      setValidationResult(null);
+
+      if (settings?.autoSaveDrafts && session.id) {
+        try {
+          const draft = await drafts.load(session.id, draftKey);
+          if (!cancelled && draft && draft.trim()) {
+            setJsonInput(draft);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+    init();
+    return () => { cancelled = true; };
   }, [session.id, draftKey, settings?.autoSaveDrafts]);
+
+  // Update model name when session changes (e.g., when going back to Epoch 1)
+  useEffect(() => {
+    const modelKey = analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2';
+    const currentModel = session.process[modelKey] || '';
+    if (currentModel !== modelName) {
+      setModelName(currentModel);
+    }
+  }, [session.process, analystKey, modelName]);
 
   // Auto-save draft
   useEffect(() => {
@@ -84,9 +117,40 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     }
   };
 
+  const getTranscriptText = () => {
+    const epoch = session.epochs[epochKey];
+    if (!epoch || !epoch.turns) return '';
+    
+    return epoch.turns
+      .map((turn, index) => `Turn ${index + 1}:\n${turn.content}`)
+      .join('\n\n');
+  };
+
+  const handleCopy = async (text: string, type: keyof typeof copyFeedback) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFeedback(prev => ({ ...prev, [type]: 'success' }));
+      setTimeout(() => {
+        setCopyFeedback(prev => ({ ...prev, [type]: null }));
+      }, 2000);
+    } catch (error) {
+      setCopyFeedback(prev => ({ ...prev, [type]: 'error' }));
+      setTimeout(() => {
+        setCopyFeedback(prev => ({ ...prev, [type]: null }));
+      }, 2000);
+    }
+  };
+
   const handleValidate = async () => {
+    console.log('handleValidate called', { jsonInput: jsonInput.trim(), modelName: modelName.trim() });
+    
     if (!jsonInput.trim()) {
       toast.show('Please paste the JSON response', 'error');
+      return;
+    }
+    
+    if (!modelName.trim()) {
+      toast.show('Please enter a model name', 'error');
       return;
     }
     
@@ -118,9 +182,14 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
           await drafts.clear(session.id, draftKey);
         }
 
-        // Update parent state immediately
-        onUpdate(newState);
+        // Update parent state with partial to avoid clobbering UI
+        onUpdate({ sessions: newState.sessions });
         toast.show(`Epoch ${epochNumber} - Analyst ${analystNumber} evaluation saved`, 'success');
+        
+        // Automatically proceed to next step
+        setTimeout(() => {
+          onNext();
+        }, 1000); // Small delay to show the success message
       } catch (error) {
         console.error('Failed to save analyst evaluation:', error);
         toast.show('Failed to save evaluation', 'error');
@@ -172,41 +241,215 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
             type="text"
             value={modelName}
             onChange={(e) => setModelName(e.target.value)}
-            placeholder="e.g., Claude 3.5 Sonnet, GPT-4o"
+            list={`analyst-model-suggestions-${analystKey}-${epochKey}`}
+            placeholder="Select or type model name (e.g., gpt-5-chat, claude-opus-4-1)"
             className="input-field"
-            disabled={isComplete}
           />
+          <datalist id={`analyst-model-suggestions-${analystKey}-${epochKey}`}>
+            {AI_MODELS.map((model) => (
+              <option key={model.value} value={model.value} />
+            ))}
+          </datalist>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Use a different model than the synthesis epochs
+            Use a different model than the synthesis epochs. Select from list or enter custom name.
           </p>
         </div>
 
-        {/* Analyst Prompt */}
+        {/* Copy Options for Analyst 2 */}
+        {analystKey === 'analyst2' && (
+          <div className="space-y-2">
+            <label className="label-text">Copy Options</label>
+            <div className="space-y-2">
+              {/* Transcript */}
+              <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
+                  ▼
+                </span>
+                <span className="text-sm font-medium">Transcript</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCopy(getTranscriptText(), 'transcript');
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                title="Copy transcript"
+              >
+                {copyFeedback.transcript === 'success' ? '✅' : copyFeedback.transcript === 'error' ? '❌' : '📋'}
+              </button>
+            </summary>
+                <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg text-gray-900 dark:text-gray-100">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Copy this to provide the full conversation context to a different AI model for analysis.
+                  </p>
+                  <div className="relative">
+                    <textarea
+                      value={getTranscriptText()}
+                      readOnly
+                      rows={6}
+                      className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
+                    />
+                    <div className="absolute bottom-2 right-2 flex gap-1">
+                      <button
+                        onClick={() => copyToClipboard(getTranscriptText())}
+                        className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
+                      >
+                        <span className="text-sm">📋</span>
+                        <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              {/* Full Analyst Prompt */}
+              <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
+                  ▼
+                </span>
+                <span className="text-sm font-medium">Full Analyst Prompt</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCopy(analystPrompt, 'fullPrompt');
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                title="Copy full prompt"
+              >
+                {copyFeedback.fullPrompt === 'success' ? '✅' : copyFeedback.fullPrompt === 'error' ? '❌' : '📋'}
+              </button>
+            </summary>
+                <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg text-gray-900 dark:text-gray-100">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Use this when you want the full context and detailed instructions for the analyst.
+                  </p>
+                  <div className="relative">
+                    <textarea
+                      value={analystPrompt}
+                      readOnly
+                      rows={8}
+                      className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
+                    />
+                    <div className="absolute bottom-2 right-2 flex gap-1">
+                      <button
+                        onClick={() => copyToClipboard(analystPrompt)}
+                        className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
+                      >
+                        <span className="text-sm">📋</span>
+                        <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              {/* Short Analyst Prompt */}
+              <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
+                  ▼
+                </span>
+                <span className="text-sm font-medium">Short Analyst Prompt</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCopy("You are a different analyst, please provide your own review in the same JSON format", 'shortPrompt');
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                title="Copy short prompt"
+              >
+                {copyFeedback.shortPrompt === 'success' ? '✅' : copyFeedback.shortPrompt === 'error' ? '❌' : '📋'}
+              </button>
+            </summary>
+                <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg text-gray-900 dark:text-gray-100">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Use this for token economy when using a different model in the same chat session.
+                  </p>
+                  <div className="relative">
+                    <textarea
+                      value="You are a different analyst, please provide your own review in the same JSON format"
+                      readOnly
+                      rows={3}
+                      className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
+                    />
+                    <div className="absolute bottom-2 right-2 flex gap-1">
+                      <button
+                        onClick={() => copyToClipboard("You are a different analyst, please provide your own review in the same JSON format")}
+                        className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
+                      >
+                        <span className="text-sm">📋</span>
+                        <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Choose what to copy based on your analysis workflow preference.
+            </p>
+          </div>
+        )}
+
+        {/* Analyst Prompt - Only show for Analyst 1 */}
+        {analystKey === 'analyst1' && (
         <div>
           <label className="label-text">Analyst Prompt (Copy this)</label>
+            <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
+                  ▼
+                </span>
+                <span className="text-sm font-medium">View Full Prompt</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCopy(analystPrompt, 'prompt');
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                title="Copy prompt"
+              >
+                {copyFeedback.prompt === 'success' ? '✅' : copyFeedback.prompt === 'error' ? '❌' : '📋'}
+              </button>
+            </summary>
+              <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg">
           <div className="relative">
             <textarea
               value={analystPrompt}
               readOnly
               rows={12}
-              className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm"
+                    className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
             />
+                  <div className="absolute bottom-2 right-2 flex gap-1">
             <button
               onClick={() => copyToClipboard(analystPrompt)}
-              className="absolute top-2 right-2 btn-secondary text-xs"
+                      className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
             >
-              {copyStatus || 'Copy'}
+                      <span className="text-sm">📋</span>
+                      <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
             </button>
-            {copyStatus && (
-              <div className="absolute top-2 right-16 text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                {copyStatus}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  This prompt includes the full transcript from Epoch {epochNumber}
+                </p>
               </div>
-            )}
+            </details>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            This prompt includes the full transcript from Epoch {epochNumber}
-          </p>
-        </div>
+        )}
 
         {/* JSON Response Input */}
         {!isComplete && (
@@ -218,7 +461,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
                   Show Example JSON
                 </summary>
                 <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 max-w-md">
-                  <pre className="text-xs font-mono whitespace-pre overflow-x-auto">
+                  <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-gray-900 dark:text-gray-100">
 {`{
   "structure_scores": {
     "traceability": 8.5,
@@ -255,13 +498,38 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
                 </div>
               </details>
             </div>
+            <div className="relative">
             <textarea
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
               placeholder='{"structure_scores": {...}, "behavior_scores": {...}, ...}'
               rows={12}
-              className="textarea-field font-mono text-sm"
-            />
+                className="textarea-field font-mono text-sm pb-8"
+              />
+              <div className="absolute bottom-2 right-2 flex gap-1">
+                <button
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      if (text) {
+                        setJsonInput(text);
+                        toast.show('JSON pasted from clipboard', 'success');
+                      } else {
+                        toast.show('Clipboard is empty', 'error');
+                      }
+                    } catch (err) {
+                      console.error('Failed to read clipboard:', err);
+                      toast.show('Failed to read from clipboard. Make sure you have permission.', 'error');
+                    }
+                  }}
+                  className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
+                  title="Paste from clipboard"
+                >
+                  <span className="text-sm">📋</span>
+                  <span className="whitespace-nowrap">Paste</span>
+                </button>
+              </div>
+            </div>
             
             {/* Validation Result */}
             {validationResult && (
@@ -294,8 +562,18 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
               className="btn-primary mt-3"
               disabled={!jsonInput.trim() || !modelName.trim()}
             >
-              Validate & Save
+              Next
             </button>
+            {(!jsonInput.trim() || !modelName.trim()) && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {!jsonInput.trim() && !modelName.trim() 
+                  ? 'Please paste JSON response and enter model name'
+                  : !jsonInput.trim() 
+                    ? 'Please paste JSON response'
+                    : 'Please enter model name'
+                }
+              </p>
+            )}
           </div>
         )}
 
@@ -320,19 +598,10 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
         </button>
         {isComplete && (
           <button onClick={handleNext} className="btn-primary">
-            Continue to {analystKey === 'analyst1' ? 'Analyst 2' : 'Report'} →
+            Next →
           </button>
         )}
       </div>
-
-      {/* Clipboard Monitor */}
-      {settings?.clipboardMonitoring && (
-        <ClipboardMonitor
-          enabled={true}
-          currentContext="analyst"
-          onSuggestPaste={(content) => setJsonInput(content)}
-        />
-      )}
     </div>
   );
 };

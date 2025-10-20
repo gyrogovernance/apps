@@ -18,10 +18,10 @@ export const storage = {
       const result = await chromeAPI.storage.local.get([STORAGE_KEY, VERSION_KEY]);
       const storedVersion = result[VERSION_KEY];
       
-      // If version mismatch, clear old data and start fresh
+      // If version mismatch, clear notebook state but preserve insights
       if (storedVersion !== SCHEMA_VERSION) {
-        console.warn(`Schema version mismatch (stored: ${storedVersion}, current: ${SCHEMA_VERSION}). Clearing storage for clean start.`);
-        await chromeAPI.storage.local.clear();
+        console.warn(`Schema version mismatch (stored: ${storedVersion}, current: ${SCHEMA_VERSION}). Clearing notebook state only.`);
+        await chromeAPI.storage.local.remove(STORAGE_KEY);
         await chromeAPI.storage.local.set({ [VERSION_KEY]: SCHEMA_VERSION });
         return INITIAL_STATE;
       }

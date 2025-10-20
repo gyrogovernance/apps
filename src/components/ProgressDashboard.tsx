@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NotebookState, Section } from '../types';
 import { getActiveSession } from '../lib/session-helpers';
 
@@ -9,6 +9,7 @@ interface ProgressDashboardProps {
 
 const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate }) => {
   const session = getActiveSession(state);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Use session data if available, otherwise fall back to legacy state
   const sections = [
@@ -75,8 +76,19 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
   const progressPercent = (completedCount / sections.length) * 100;
   const currentSection = sections[currentIndex];
 
+  // Auto-scroll to show Epoch 2 and later sections
+  useEffect(() => {
+    if (scrollContainerRef.current && currentIndex >= 4) { // Epoch 2 starts at index 4
+      const container = scrollContainerRef.current;
+      container.scrollTo({
+        left: container.scrollWidth - container.clientWidth,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentIndex]);
+
   return (
-    <div className="space-y-2 mx-3 mb-3 mt-4">
+    <div className="space-y-2 mx-3 mb-2 mt-2">
       {/* Progress bar with percentage */}
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
@@ -98,7 +110,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
       </div>
 
       {/* Section indicators with icons */}
-      <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-thin">
+      <div ref={scrollContainerRef} className="flex gap-1 overflow-x-auto pb-1 scrollbar-thin">
         {sections.map((section, index) => (
           <button
             key={section.key}

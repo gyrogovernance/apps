@@ -1,11 +1,15 @@
 import React from 'react';
 import { NotebookState } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
+import { getNextSection } from '../../../lib/session-utils';
 import JournalHome from './JournalHome';
 import JournalTabs from './JournalTabs';
 import SessionView from './SessionView';
 import AnalysisView from './AnalysisView';
 import ReportSection from '../../ReportSection';
+import SetupSection from '../../SetupSection';
+import { Timer } from '../../shared/Timer';
+import ProgressDashboard from '../../ProgressDashboard';
 
 interface JournalAppProps {
   state: NotebookState;
@@ -79,22 +83,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
     const session = state.sessions.find(s => s.id === sessionId);
     if (!session) return;
 
-    // Determine which section to navigate to based on session progress
-    const epoch1Done = session.epochs.epoch1.completed;
-    const epoch2Done = session.epochs.epoch2.completed;
-    const a1e1Done = session.analysts.epoch1.analyst1.status === 'complete';
-    const a1e2Done = session.analysts.epoch2.analyst1.status === 'complete';
-    const a2e1Done = session.analysts.epoch1.analyst2.status === 'complete';
-    const a2e2Done = session.analysts.epoch2.analyst2.status === 'complete';
-
-    let targetSection: 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report' = 'epoch1';
-    if (!epoch1Done) targetSection = 'epoch1';
-    else if (!epoch2Done) targetSection = 'epoch2';
-    else if (!a1e1Done) targetSection = 'analyst1_epoch1';
-    else if (!a1e2Done) targetSection = 'analyst1_epoch2';
-    else if (!a2e1Done) targetSection = 'analyst2_epoch1';
-    else if (!a2e2Done) targetSection = 'analyst2_epoch2';
-    else targetSection = 'report';
+    // Use canonical getNextSection to determine target
+    const targetSection = getNextSection(session);
 
     // Update state with selected session and navigate to appropriate section
     // Note: Legacy analyst fields maintained for backward compatibility
@@ -119,8 +109,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
   };
 
   const renderContent = () => {
-    // Show JournalHome if no active session or on setup section
-    if (!state.activeSessionId || state.ui.currentSection === 'setup') {
+    // Show JournalHome if no active session
+    if (!state.activeSessionId) {
       return (
         <JournalHome
           sessions={state.sessions}
@@ -132,75 +122,92 @@ const JournalApp: React.FC<JournalAppProps> = ({
       );
     }
     
+    // Show Setup screen inside Journal when currentSection === 'setup'
+    if (state.ui.currentSection === 'setup') {
+      return (
+        <SetupSection
+          state={state}
+          onUpdate={onUpdate}
+          onNext={() => onNavigateToSection('epoch1')}
+        />
+      );
+    }
+    
     // Route to appropriate subview based on currentSection
     switch (state.ui.currentSection) {
       case 'epoch1':
         return (
           <SessionView
+            key={`${state.activeSessionId}-epoch1`}
             state={state}
             onUpdate={onUpdate}
             epochKey="epoch1"
-            onNext={() => onNavigateToSection('epoch2')}
+            onNext={() => onNavigateToSection('analyst1_epoch1')}
             onBack={handleNewSession}
+          />
+        );
+      
+      case 'analyst1_epoch1':
+        return (
+          <AnalysisView
+            key={`${state.activeSessionId}-analyst1-epoch1`}
+            state={state}
+            onUpdate={onUpdate}
+            analystKey="analyst1"
+            epochKey="epoch1"
+            onNext={() => onNavigateToSection('analyst2_epoch1')}
+            onBack={() => onNavigateToSection('epoch1')}
+          />
+        );
+      
+      case 'analyst2_epoch1':
+        return (
+          <AnalysisView
+            key={`${state.activeSessionId}-analyst2-epoch1`}
+            state={state}
+            onUpdate={onUpdate}
+            analystKey="analyst2"
+            epochKey="epoch1"
+            onNext={() => onNavigateToSection('epoch2')}
+            onBack={() => onNavigateToSection('analyst1_epoch1')}
           />
         );
       
       case 'epoch2':
         return (
           <SessionView
+            key={`${state.activeSessionId}-epoch2`}
             state={state}
             onUpdate={onUpdate}
             epochKey="epoch2"
-            onNext={() => onNavigateToSection('analyst1_epoch1')}
-            onBack={() => onNavigateToSection('epoch1')}
+            onNext={() => onNavigateToSection('analyst1_epoch2')}
+            onBack={() => onNavigateToSection('analyst2_epoch1')}
           />
         );
-    
-    case 'analyst1_epoch1':
-      return (
-        <AnalysisView
-          state={state}
-          onUpdate={onUpdate}
-          analystKey="analyst1"
-          epochKey="epoch1"
-          onNext={() => onNavigateToSection('analyst1_epoch2')}
-          onBack={() => onNavigateToSection('epoch2')}
-        />
-      );
     
     case 'analyst1_epoch2':
       return (
         <AnalysisView
+          key={`${state.activeSessionId}-analyst1-epoch2`}
           state={state}
           onUpdate={onUpdate}
           analystKey="analyst1"
           epochKey="epoch2"
-          onNext={() => onNavigateToSection('analyst2_epoch1')}
-          onBack={() => onNavigateToSection('analyst1_epoch1')}
-        />
-      );
-    
-    case 'analyst2_epoch1':
-      return (
-        <AnalysisView
-          state={state}
-          onUpdate={onUpdate}
-          analystKey="analyst2"
-          epochKey="epoch1"
           onNext={() => onNavigateToSection('analyst2_epoch2')}
-          onBack={() => onNavigateToSection('analyst1_epoch2')}
+          onBack={() => onNavigateToSection('epoch2')}
         />
       );
     
     case 'analyst2_epoch2':
       return (
         <AnalysisView
+          key={`${state.activeSessionId}-analyst2-epoch2`}
           state={state}
           onUpdate={onUpdate}
           analystKey="analyst2"
           epochKey="epoch2"
           onNext={() => onNavigateToSection('report')}
-          onBack={() => onNavigateToSection('analyst2_epoch1')}
+          onBack={() => onNavigateToSection('analyst1_epoch2')}
         />
       );
     
@@ -227,6 +234,48 @@ const JournalApp: React.FC<JournalAppProps> = ({
     }
   };
 
+  // Determine if we should show the timer (only for epoch sections)
+  const currentSection = state.ui.currentSection;
+  const showTimer = state.activeSessionId && (currentSection === 'epoch1' || currentSection === 'epoch2');
+  const timerEpochKey = currentSection === 'epoch1' ? 'epoch1' : 'epoch2';
+
+  // Handler to update duration when timer changes
+  const handleDurationChange = async (minutes: number) => {
+    if (!state.activeSessionId) return;
+    
+    try {
+      const session = state.sessions.find(s => s.id === state.activeSessionId);
+      if (!session) return;
+
+      // Guard: only persist if minutes actually changed
+      const current = session.epochs[timerEpochKey].duration_minutes;
+      if (minutes === current) return;
+
+      const newState = await sessionsStorage.update(state.activeSessionId, {
+        epochs: {
+          ...session.epochs,
+          [timerEpochKey]: {
+            ...session.epochs[timerEpochKey],
+            duration_minutes: minutes
+          }
+        }
+      });
+
+      // Update parent state with partial to avoid clobbering UI
+      onUpdate({ sessions: newState.sessions });
+    } catch (error) {
+      console.error('Failed to update duration:', error);
+    }
+  };
+
+  // Handler for ProgressDashboard navigation - converts Section to the specific subset
+  const handleProgressNavigation = (section: 'setup' | 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report') => {
+    // Only allow navigation to non-setup sections since setup is handled differently
+    if (section !== 'setup') {
+      onNavigateToSection(section);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Tab Bar - always show in Journal */}
@@ -237,6 +286,22 @@ const JournalApp: React.FC<JournalAppProps> = ({
         onCloseSession={handleCloseSession}
         onNewSession={handleNewSession}
       />
+      
+      {/* Progress Dashboard - show below tabs when there's an active session */}
+      {state.activeSessionId && (
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <ProgressDashboard state={state} onNavigate={handleProgressNavigation} />
+        </div>
+      )}
+      
+      {/* Timer - show below progress during epoch sections */}
+      {showTimer && (
+        <Timer 
+          sessionId={state.activeSessionId!}
+          epochKey={timerEpochKey}
+          onDurationChange={handleDurationChange}
+        />
+      )}
       
       {/* Content */}
       <div className="flex-1 overflow-auto">

@@ -27,6 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+
 // Keep service worker alive
 chrome.runtime.onConnect.addListener((port) => {
   port.onDisconnect.addListener(() => {

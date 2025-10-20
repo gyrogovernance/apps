@@ -19,6 +19,11 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
   const activeSessions = state.sessions.filter(s => s.status === 'active' || s.status === 'paused');
   const completedInsightsCount = state.sessions.filter(s => s.status === 'complete').length;
   const hasActiveSession = activeSessions.length > 0;
+  
+  // Get proper URL for extension assets
+  const stampUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL 
+    ? chrome.runtime.getURL('icons/gyrogovernance_stamp.png')
+    : 'dist/icons/gyrogovernance_stamp.png';
 
   // Load guide state from localStorage on mount
   React.useEffect(() => {
@@ -180,23 +185,41 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
       </div>
 
 
-      {/* Help Section */}
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-        <div className="flex items-start gap-3">
-          <span className="text-2xl">💡</span>
-          <div className="flex-1">
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-              Getting Started
-            </h4>
-            <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-              The GyroDiagnostics framework helps you evaluate AI models through structured challenges across 5 domains: 
-              Formal, Normative, Procedural, Strategic, and Epistemic.
-            </p>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 ml-4">
-              <li>• <strong>Participation:</strong> Select or create a challenge</li>
-              <li>• <strong>Preparation:</strong> Run 2 synthesis epochs (6 turns each)</li>
-              <li>• <strong>Provision:</strong> Evaluate with 2 analyst perspectives</li>
-            </ul>
+      {/* GyroGovernance Promo */}
+      <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+        <div className="text-center">
+          {/* Stamp at top */}
+          <img 
+            src={stampUrl}
+            alt="GyroGovernance" 
+            className="w-16 h-16 opacity-70 dark:opacity-60 mx-auto mb-3"
+          />
+          
+          {/* Description */}
+          <p className="text-sm text-indigo-800 dark:text-indigo-200 mb-3">
+            Explore the full GyroDiagnostics framework and connect with the governance research community.
+          </p>
+          
+          {/* Compact buttons */}
+          <div className="flex gap-2">
+            <a 
+              href="https://gyrogovernance.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex-1 px-2 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded transition-colors duration-200 flex items-center justify-center gap-1"
+            >
+              <span>🌐</span>
+              <span>Website</span>
+            </a>
+            <a 
+              href="https://github.com/gyrogovernance/apps" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex-1 px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 text-xs font-medium rounded transition-colors duration-200 flex items-center justify-center gap-1"
+            >
+              <span>📂</span>
+              <span>GitHub</span>
+            </a>
           </div>
         </div>
       </div>

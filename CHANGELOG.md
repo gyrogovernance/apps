@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.2-Alpha] - 2025-10-20
+
+### Fixed
+
+**Critical Journal Flow Issues**
+- **Fixed "Save Turn 1" navigation stall**: Turns now save and automatically advance to the next turn without UI freezing
+- **Corrected step order**: Journal now follows proper sequence → Epoch 1 → Analyst 1 (E1) → Analyst 2 (E1) → Epoch 2 → Analyst 1 (E2) → Analyst 2 (E2) → Report (was incorrectly routing to analysts after both epochs)
+- **Fixed state updates**: Session updates now use partial state (`{ sessions }` only) to prevent UI routing clobber during turn saves
+- **Fixed button labels**: Analyst sections now show correct next step ("Continue to Epoch 2" for Analyst 2 in Epoch 1, "Continue to Report" for Analyst 2 in Epoch 2)
+
+**Timer & Duration Improvements**
+- **Precise timing capture**: Timer now records duration with 2-decimal precision (e.g., 15.75 minutes) instead of rounding, critical for accurate Alignment Rate calculations
+- **Reduced storage spam**: Timer only persists when minute value changes (not every second)
+- **Auto-stop on completion**: Timer automatically stops and captures duration when 6th turn is saved
+- **Human-readable format**: Duration displayed and editable in `mm:ss` format (e.g., "15:45") with automatic conversion to decimal minutes for calculations
+- **User control restored**: Duration field is now editable with format validation, allowing manual corrections
+
+**UX Polish**
+- **Setup screen in Journal**: Fixed rendering to show SetupSection when `currentSection === 'setup'` inside Journal tabs
+- **Cleaner completion screen**: Removed redundant instructions after all 6 turns complete (instructions only show during turn collection)
+- **Back button restored**: Users can navigate back at any stage to review pasted turns (removed blocking behavior)
+- **Dark mode text**: Fixed duration display to properly switch colors between light/dark modes
+
+**Data Integrity**
+- **Safe schema migration**: Version mismatches now only clear `notebook_state`, preserving `insights_library` and other stored data
+- **Fixed Export mapping**: GyroDiagnostics JSON export now uses correct field paths (`process.durations`, `quality.pathologies.detected`, `insights.combined_markdown`)
+- **Clipboard monitoring default**: Aligned default value to `true` across all components (matches UI copy "Enabled by Default")
+
+**Code Quality**
+- **Removed unused imports**: Cleaned up Notebook.tsx (removed SetupSection, SynthesisSection, AnalystSection, ReportSection, ProgressDashboard)
+- **Canonical navigation**: Journal now uses `getNextSection()` helper for consistent routing logic
+
+**Button & UI Improvements**
+- **Simplified navigation buttons**: All "Continue to..." buttons now simply say "Continue →" for cleaner UI
+- **Fixed button positioning**: Copy/paste buttons moved to bottom of textareas with proper spacing (no text overlap)
+- **Enhanced button visibility**: Added borders and shadows to copy/paste buttons to prevent blending with field backgrounds
+- **Stable button behavior**: Fixed buttons moving when clicked by adding fixed width and preventing layout shifts
+- **Removed duplicate status messages**: Eliminated redundant green modals, keeping only button text feedback
+
+**Analyst Section Enhancements**
+- **Automatic progression**: "Validate & Continue" button now automatically proceeds after successful validation (no double-clicking)
+- **Model field reset**: Analyst 2 model field now starts empty, encouraging different model selection
+- **Flexible copy options for Analyst 2**: Added three copy buttons (Transcript, Full Analyst Prompt, Short Analyst Prompt) for different workflow preferences
+- **Hidden full prompt for Analyst 2**: Cleaner UI by hiding verbose prompt display, replaced with copy options
+- **Better error messaging**: Clear helper text shows exactly what's missing when validation button is disabled
+
+**Clipboard & Paste Improvements**
+- **Removed clipboard monitoring**: Eliminated automatic clipboard detection and modal popups for cleaner manual workflow
+- **Enhanced paste buttons**: Added paste functionality to all text input areas with consistent styling
+- **Dark mode JSON example**: Fixed "Show Example JSON" box to properly display in dark mode
+- **Improved button organization**: All copy/paste buttons positioned at bottom of fields with proper spacing
+
+**State Management & Phantom Data Fixes**
+- **Fixed phantom JSON data**: Resolved issue where Analyst 2 would show previous analyst's data due to React state reuse
+- **Component remounting**: Added unique keys to AnalysisView components to force fresh state on navigation
+- **Reset effect**: Added state clearing when switching between analyst steps to prevent data carryover
+- **Draft loading safety**: Enhanced draft loading with better validation to prevent cross-contamination
+- **Complete state isolation**: Each analyst step now maintains completely independent state
+
+**Report Section Dark Mode & UI Enhancements**
+- **Complete dark mode support**: Fixed all text color issues in ReportSection for proper dark theme display
+- **Enhanced Quality Validation block**: Redesigned with color-coded gradient cards (blue, purple, emerald themes)
+- **Improved visual hierarchy**: Larger text, better spacing, and professional gradient backgrounds
+- **Responsive detailed scores**: Structure and Behavior score cards now stack on mobile, side-by-side on desktop
+- **Better information design**: Added visual indicators, score badges, and improved technical details popup
+- **Enhanced mobile experience**: Full responsive design with proper breakpoints and touch-friendly spacing
+
+**Collapsible UI Improvements**
+- **Consistent collapsible design**: Applied unified collapsible style across SynthesisSection and AnalystSection
+- **Visual feedback**: Added copy success/error indicators (✅/❌) for all copy buttons
+- **Better organization**: Arrow indicators on left, copy buttons on right for intuitive interaction
+- **Explanatory text**: Added helpful descriptions for Analyst 2 copy options (Transcript, Full Prompt, Short Prompt)
+- **Dark mode compatibility**: All collapsible content properly styled for both light and dark themes
+
+### Changed
+- **Version updated**: Manifest and About screen now show v0.2.1 (was incorrectly v0.1.0/v0.1.1)
+- **Button text simplified**: All navigation buttons now use consistent "Continue →" format
+- **Analyst 2 workflow**: Streamlined with copy options instead of full prompt display
+- **Report section design**: Upgraded from basic cards to professional gradient-based design with better visual hierarchy
+
+---
+
 ## [0.2.1-Alpha] - 2025-10-17
 
 ### Added

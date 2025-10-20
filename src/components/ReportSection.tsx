@@ -307,7 +307,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
     return (
       <div className="section-card">
         <div className="text-center py-8">
-          <div className="text-gray-600">Generating report...</div>
+          <div className="text-gray-600 dark:text-gray-400">Generating report...</div>
         </div>
       </div>
     );
@@ -317,7 +317,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
     return (
       <div className="section-card">
         <div className="text-center py-8">
-          <div className="text-red-600">Error generating report</div>
+          <div className="text-red-600 dark:text-red-400">Error generating report</div>
           <button onClick={onBack} className="btn-secondary mt-4">
             ← Back
           </button>
@@ -330,112 +330,169 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
     <div className="space-y-4">
       {/* Header Card */}
       <div className="section-card">
-        <h2 className="text-2xl font-bold mb-2">{insight.challenge.title}</h2>
-        <div className="flex gap-2 text-sm text-gray-600">
-          <span className="px-2 py-1 bg-gray-100 rounded">{insight.challenge.type}</span>
+        <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">{insight.challenge.title}</h2>
+        <div className="flex gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded">{insight.challenge.type}</span>
           {insight.challenge.domain.map(d => (
-            <span key={d} className="px-2 py-1 bg-blue-100 text-blue-800 rounded">{d}</span>
+            <span key={d} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{d}</span>
           ))}
         </div>
       </div>
 
       {/* Quality Metrics Overview */}
       <div className="section-card">
-        <h3 className="text-lg font-semibold mb-4">Quality Validation</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Quality Validation</h3>
         
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="text-center p-4 bg-gray-50 rounded">
-            <div className="text-3xl font-bold text-primary">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Quality Index */}
+          <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 rounded-lg border border-blue-200 dark:border-blue-700 shadow-sm">
+            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
               {insight.quality.quality_index.toFixed(1)}%
             </div>
-            <div className="text-sm text-gray-600">Quality Index</div>
+            <div className="text-sm font-medium text-blue-800 dark:text-blue-300">Quality Index</div>
+            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              Overall performance score
+            </div>
           </div>
           
-          <div className="text-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded">
-            <div className="text-3xl font-bold text-primary">
+          {/* Superintelligence Index */}
+          <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 rounded-lg border border-purple-200 dark:border-purple-700 shadow-sm">
+            <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
               {isNaN(insight.quality.superintelligence_index) ? 'N/A' : insight.quality.superintelligence_index.toFixed(2)}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">SI Index</div>
-            <details className="text-xs text-left">
-              <summary className="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline text-center">
-                Details
+            <div className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-3">SI Index</div>
+            <details className="text-xs">
+              <summary className="cursor-pointer text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                Technical Details
               </summary>
-              <div className="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
-                <p>Target Aperture: 0.020701 (K=4)</p>
-                <p>Deviation: {isNaN(insight.quality.si_deviation) ? 'N/A' : `${insight.quality.si_deviation.toFixed(2)}×`}</p>
-                <p className="text-xs mt-1">
+              <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded border border-purple-200 dark:border-purple-600 text-left space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Target Aperture:</span>
+                  <span className="font-mono text-gray-900 dark:text-gray-100">0.020701 (K=4)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Deviation:</span>
+                  <span className="font-mono text-gray-900 dark:text-gray-100">
+                    {isNaN(insight.quality.si_deviation) ? 'N/A' : `${insight.quality.si_deviation.toFixed(2)}×`}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-600">
                   {isNaN(insight.quality.superintelligence_index) 
                     ? 'SI requires all 6 behavior metrics to be numeric (no N/A values)'
                     : 'Measures behavior score spread via K4 spherical geometry'}
-                </p>
+                </div>
               </div>
             </details>
           </div>
           
-          <div className="text-center p-4 bg-gray-50 rounded">
-            <div className={`text-xl font-bold ${
-              insight.quality.alignment_rate_category === 'VALID' ? 'text-green-600' :
-              insight.quality.alignment_rate_category === 'SLOW' ? 'text-yellow-600' :
-              'text-orange-600'
+          {/* Alignment Rate */}
+          <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/20 rounded-lg border border-emerald-200 dark:border-emerald-700 shadow-sm">
+            <div className={`text-3xl font-bold mb-2 ${
+              insight.quality.alignment_rate_category === 'VALID' ? 'text-emerald-600 dark:text-emerald-400' :
+              insight.quality.alignment_rate_category === 'SLOW' ? 'text-amber-600 dark:text-amber-400' :
+              'text-orange-600 dark:text-orange-400'
             }`}>
               {insight.quality.alignment_rate_category}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-1">
               {insight.quality.alignment_rate.toFixed(4)}/min
+            </div>
+            <div className="text-xs text-emerald-600 dark:text-emerald-400">
+              Quality points per minute
             </div>
           </div>
         </div>
 
         {/* Detailed Scores */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Structure */}
-          <div className="border rounded p-3">
-            <h4 className="font-medium mb-2">Structure Scores</h4>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span>Traceability</span>
-                <span className="font-medium">{insight.quality.structure_scores.traceability.toFixed(1)}/10</span>
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg p-4 shadow-sm">
+            <h4 className="font-semibold mb-3 text-slate-900 dark:text-slate-100 flex items-center">
+              <div className="w-2 h-2 bg-slate-500 dark:bg-slate-400 rounded-full mr-2"></div>
+              Structure Scores
+            </h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-700 dark:text-slate-300">Traceability</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+                  {insight.quality.structure_scores.traceability.toFixed(1)}/10
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span>Variety</span>
-                <span className="font-medium">{insight.quality.structure_scores.variety.toFixed(1)}/10</span>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-700 dark:text-slate-300">Variety</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+                  {insight.quality.structure_scores.variety.toFixed(1)}/10
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span>Accountability</span>
-                <span className="font-medium">{insight.quality.structure_scores.accountability.toFixed(1)}/10</span>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-700 dark:text-slate-300">Accountability</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+                  {insight.quality.structure_scores.accountability.toFixed(1)}/10
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span>Integrity</span>
-                <span className="font-medium">{insight.quality.structure_scores.integrity.toFixed(1)}/10</span>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-700 dark:text-slate-300">Integrity</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+                  {insight.quality.structure_scores.integrity.toFixed(1)}/10
+                </span>
               </div>
             </div>
           </div>
 
           {/* Behavior */}
-          <div className="border rounded p-3">
-            <h4 className="font-medium mb-2">Behavior Scores</h4>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Truthfulness</span><span className="font-medium">{insight.quality.behavior_scores.truthfulness.toFixed(1)}/10</span></div>
-              <div className="flex justify-between"><span>Completeness</span><span className="font-medium">{insight.quality.behavior_scores.completeness.toFixed(1)}/10</span></div>
-              <div className="flex justify-between"><span>Groundedness</span><span className="font-medium">{insight.quality.behavior_scores.groundedness.toFixed(1)}/10</span></div>
-              <div className="flex justify-between"><span>Literacy</span><span className="font-medium">{insight.quality.behavior_scores.literacy.toFixed(1)}/10</span></div>
-              <div className="flex justify-between"><span>Comparison</span><span className="font-medium">
-                {typeof insight.quality.behavior_scores.comparison === 'number' ? insight.quality.behavior_scores.comparison.toFixed(1) : 'N/A'}/10
-              </span></div>
-              <div className="flex justify-between"><span>Preference</span><span className="font-medium">
-                {typeof insight.quality.behavior_scores.preference === 'number' ? insight.quality.behavior_scores.preference.toFixed(1) : 'N/A'}/10
-              </span></div>
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/20 border border-indigo-200 dark:border-indigo-600 rounded-lg p-4 shadow-sm">
+            <h4 className="font-semibold mb-3 text-indigo-900 dark:text-indigo-100 flex items-center">
+              <div className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full mr-2"></div>
+              Behavior Scores
+            </h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-indigo-700 dark:text-indigo-300">Truthfulness</span>
+                <span className="font-semibold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded">
+                  {insight.quality.behavior_scores.truthfulness.toFixed(1)}/10
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-indigo-700 dark:text-indigo-300">Completeness</span>
+                <span className="font-semibold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded">
+                  {insight.quality.behavior_scores.completeness.toFixed(1)}/10
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-indigo-700 dark:text-indigo-300">Groundedness</span>
+                <span className="font-semibold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded">
+                  {insight.quality.behavior_scores.groundedness.toFixed(1)}/10
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-indigo-700 dark:text-indigo-300">Literacy</span>
+                <span className="font-semibold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded">
+                  {insight.quality.behavior_scores.literacy.toFixed(1)}/10
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-indigo-700 dark:text-indigo-300">Comparison</span>
+                <span className="font-semibold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded">
+                  {typeof insight.quality.behavior_scores.comparison === 'number' ? insight.quality.behavior_scores.comparison.toFixed(1) : 'N/A'}/10
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-indigo-700 dark:text-indigo-300">Preference</span>
+                <span className="font-semibold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded">
+                  {typeof insight.quality.behavior_scores.preference === 'number' ? insight.quality.behavior_scores.preference.toFixed(1) : 'N/A'}/10
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Pathologies */}
         {insight.quality?.pathologies?.detected && insight.quality.pathologies.detected.length > 0 && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <h4 className="font-medium text-yellow-900 mb-2">Detected Pathologies</h4>
+          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded">
+            <h4 className="font-medium text-yellow-900 dark:text-yellow-200 mb-2">Detected Pathologies</h4>
             <div className="flex flex-wrap gap-2">
               {insight.quality.pathologies.detected.map(p => (
-                <span key={p} className="px-2 py-1 bg-yellow-100 text-yellow-800 text-sm rounded">
+                <span key={p} className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-sm rounded">
                   {p}
                 </span>
               ))}
@@ -446,13 +503,13 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
 
       {/* Insights Preview */}
       <div className="section-card">
-        <h3 className="text-lg font-semibold mb-3">Insights</h3>
+        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Insights</h3>
         <div className="prose max-w-none text-sm">
           <details>
-            <summary className="cursor-pointer font-medium text-primary mb-2">
+            <summary className="cursor-pointer font-medium text-primary dark:text-blue-400 mb-2">
               View Combined Insights
             </summary>
-            <div className="mt-3 p-4 bg-gray-50 rounded max-h-96 overflow-y-auto whitespace-pre-wrap">
+            <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-800 rounded max-h-96 overflow-y-auto whitespace-pre-wrap text-gray-900 dark:text-gray-100">
               {insight.insights.combined_markdown}
             </div>
           </details>
@@ -496,7 +553,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
               onClick={handleNextChallenge}
               className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors text-lg"
             >
-              Continue to Next Challenge ({['Normative', 'Procedural', 'Strategic', 'Epistemic'][state.gyroSuiteCurrentIndex]}) →
+              Next →
             </button>
           ) : (
             <button
@@ -511,7 +568,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
 
       {/* Export Actions */}
       <div className="section-card">
-        <h3 className="text-lg font-semibold mb-3">Export & Share</h3>
+        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Export & Share</h3>
         <div className="grid grid-cols-3 gap-3">
           <button onClick={handleDownloadJSON} className="btn-primary">
             Download JSON
@@ -523,7 +580,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
             Share to GitHub
           </button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
           Contributions are published under CC0 license to the public knowledge base
         </p>
       </div>

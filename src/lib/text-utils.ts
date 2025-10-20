@@ -52,9 +52,11 @@ export function formatWordTokenCount(words: number): string {
  * e.g., "sycophantic_agreement" → "Sycophantic Agreement"
  */
 export function formatPathologyName(pathology: string): string {
+  if (!pathology) return '';
   return pathology
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map(word => word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '')
+    .filter(word => word.length > 0)
     .join(' ');
 }
 

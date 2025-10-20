@@ -127,7 +127,7 @@ export function downloadFile(filename: string, content: string, mimeType: string
  */
 export function generateFilename(title: string, extension: string): string {
   const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-  const cleanTitle = title
+  const cleanTitle = (title || 'untitled')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
     .slice(0, 50);

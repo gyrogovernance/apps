@@ -11,11 +11,6 @@ import InsightsApp from './apps/InsightsApp/InsightsApp';
 import JournalApp from './apps/JournalApp/JournalApp';
 import { SettingsApp } from './apps/SettingsApp';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import SetupSection from './SetupSection';
-import SynthesisSection from './SynthesisSection';
-import AnalystSection from './AnalystSection';
-import ReportSection from './ReportSection';
-import ProgressDashboard from './ProgressDashboard';
 
 const Notebook: React.FC = () => {
   const [state, setState] = useState<NotebookState>(INITIAL_STATE);
@@ -141,7 +136,7 @@ const Notebook: React.FC = () => {
         ui: {
           ...freshState.ui,
           currentApp: 'journal',
-          currentSection: 'epoch1'
+          currentSection: 'setup'
         }
       });
       
@@ -205,7 +200,7 @@ const Notebook: React.FC = () => {
         ui: {
           ...freshState.ui,
           currentApp: 'journal',
-          currentSection: 'epoch1'
+          currentSection: 'setup'
         }
       });
       
@@ -284,12 +279,6 @@ const Notebook: React.FC = () => {
         onNavigateHome={() => navigateToApp('welcome')}
       />
 
-      {/* Progress Dashboard - only show for journal app */}
-      {state.ui.currentApp === 'journal' && (
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex-shrink-0">
-          <ProgressDashboard state={state} onNavigate={navigateToSection} />
-        </div>
-      )}
 
       {/* Main Content - Scrollable */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">

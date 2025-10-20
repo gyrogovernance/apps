@@ -36,6 +36,8 @@ export function useKeyboardShortcuts(shortcuts: Shortcuts, enabled: boolean = tr
       if (e.shiftKey) parts.push('shift');
       if (e.altKey) parts.push('alt');
       
+      // Guard against undefined key
+      if (!e.key) return;
       const key = e.key.toLowerCase();
       parts.push(key);
       

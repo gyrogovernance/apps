@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { chromeAPI } from '../lib/chrome-mock';
 
 export interface Settings {
-  clipboardMonitoring: boolean;
   autoSaveDrafts: boolean;
   darkMode: 'auto' | 'light' | 'dark';
   defaultPlatform: string;
@@ -10,7 +9,6 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  clipboardMonitoring: false,
   autoSaveDrafts: true,
   darkMode: 'auto',
   defaultPlatform: 'custom',

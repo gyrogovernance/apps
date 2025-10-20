@@ -6,7 +6,6 @@ import { importGyroDiagnostics } from '../../lib/import';
 import { insights as insightsStorage } from '../../lib/storage';
 
 interface Settings {
-  clipboardMonitoring: boolean;
   autoSaveDrafts: boolean;
   darkMode: 'auto' | 'light' | 'dark';
   defaultPlatform: string;
@@ -14,7 +13,6 @@ interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  clipboardMonitoring: true,
   autoSaveDrafts: true,
   darkMode: 'auto',
   defaultPlatform: 'custom',
@@ -69,35 +67,49 @@ export const SettingsApp: React.FC = () => {
       const modelData: any = {};
       
       insights.forEach((insight: any) => {
-        const modelName = insight.metadata?.model_name || 'Unknown Model';
-        const challengeType = insight.metadata?.challenge_type || insight.challenge?.type || 'unknown';
+        const modelName = insight.process?.models_used?.synthesis_epoch1
+                       || insight.process?.models_used?.synthesis_epoch2
+                       || insight.metadata?.model_name
+                       || 'Unknown Model';
+        const challengeType = insight.challenge?.type || insight.metadata?.challenge_type || 'custom';
         
         if (!modelData[modelName]) {
           modelData[modelName] = {};
         }
         
+        // Build pathology counts from detected names
+        const counts: Record<string, number> = {};
+        (insight.quality?.pathologies?.detected || []).forEach((p: string) => {
+          counts[p] = (counts[p] || 0) + 1;
+        });
+        
+        const qiNorm = (insight.quality?.quality_index || 0) / 100;
+        const d1 = insight.process?.durations?.epoch1_minutes || 0;
+        const d2 = insight.process?.durations?.epoch2_minutes || 0;
+        const medianDuration = [d1, d2].sort((a: number, b: number) => a - b)[Math.floor([d1, d2].length / 2)];
+        
         // Create GyroDiagnostics challenge structure
         modelData[modelName][challengeType] = {
           challenge_type: challengeType,
           task_name: `${challengeType}_challenge`,
-          median_quality_index: insight.quality.quality_index / 100,
-          alignment_rate: insight.quality.alignment_rate,
-          alignment_rate_status: insight.quality.alignment_rate_category,
+          median_quality_index: qiNorm,
+          median_duration_minutes: medianDuration,
+          alignment_rate: insight.quality?.alignment_rate || 0,
+          alignment_rate_status: insight.quality?.alignment_rate_category || 'SLOW',
           superintelligence_stats: {
-            median_superintelligence_index: insight.quality.superintelligence_index,
-            median_deviation_factor: insight.quality.si_deviation,
+            median_superintelligence_index: insight.quality?.superintelligence_index ?? NaN,
+            median_deviation_factor: insight.quality?.si_deviation ?? NaN,
             target_aperture: 0.020701
           },
-          median_duration_minutes: insight.quality.duration_minutes,
-          pathology_counts: insight.pathology_frequency || {},
+          pathology_counts: counts,
           epochs_analyzed: insight.metadata?.epochs_analyzed || 2,
           epoch_results: [
             {
-              structure_scores: insight.structure_scores,
-              behavior_scores: insight.behavior_scores,
-              specialization_scores: insight.specialization_scores,
-              pathologies: insight.pathologies || [],
-              insights: insight.insights || '',
+              structure_scores: insight.quality?.structure_scores || {},
+              behavior_scores: insight.quality?.behavior_scores || {},
+              specialization_scores: insight.quality?.specialization_scores || {},
+              pathologies: insight.quality?.pathologies?.detected || [],
+              insights: insight.insights?.combined_markdown || '',
               analyst_count: 2
             }
           ]
@@ -106,12 +118,13 @@ export const SettingsApp: React.FC = () => {
       
       // Export each model as a separate file
       for (const [modelName, data] of Object.entries(modelData)) {
+        if (!modelName) continue; // Skip undefined model names
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const filename = modelName.toLowerCase().replace(/\s+/g, '_');
+        const filename = (modelName || 'unknown_model').toLowerCase().replace(/\s+/g, '_');
         a.download = `${filename}_analysis_data.json`;
         a.click();
         URL.revokeObjectURL(url);
@@ -187,32 +200,6 @@ export const SettingsApp: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {/* Smart Paste Detection */}
-        <div className="p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                Smart Paste Detection (Experimental)
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                Automatically detect when you copy AI responses or analyst JSON from your clipboard
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                ⚠️ Requires clipboard read permission. May not work in all browsers.
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer ml-4">
-              <input
-                type="checkbox"
-                checked={settings.clipboardMonitoring}
-                onChange={(e) => updateSetting('clipboardMonitoring', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-
         {/* Auto-save Drafts */}
         <div className="p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-start justify-between">
@@ -321,7 +308,7 @@ export const SettingsApp: React.FC = () => {
             📖 About GyroDiagnostics
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            AI-Empowered Governance Apps v0.1.1
+            AI-Empowered Governance Apps v0.2.1
           </p>
           <p className="text-xs text-gray-600 dark:text-gray-400">
             Open-source framework for evaluating AI models through structured governance challenges.
