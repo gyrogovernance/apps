@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+**Documentation**
+- Comprehensive [GyroGovernance Apps General Specifications](docs/GyroGovernance_Apps_General_Specs.md) document
+- High-level architecture overview and user journey mapping
+- Technical specifications and integration points documentation
+- Future roadmap and development guidelines
+
 **Welcome Screen Improvements**
 - Official GyroDiagnostics results import functionality with direct link to [GitHub repository](https://github.com/gyrogovernance/diagnostics)
 - One-click import of pre-evaluated insights from frontier models (GPT-4o, Claude Sonnet 4.5, Grok-4)

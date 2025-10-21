@@ -23,7 +23,8 @@
 
 ---
 
-# 🌍 AI-Empowered Participatory Governance
+![Ai Inspector Browser Extension](/assets/ai_inspector_cover.jpg)
+# 🌍 Ai Inspector - Browser Extension
 
 **Transform everyday AI conversations into rigorous governance analysis.** This browser extension validates AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
@@ -104,7 +105,15 @@ Export validated findings to contribute to open governance research under CC0 li
 **Communities**: Evidence-based policy development  
 **Researchers**: Reproducible governance experiments  
 **Policy Makers**: Quality assessment of AI recommendations  
-**NGOs**: Validated advocacy proposals  
+**NGOs**: Validated advocacy proposals
+
+## 📖 Documentation
+
+- **[General Specifications](docs/GyroGovernance_Apps_General_Specs.md)** - Comprehensive overview of architecture, features, and user journey
+- **[GyroDiagnostics Specs](docs/GyroDiagnostics_General_Specs.md)** - Core evaluation methodology and metrics
+- **[Import/Export Guide](docs/IMPORT_EXPORT.md)** - Data management and migration
+- **[Developer Guide](DEV_GUIDE.md)** - Technical implementation details
+
 **Citizens**: Direct participation in AI governance
 
 ---
