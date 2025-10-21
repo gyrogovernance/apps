@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI-Empowered Governance Apps",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "Generate validated insights on governance challenges through structured AI-empowered processes",
   "permissions": [
     "storage",

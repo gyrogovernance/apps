@@ -1,6 +1,6 @@
 {
   "name": "aiempowered-governance-lab",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "Generate validated insights on governance challenges through structured AI-empowered processes",
   "scripts": {
     "dev": "webpack --mode development --watch",
