@@ -13,8 +13,8 @@ export const AI_MODELS: ModelInfo[] = [
   { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite', company: 'Google' },
   
   // Meta
-  { value: 'lama-4-maverick-17b-128e-instruct', label: 'Lama 4 Maverick 17B 128E Instruct', company: 'Meta' },
-  { value: 'lama-4-scout-17b-16e-instruct', label: 'Lama 4 Scout 17B 16E Instruct', company: 'Meta' },
+  { value: 'llama-4-maverick-17b-128e-instruct', label: 'llama 4 Maverick 17B 128E Instruct', company: 'Meta' },
+  { value: 'llama-4-scout-17b-16e-instruct', label: 'llama 4 Scout 17B 16E Instruct', company: 'Meta' },
   
   // Anthropic
   { value: 'claude-opus-4-1-20250805-thinking-16k', label: 'Claude Opus 4.1 (Thinking 16K)', company: 'Anthropic' },

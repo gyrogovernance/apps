@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { NotebookState } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
 import { getNextSection } from '../../../lib/session-utils';
+import { getActiveSession, getSessionById } from '../../../lib/session-helpers';
 import JournalHome from './JournalHome';
 import JournalTabs from './JournalTabs';
 import SessionView from './SessionView';
 import AnalysisView from './AnalysisView';
 import ReportSection from '../../ReportSection';
-import SetupSection from '../../SetupSection';
 import { Timer } from '../../shared/Timer';
 import ProgressDashboard from '../../ProgressDashboard';
 
@@ -26,7 +26,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
 }) => {
   const handleCloseSession = async (sessionId: string) => {
     try {
-      const session = state.sessions.find(s => s.id === sessionId);
+      const session = getSessionById(state, sessionId);
       if (!session) return;
 
       const isClosingActiveSession = sessionId === state.activeSessionId;
@@ -37,14 +37,15 @@ const JournalApp: React.FC<JournalAppProps> = ({
         
         // If we're closing the active session, navigate to home but keep tabs visible
         if (isClosingActiveSession) {
-          onUpdate({
-            ...newState,
-            activeSessionId: undefined,
-            ui: {
-              ...state.ui,
-              currentSection: 'setup'
-            }
-          });
+        onUpdate({
+          ...newState,
+          activeSessionId: undefined,
+          ui: {
+            ...state.ui,
+            currentSection: 'epoch1',
+            journalView: 'home'
+          }
+        });
         } else {
           onUpdate(newState);
         }
@@ -67,7 +68,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
           activeSessionId: otherActiveSession?.id,
           ui: {
             ...state.ui,
-            currentSection: otherActiveSession ? state.ui.currentSection : 'setup'
+            currentSection: otherActiveSession ? state.ui.currentSection : 'epoch1',
+            journalView: otherActiveSession ? 'session' : 'home'
           }
         });
       } else {
@@ -80,23 +82,15 @@ const JournalApp: React.FC<JournalAppProps> = ({
 
   const handleSelectSession = (sessionId: string) => {
     // Load the session and determine where to navigate
-    const session = state.sessions.find(s => s.id === sessionId);
+    const session = getSessionById(state, sessionId);
     if (!session) return;
 
     // Use canonical getNextSection to determine target
     const targetSection = getNextSection(session);
 
     // Update state with selected session and navigate to appropriate section
-    // Note: Legacy analyst fields maintained for backward compatibility
     onUpdate({
       activeSessionId: sessionId,
-      challenge: session.challenge,
-      process: session.process,
-      epochs: session.epochs,
-      analysts: {
-        analyst1: session.analysts.epoch1.analyst1.data,
-        analyst2: session.analysts.epoch2.analyst2.data
-      },
       ui: {
         ...state.ui,
         currentSection: targetSection
@@ -109,7 +103,32 @@ const JournalApp: React.FC<JournalAppProps> = ({
   };
 
   const renderContent = () => {
-    // Show JournalHome if no active session
+    // NEW: Force Home when journalView says so (regardless of activeSessionId)
+    if (state.ui.journalView === 'home') {
+      return (
+        <JournalHome
+          sessions={state.sessions}
+          activeSessionId={state.activeSessionId}
+          onSelectSession={(sessionId) => {
+            const session = getSessionById(state, sessionId);
+            if (!session) return;
+            const targetSection = getNextSection(session);
+            onUpdate({
+              activeSessionId: sessionId,
+              ui: { 
+                ...state.ui, 
+                currentSection: targetSection, 
+                journalView: 'session' 
+              }
+            });
+          }}
+          onNewSession={handleNewSession}
+          onUpdate={onUpdate}
+        />
+      );
+    }
+
+    // Show JournalHome if no active session (fallback)
     if (!state.activeSessionId) {
       return (
         <JournalHome
@@ -118,17 +137,6 @@ const JournalApp: React.FC<JournalAppProps> = ({
           onSelectSession={handleSelectSession}
           onNewSession={handleNewSession}
           onUpdate={onUpdate}
-        />
-      );
-    }
-    
-    // Show Setup screen inside Journal when currentSection === 'setup'
-    if (state.ui.currentSection === 'setup') {
-      return (
-        <SetupSection
-          state={state}
-          onUpdate={onUpdate}
-          onNext={() => onNavigateToSection('epoch1')}
         />
       );
     }
@@ -144,6 +152,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
             epochKey="epoch1"
             onNext={() => onNavigateToSection('analyst1_epoch1')}
             onBack={handleNewSession}
+            onBackToList={() => onUpdate({ ui: { ...state.ui, journalView: 'home' } })}
           />
         );
       
@@ -182,6 +191,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
             epochKey="epoch2"
             onNext={() => onNavigateToSection('analyst1_epoch2')}
             onBack={() => onNavigateToSection('analyst2_epoch1')}
+            onBackToList={() => onUpdate({ ui: { ...state.ui, journalView: 'home' } })}
           />
         );
     
@@ -239,23 +249,34 @@ const JournalApp: React.FC<JournalAppProps> = ({
   const showTimer = state.activeSessionId && (currentSection === 'epoch1' || currentSection === 'epoch2');
   const timerEpochKey = currentSection === 'epoch1' ? 'epoch1' : 'epoch2';
 
+  // Track last persisted value to reduce storage writes (gate to 30s increments)
+  const lastPersistedRef = useRef<number>(-1);
+
   // Handler to update duration when timer changes
   const handleDurationChange = async (minutes: number) => {
     if (!state.activeSessionId) return;
     
     try {
-      const session = state.sessions.find(s => s.id === state.activeSessionId);
-      if (!session) return;
+      // Always fetch the latest session to avoid overwriting newer turns
+      const fresh = await sessionsStorage.getById(state.activeSessionId);
+      if (!fresh) return;
 
       // Guard: only persist if minutes actually changed
-      const current = session.epochs[timerEpochKey].duration_minutes;
+      const current = fresh.epochs[timerEpochKey].duration_minutes;
       if (minutes === current) return;
+
+      // Gate to 30-second increments to reduce storage writes
+      // Round to nearest 0.5 minute (30 seconds)
+      const rounded = Math.floor(minutes * 2) / 2;
+      if (rounded === lastPersistedRef.current) return;
+      
+      lastPersistedRef.current = rounded;
 
       const newState = await sessionsStorage.update(state.activeSessionId, {
         epochs: {
-          ...session.epochs,
+          ...fresh.epochs,
           [timerEpochKey]: {
-            ...session.epochs[timerEpochKey],
+            ...fresh.epochs[timerEpochKey],
             duration_minutes: minutes
           }
         }
@@ -269,11 +290,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
   };
 
   // Handler for ProgressDashboard navigation - converts Section to the specific subset
-  const handleProgressNavigation = (section: 'setup' | 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report') => {
-    // Only allow navigation to non-setup sections since setup is handled differently
-    if (section !== 'setup') {
-      onNavigateToSection(section);
-    }
+  const handleProgressNavigation = (section: 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report') => {
+    onNavigateToSection(section);
   };
 
   return (
@@ -297,8 +315,13 @@ const JournalApp: React.FC<JournalAppProps> = ({
       {/* Timer - show below progress during epoch sections */}
       {showTimer && (
         <Timer 
+          key={`${state.activeSessionId}-${timerEpochKey}`}
           sessionId={state.activeSessionId!}
           epochKey={timerEpochKey}
+          initialDuration={(() => {
+            const session = getActiveSession(state);
+            return session?.epochs[timerEpochKey].duration_minutes || 0;
+          })()}
           onDurationChange={handleDurationChange}
         />
       )}

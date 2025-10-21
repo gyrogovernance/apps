@@ -52,8 +52,16 @@ export function calculateSpecializationAverage(scores: Record<string, number>): 
 }
 
 /**
- * Aggregate scores from two analysts using median (average of two values)
- * Per-metric median with no default injection.
+ * Aggregate scores from two analysts using median (average of two values).
+ * 
+ * Combines evaluations from two analysts into single metrics.
+ * Structure: always median. Behavior: handles N/A by using numeric value if one present.
+ * Specialization: median where both present, single value if only one.
+ * Pathologies: deduplicated union.
+ * 
+ * @param analyst1 - First analyst's evaluation data
+ * @param analyst2 - Second analyst's evaluation data
+ * @returns Aggregated scores and pathologies
  */
 export function aggregateAnalysts(
   analyst1: AnalystResponse,
@@ -172,9 +180,20 @@ export function calculateAlignmentRate(
 }
 
 /**
- * Calculate Superintelligence Index using K4 graph topology
- * Based on behavior scores and CGM Balance theory
- * Requires all 6 metrics numeric in [1,10]; no defaults, no fallbacks.
+ * Calculate Superintelligence Index using K4 complete graph topology.
+ * 
+ * The SI measures structural coherence of behavior scores using spherical geometry
+ * on a K4 (complete graph with 4 vertices, 6 edges). This is the core mathematical
+ * innovation of the GyroDiagnostics framework.
+ * 
+ * Process: Maps 6 behavior scores to K4 edges, solves Laplacian system,
+ * computes aperture ratio, and compares to target aperture A* = 0.02070.
+ * 
+ * Interpretation: SI=100 is perfect coherence, SI=50 is 2x deviation, SI less than 25 is significant incoherence.
+ * 
+ * @param behaviorScores - Array of exactly 6 numeric scores in range [1, 10]
+ * @returns Object with si (index), aperture (computed), and deviation (factor from target)
+ * @throws Error if scores array is not exactly 6 elements or any score out of range
  */
 export function calculateSuperintelligenceIndex(
   behaviorScores: number[]

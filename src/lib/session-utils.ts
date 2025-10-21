@@ -31,7 +31,7 @@ export const formatSessionDuration = (session: Session): string => {
   if (total < 60) return `${total} min`;
   const hours = Math.floor(total / 60);
   const mins = total % 60;
-  return `${hours}h ${mins > 0 ? ` ${mins}m` : ''}`;
+  return `${hours}h${mins > 0 ? ` ${mins}m` : ''}`;
 };
 
 /**

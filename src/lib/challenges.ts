@@ -59,7 +59,7 @@ export const GYRO_SUITE = {
       description: 'Knowledge synthesis, evidence evaluation, and clear communication'
     }
   ],
-  estimatedTime: "2-4 hours",
+  estimatedTime: "1 hour",
   output: "Comprehensive model quality report with SI, QI, AR metrics across all governance dimensions"
 };
 

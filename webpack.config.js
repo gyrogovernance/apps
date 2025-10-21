@@ -41,6 +41,7 @@ module.exports = {
       patterns: [
         { from: 'public/manifest.json', to: 'manifest.json' },
         { from: 'public/sidepanel.html', to: 'sidepanel.html' },
+        { from: 'public/results.zip', to: 'results.zip' },
         { from: 'assets', to: 'icons', noErrorOnMissing: true }
       ]
     })

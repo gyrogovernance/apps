@@ -3,11 +3,10 @@
 
 import { NotebookState, INITIAL_STATE, Session, GovernanceInsight } from '../types';
 import { chromeAPI } from './chrome-mock';
+import { handleStorageError } from './error-utils';
 
 const STORAGE_KEY = 'notebook_state';
 const INSIGHTS_KEY = 'insights_library';
-const SCHEMA_VERSION = '2.0'; // Per-epoch analyst structure
-const VERSION_KEY = 'schema_version';
 
 export const storage = {
   /**
@@ -15,20 +14,10 @@ export const storage = {
    */
   async get(): Promise<NotebookState> {
     try {
-      const result = await chromeAPI.storage.local.get([STORAGE_KEY, VERSION_KEY]);
-      const storedVersion = result[VERSION_KEY];
-      
-      // If version mismatch, clear notebook state but preserve insights
-      if (storedVersion !== SCHEMA_VERSION) {
-        console.warn(`Schema version mismatch (stored: ${storedVersion}, current: ${SCHEMA_VERSION}). Clearing notebook state only.`);
-        await chromeAPI.storage.local.remove(STORAGE_KEY);
-        await chromeAPI.storage.local.set({ [VERSION_KEY]: SCHEMA_VERSION });
-        return INITIAL_STATE;
-      }
-      
+      const result = await chromeAPI.storage.local.get([STORAGE_KEY]);
       return result[STORAGE_KEY] || INITIAL_STATE;
     } catch (error) {
-      console.error('Error loading state:', error);
+      handleStorageError(error, 'storage.get');
       return INITIAL_STATE;
     }
   },
@@ -39,11 +28,10 @@ export const storage = {
   async set(state: NotebookState): Promise<void> {
     try {
       await chromeAPI.storage.local.set({ 
-        [STORAGE_KEY]: state,
-        [VERSION_KEY]: SCHEMA_VERSION 
+        [STORAGE_KEY]: state
       });
     } catch (error) {
-      console.error('Error saving state:', error);
+      handleStorageError(error, 'storage.set');
       throw error;
     }
   },
@@ -65,7 +53,7 @@ export const storage = {
     try {
       await chromeAPI.storage.local.remove(STORAGE_KEY);
     } catch (error) {
-      console.error('Error clearing state:', error);
+      handleStorageError(error, 'storage.clear');
       throw error;
     }
   },
@@ -195,7 +183,7 @@ export const sessions = {
         : state.activeSessionId,
       // Reset UI if deleting active session
       ui: state.activeSessionId === sessionId
-        ? { ...state.ui, currentSection: 'setup' }
+        ? { ...state.ui, currentSection: 'epoch1', journalView: 'home' }
         : state.ui
     };
     
@@ -251,6 +239,68 @@ export const sessions = {
     });
     
     return clonedSession;
+  },
+
+  /**
+   * Create multiple sessions atomically (for Gyro Suite).
+   * 
+   * Creates all sessions in a single atomic write operation,
+   * eliminating race conditions from loop creation where last write wins.
+   * Use for batch creation like GyroDiagnostics Suite (5 challenges).
+   * 
+   * Creates all sessions in memory first, then single atomic write with correct activeSessionId.
+   * Returns both session IDs and updated state.
+   * 
+   * @param items - Array of challenge/platform pairs to create sessions from
+   * @param activeIndex - Which session should be active (default: 0 = first)
+   * @returns Object with sessionIds array and complete updated state
+   */
+  async createMany(
+    items: Array<{ challenge: Session['challenge']; platform: Session['process']['platform'] }>,
+    activeIndex: number = 0
+  ): Promise<{ sessionIds: string[]; state: NotebookState }> {
+    const state = await storage.get();
+    const now = new Date().toISOString();
+    
+    const newSessions: Session[] = items.map(({ challenge, platform }, i) => ({
+      id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      challenge,
+      status: i === activeIndex ? 'active' : 'paused', // Only first session is active
+      process: {
+        platform,
+        model_epoch1: '',
+        model_epoch2: '',
+        model_analyst1: '',
+        model_analyst2: '',
+        started_at: now
+      },
+      epochs: {
+        epoch1: { turns: [], duration_minutes: 0, completed: false, status: 'pending' },
+        epoch2: { turns: [], duration_minutes: 0, completed: false, status: 'pending' }
+      },
+      analysts: {
+        epoch1: {
+          analyst1: { status: 'pending', data: null },
+          analyst2: { status: 'pending', data: null }
+        },
+        epoch2: {
+          analyst1: { status: 'pending', data: null },
+          analyst2: { status: 'pending', data: null }
+        }
+      },
+      createdAt: now,
+      updatedAt: now
+    }));
+
+    const sessionIds = newSessions.map(s => s.id);
+    const updatedState: NotebookState = {
+      ...state,
+      sessions: [...state.sessions, ...newSessions],
+      activeSessionId: sessionIds[activeIndex]
+    };
+
+    await storage.set(updatedState); // Single atomic write
+    return { sessionIds, state: updatedState };
   }
 };
 
@@ -323,7 +373,7 @@ export const insights = {
       const result = await chromeAPI.storage.local.get(INSIGHTS_KEY);
       return result[INSIGHTS_KEY] || [];
     } catch (error) {
-      console.error('Error loading insights:', error);
+      handleStorageError(error, 'insights.getAll');
       return [];
     }
   },

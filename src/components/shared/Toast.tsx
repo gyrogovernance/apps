@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Z_INDEX, UI_CONSTANTS } from '../../lib/constants';
 
 interface Toast {
   id: number;
@@ -21,7 +22,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3000);
+    }, UI_CONSTANTS.TOAST_DURATION_MS);
   };
 
   const getToastColor = (type: Toast['type']) => {
@@ -51,7 +52,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       {children}
       
       {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 space-y-2 z-50 pointer-events-none" role="status" aria-live="polite">
+      <div className="fixed bottom-4 left-4 space-y-2 pointer-events-none" style={{ zIndex: Z_INDEX.TOAST }} role="status" aria-live="polite">
         {toasts.map(toast => (
           <div
             key={toast.id}

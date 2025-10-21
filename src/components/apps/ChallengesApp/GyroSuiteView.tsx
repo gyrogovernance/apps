@@ -132,7 +132,7 @@ const GyroSuiteView: React.FC<GyroSuiteViewProps> = ({ onStart, onBack }) => {
 
       {/* Help Text */}
       <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-        💡 Tip: Set aside 2-4 hours for the complete suite. You can pause and resume anytime.
+        💡 Tip: Set aside 1 hour for the complete suite. You can pause and resume anytime.
       </p>
     </div>
   );

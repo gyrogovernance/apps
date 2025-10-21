@@ -5,6 +5,7 @@ import { getQIColor, getAlignmentColor } from '../../../lib/ui-utils';
 import { exportAsJSON, exportAsMarkdown, downloadFile, generateFilename } from '../../../lib/export';
 import { useToast } from '../../shared/Toast';
 import { SmartTooltip } from '../../shared/SmartTooltip';
+import { Z_INDEX } from '../../../lib/constants';
 
 interface InsightsLibraryProps {
   onSelectInsight: (insightId: string) => void;
@@ -95,40 +96,44 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     return Array.from(models).sort();
   }, [allInsights]);
 
-  // Filter insights
-  const filteredInsights = allInsights.filter(insight => {
-    // Safely access challenge and quality properties
-    const title = insight.challenge?.title || '';
-    const type = insight.challenge?.type || 'custom';
-    const alignmentCategory = insight.quality?.alignment_rate_category;
-    const qualityIndex = insight.quality?.quality_index || 0;
-    const synthesizer = insight.process?.models_used?.synthesis_epoch1 || 
-                        insight.process?.models_used?.synthesis_epoch2 || '';
-    
-    if (filters.search && !title.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
-    }
-    if (filters.challengeType !== 'all' && type !== filters.challengeType) {
-      return false;
-    }
-    if (filters.synthesizer !== 'all' && synthesizer !== filters.synthesizer) {
-      return false;
-    }
-    if (filters.alignmentCategory !== 'all' && alignmentCategory !== filters.alignmentCategory) {
-      return false;
-    }
-    if (qualityIndex < filters.minQI) {
-      return false;
-    }
-    return true;
-  });
+  // Filter insights (memoized to avoid recalculation on every render)
+  const filteredInsights = React.useMemo(() => {
+    return allInsights.filter(insight => {
+      // Safely access challenge and quality properties
+      const title = insight.challenge?.title || '';
+      const type = insight.challenge?.type || 'custom';
+      const alignmentCategory = insight.quality?.alignment_rate_category;
+      const qualityIndex = insight.quality?.quality_index || 0;
+      const synthesizer = insight.process?.models_used?.synthesis_epoch1 || 
+                          insight.process?.models_used?.synthesis_epoch2 || '';
+      
+      if (filters.search && !title.toLowerCase().includes(filters.search.toLowerCase())) {
+        return false;
+      }
+      if (filters.challengeType !== 'all' && type !== filters.challengeType) {
+        return false;
+      }
+      if (filters.synthesizer !== 'all' && synthesizer !== filters.synthesizer) {
+        return false;
+      }
+      if (filters.alignmentCategory !== 'all' && alignmentCategory !== filters.alignmentCategory) {
+        return false;
+      }
+      if (qualityIndex < filters.minQI) {
+        return false;
+      }
+      return true;
+    });
+  }, [allInsights, filters]);
 
-  // Sort by date (most recent first)
-  const sortedInsights = [...filteredInsights].sort((a, b) => {
-    const dateA = a.process?.created_at ? new Date(a.process.created_at).getTime() : 0;
-    const dateB = b.process?.created_at ? new Date(b.process.created_at).getTime() : 0;
-    return dateB - dateA;
-  });
+  // Sort by date (most recent first) - memoized
+  const sortedInsights = React.useMemo(() => {
+    return [...filteredInsights].sort((a, b) => {
+      const dateA = a.process?.created_at ? new Date(a.process.created_at).getTime() : 0;
+      const dateB = b.process?.created_at ? new Date(b.process.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [filteredInsights]);
 
   if (loading) {
     return (
@@ -255,6 +260,13 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                       </button>
                     </div>
 
+                    {/* Excellence Badge */}
+                    {qi >= 80 && (
+                      <div className="absolute top-2 right-2">
+                        <span className="text-lg" title="High Quality Result">⭐</span>
+                      </div>
+                    )}
+
                     {/* Meta Row */}
                     <div className="flex items-center gap-2 mb-2 text-xs">
                       <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded">
@@ -315,7 +327,8 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                   {/* Action Menu Dropdown */}
                   {openMenuId === insight.id && (
                     <div 
-                      className="absolute right-0 top-10 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+                      className="absolute right-0 top-10 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+                      style={{ zIndex: Z_INDEX.DROPDOWN }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button

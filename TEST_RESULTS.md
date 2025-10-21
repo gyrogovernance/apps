@@ -103,7 +103,7 @@ Verify full compliance with GyroDiagnostics Measurement and General Specificatio
 - Epoch 2: GPT-4o (10 min)
 
 **Analyst Models:**
-- Analyst 1: Llama 3.1 405B
+- Analyst 1: Lllama 3.1 405B
 - Analyst 2: Gemini 1.5 Pro
 
 **Behavior Scores (Aggregated):**

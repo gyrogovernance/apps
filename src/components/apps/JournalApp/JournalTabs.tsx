@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Session } from '../../../types';
-import { isSessionEmpty } from '../../../lib/validation';
 import { getSessionProgress } from '../../../lib/session-utils';
 
 interface JournalTabsProps {
@@ -18,6 +17,32 @@ const JournalTabs: React.FC<JournalTabsProps> = ({
   onCloseSession,
   onNewSession
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
+
+  // Check scroll position to show/hide shadows
+  const checkScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    
+    setShowLeftShadow(el.scrollLeft > 5);
+    setShowRightShadow(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll);
+      // Check on resize too
+      window.addEventListener('resize', checkScroll);
+      return () => {
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, [sessions.length]);
   // Show tabs for active/paused/analyzing sessions (even if empty)
   const tabSessions = sessions.filter(s =>
     s.status === 'active' || s.status === 'paused' || s.status === 'analyzing'
@@ -53,8 +78,18 @@ const JournalTabs: React.FC<JournalTabsProps> = ({
   };
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-      <div className="flex items-center gap-1 px-3 py-2 overflow-x-auto scrollbar-thin">
+    <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 relative">
+      {/* Left scroll shadow */}
+      {showLeftShadow && (
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 dark:from-gray-800/50 to-transparent pointer-events-none z-10" />
+      )}
+      
+      {/* Right scroll shadow */}
+      {showRightShadow && (
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 dark:from-gray-800/50 to-transparent pointer-events-none z-10" />
+      )}
+      
+      <div ref={scrollRef} className="flex items-center gap-1 px-3 py-2 overflow-x-auto scrollbar-thin">
         {/* New Session Tab */}
         <button
           onClick={onNewSession}

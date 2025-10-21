@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   formatTime, 
   secondsToMinutes,
+  secondsToMinutesPrecise,
   saveTimerState, 
   loadTimerState,
   INITIAL_TIMER_STATE,
@@ -12,6 +13,7 @@ import {
 interface TimerProps {
   sessionId: string;
   epochKey: 'epoch1' | 'epoch2';
+  initialDuration?: number; // Duration from session storage (in minutes)
   onDurationChange?: (minutes: number) => void;
   className?: string;
 }
@@ -19,21 +21,54 @@ interface TimerProps {
 export const Timer: React.FC<TimerProps> = ({ 
   sessionId, 
   epochKey, 
+  initialDuration = 0,
   onDurationChange,
   className = '' 
 }) => {
   const [state, setState] = useState<TimerState>(() => {
-    // Load saved state on mount
+    // Priority 1: Use session storage value if available
+    if (initialDuration > 0) {
+      return {
+        isRunning: false,
+        elapsedSeconds: Math.round(initialDuration * 60),
+        startTime: null
+      };
+    }
+    // Priority 2: Try localStorage as fallback
     const saved = loadTimerState(sessionId, epochKey);
-    return saved || INITIAL_TIMER_STATE;
+    if (saved) {
+      return saved;
+    }
+    // Priority 3: Start fresh
+    return INITIAL_TIMER_STATE;
   });
   
   const intervalRef = useRef<number | null>(null);
 
-  // Sync elapsed time to parent
+  // Reset timer when session or epoch changes (critical for suite transitions)
+  useEffect(() => {
+    // Stop any running timer first
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (initialDuration > 0) {
+      setState({
+        isRunning: false,
+        elapsedSeconds: Math.round(initialDuration * 60),
+        startTime: null
+      });
+    } else {
+      const saved = loadTimerState(sessionId, epochKey);
+      setState(saved || INITIAL_TIMER_STATE);
+    }
+  }, [sessionId, epochKey, initialDuration]);
+
+  // Sync elapsed time to parent (use precise minutes for AR calculation)
   useEffect(() => {
     if (onDurationChange) {
-      const minutes = secondsToMinutes(state.elapsedSeconds);
+      const minutes = secondsToMinutesPrecise(state.elapsedSeconds);
       onDurationChange(minutes);
     }
   }, [state.elapsedSeconds, onDurationChange]);

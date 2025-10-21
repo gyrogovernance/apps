@@ -4,13 +4,13 @@
 export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings';
 export type ChallengesView = 'select-type' | 'gyro-suite' | 'sdg-gallery' | 'custom-builder' | 'prompt-workshop';
 export type JournalView = 'home' | 'session' | 'active-session' | 'synthesis' | 'analysis';
-export type InsightsView = 'library' | 'detail' | 'comparison';
+export type InsightsView = 'library' | 'detail' | 'comparison' | 'suites' | 'tracker';
 
 export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedural' | 'formal' | 'custom';
 export type Platform = 'lmarena' | 'chatgpt' | 'claude' | 'poe' | 'custom';
 export type TurnNumber = 1 | 2 | 3 | 4 | 5 | 6;
 export type Confidence = 'high' | 'medium' | 'low';
-export type Section = 'setup' | 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report';
+export type Section = 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report';
 export type AlignmentCategory = 'VALID' | 'SUPERFICIAL' | 'SLOW';
 export type SessionStatus = 'active' | 'paused' | 'analyzing' | 'complete';
 export type EpochStatus = 'pending' | 'in-progress' | 'complete';
@@ -90,36 +90,20 @@ export interface Session {
   };
   createdAt: string;
   updatedAt: string;
+  completedInsightId?: string; // Link to generated insight when complete
 }
 
 export interface NotebookState {
-  // Legacy support - current active session data
-  challenge: {
-    title: string;
-    description: string;
-    type: ChallengeType;
-    domain: string[];
-  };
+  // Multi-session support (SINGLE SOURCE OF TRUTH)
+  sessions: Session[];
+  activeSessionId?: string;
   
-  process: {
-    platform: Platform;
-    model_epoch1: string;
-    model_epoch2: string;
-    model_analyst1: string;
-    model_analyst2: string;
-    started_at: string;
-  };
+  // Gyro Suite tracking
+  gyroSuiteSessionIds?: string[]; // IDs of all 5 suite sessions
+  gyroSuiteCurrentIndex?: number; // Current challenge index (0-4)
+  currentSuiteRunId?: string; // NEW: track current suite run for linking insights
   
-  epochs: {
-    epoch1: Epoch;
-    epoch2: Epoch;
-  };
-  
-  analysts: {
-    analyst1: AnalystResponse | null;
-    analyst2: AnalystResponse | null;
-  };
-  
+  // UI state
   ui: {
     currentSection: Section;
     currentTurn: number;
@@ -128,16 +112,6 @@ export interface NotebookState {
     journalView?: JournalView;
     insightsView?: InsightsView;
   };
-  
-  // New multi-session support
-  sessions: Session[];
-  activeSessionId?: string;
-  
-  // Gyro Suite tracking
-  gyroSuiteSessionIds?: string[]; // IDs of all 5 suite sessions
-  gyroSuiteCurrentIndex?: number; // Current challenge index (0-4)
-  
-  results: GovernanceInsight | null;
 }
 
 export interface GovernanceInsight {
@@ -214,6 +188,16 @@ export interface GovernanceInsight {
   starred: boolean;
   notes: string;
   
+  // Suite tracking metadata
+  suiteRunId?: string; // Links insights from same GD run
+  suiteMetadata?: {
+    suiteIndex: number; // 0-4 (Formal, Normative, Procedural, Strategic, Epistemic)
+    totalChallenges: 5;
+    modelEvaluated: string; // Primary model name
+    suiteStartedAt: string;
+    suiteCompletedAt?: string; // Set when last challenge finishes
+  };
+  
   // Optional metadata for imports and extended information
   metadata?: {
     model_name?: string;
@@ -236,50 +220,18 @@ export interface GovernanceInsight {
 }
 
 export const INITIAL_STATE: NotebookState = {
-  challenge: {
-    title: '',
-    description: '',
-    type: 'custom',
-    domain: []
-  },
-  process: {
-    platform: 'custom',
-    model_epoch1: '',
-    model_epoch2: '',
-    model_analyst1: '',
-    model_analyst2: '',
-    started_at: ''
-  },
-  epochs: {
-    epoch1: {
-      turns: [],
-      duration_minutes: 0,
-      completed: false,
-      status: 'pending'
-    },
-    epoch2: {
-      turns: [],
-      duration_minutes: 0,
-      completed: false,
-      status: 'pending'
-    }
-  },
-  analysts: {
-    analyst1: null,
-    analyst2: null
-  },
+  sessions: [],
+  activeSessionId: undefined,
+  gyroSuiteSessionIds: undefined,
+  gyroSuiteCurrentIndex: undefined,
+  currentSuiteRunId: undefined,
   ui: {
-    currentSection: 'setup',
+    currentSection: 'epoch1',
     currentTurn: 1,
     currentApp: 'welcome',
     challengesView: 'select-type',
     journalView: 'home',
     insightsView: 'library'
-  },
-  sessions: [],
-  activeSessionId: undefined,
-  gyroSuiteSessionIds: undefined,
-  gyroSuiteCurrentIndex: undefined,
-  results: null
+  }
 };
 

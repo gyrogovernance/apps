@@ -48,6 +48,13 @@ These terms are part of the core methodology and MUST NOT be changed, renamed, o
     - `Notebook.tsx` is the top-level router that switches between these apps.
     - Each app manages its own internal views (e.g., `ChallengesApp` routes between `TypeSelector`, `SDGGallery`, etc.).
 - **Robust Asynchronous Operations:**
+- **Storage API Patterns:**
+    - Use `sessions.*` for session CRUD operations (create, createMany, update, delete, clone, getById)
+    - Use `storage.*` only for global state updates (UI navigation, suite tracking, etc.)
+    - Use `insights.*` for insights library operations
+    - Use `drafts.*` for temporary draft management
+    - **NEVER** mix these APIs in a single operation - one operation should use one API family
+    - **ALWAYS** use session helpers (`getActiveSession`, `getSessionById`) instead of manual `state.sessions.find()`
 
 ## 4. ✨ User Experience (UX) & Flow
 

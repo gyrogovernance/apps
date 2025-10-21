@@ -62,8 +62,8 @@ interface GyroDiagnosticsData {
   challenges?: {
     [challengeType: string]: GyroDiagnosticsChallenge;
   };
-  // Legacy flat structure support
-  [challengeType: string]: GyroDiagnosticsChallenge | any;
+  // Legacy flat structure support (allows arbitrary challenge types)
+  [challengeType: string]: GyroDiagnosticsChallenge | Record<string, any> | undefined;
 }
 
 /**
@@ -117,10 +117,9 @@ export function isGyroDiagnosticsFormat(data: any): boolean {
 
 /**
  * Extract model name from filename
+ * Removes common prefixes/suffixes and formats for display
  */
 export function extractModelName(filename: string): string {
-  console.log('Extracting model name from filename:', filename); // Debug log
-  
   let modelName = filename
     .replace('_analysis_data.json', '')
     .replace('_data.json', '')
@@ -131,7 +130,6 @@ export function extractModelName(filename: string): string {
     .replace(/\b\w/g, l => l.toUpperCase())
     .trim();
     
-  console.log('Extracted model name:', modelName); // Debug log
   return modelName;
 }
 
@@ -261,7 +259,11 @@ function transformChallenge(
         frequency: aggregated.pathologies.length / challenge.epochs_analyzed
       },
       alignment_rate: challenge.alignment_rate,
-      alignment_rate_category: challenge.alignment_rate_status as any,
+      alignment_rate_category: (challenge.alignment_rate_status === 'VALID' || 
+                                 challenge.alignment_rate_status === 'SUPERFICIAL' || 
+                                 challenge.alignment_rate_status === 'SLOW')
+                                 ? challenge.alignment_rate_status
+                                 : 'SLOW', // Default fallback
       superintelligence_index: challenge.superintelligence_stats.median_superintelligence_index,
       si_deviation: challenge.superintelligence_stats.median_deviation_factor
     },
@@ -328,11 +330,8 @@ export function transformGyroDiagnosticsToInsights(
     modelName = data.metadata.model_tested;
     analystModels = data.metadata.analyst_models || [];
     epochTimings = data.metadata.timings || {};
-    console.log('Using metadata model name:', modelName);
-    console.log('Analyst models:', analystModels);
   } else {
     modelName = extractModelName(filename);
-    console.log('Using filename-extracted model name:', modelName);
   }
   
   const timestamp = new Date().toISOString();
@@ -436,8 +435,6 @@ export async function importGyroDiagnosticsZip(file: File): Promise<{
       };
     }
     
-    console.log(`Found ${dataFiles.length} data.json file(s) in ZIP`);
-    
     // Process each data.json file
     let successCount = 0;
     const errors: string[] = [];
@@ -458,7 +455,6 @@ export async function importGyroDiagnosticsZip(file: File): Promise<{
         if (insights.length > 0) {
           allInsights.push(...insights);
           successCount++;
-          console.log(`Imported ${insights.length} insight(s) from ${filename}`);
         } else {
           errors.push(`${filename}: No valid challenges found`);
         }

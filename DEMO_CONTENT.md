@@ -43,7 +43,7 @@ Use this for full feature demonstration with all metrics calculated:
 
 - **Epoch 1**: Claude 3.5 Sonnet (12 min)
 - **Epoch 2**: GPT-4o (10 min)
-- **Analyst 1**: Llama 3.1 405B
+- **Analyst 1**: Lllama 3.1 405B
 - **Analyst 2**: Gemini 1.5 Pro
 
 

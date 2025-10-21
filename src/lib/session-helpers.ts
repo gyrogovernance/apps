@@ -4,8 +4,14 @@
 import { NotebookState, Session } from '../types';
 
 /**
- * Get the active session from state (Single Source of Truth)
- * Returns null if no active session
+ * Get the active session from state (Single Source of Truth).
+ * 
+ * Primary way components should access session data.
+ * Never use state.challenge, state.epochs, or state.analysts directly.
+ * Always derive from the active session in the sessions array.
+ * 
+ * @param state - The current notebook state
+ * @returns The active session, or null if no session is active
  */
 export function getActiveSession(state: NotebookState): Session | null {
   if (!state.activeSessionId) return null;
@@ -50,7 +56,14 @@ export function hasActiveSession(state: NotebookState): boolean {
 }
 
 /**
- * Get session by ID or null
+ * Get session by ID or null.
+ * 
+ * Centralized session lookup by ID. Prefer this over manual state.sessions.find()
+ * for consistency and maintainability.
+ * 
+ * @param state - The current notebook state
+ * @param sessionId - The ID of the session to retrieve
+ * @returns The session if found, null otherwise
  */
 export function getSessionById(state: NotebookState, sessionId: string): Session | null {
   return state.sessions.find(s => s.id === sessionId) || null;

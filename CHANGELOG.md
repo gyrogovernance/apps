@@ -7,6 +7,119 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.3-Alpha] - 2025-10-21
+
+### Added
+
+**Welcome Screen Improvements**
+- Official GyroDiagnostics results import functionality with direct link to [GitHub repository](https://github.com/gyrogovernance/diagnostics)
+- One-click import of pre-evaluated insights from frontier models (GPT-4o, Claude Sonnet 4.5, Grok-4)
+- Loading state with spinner during import process
+- Automatic navigation to Insights app after successful import
+
+### Changed
+
+**Build Configuration**
+- Updated webpack config to include `results.zip` in build output for Chrome extension access
+
+### Removed
+
+**Welcome Screen Cleanup**
+- Smart Paste Detection section (feature no longer used)
+- Outdated clipboard permission instructions
+
+**New Shared Components & Hooks**
+- `useClipboard` hook for centralized clipboard operations with status feedback
+- `useDrafts` hook for auto-save/load draft logic with configurable debounce
+- `CopyableDetails` component for collapsible details with integrated copy button
+- `TurnsSummary` component for standardized turn display with word counts and timestamps
+- `ModelSelect` component for consistent model selector UI
+- Error utilities library (`error-utils.ts`) for centralized error handling
+- Constants library (`constants.ts`) for z-index layering and UI constants
+- JSDoc comments for complex functions (`calculateSuperintelligenceIndex`, `aggregateAnalysts`, `generateInsightFromSession`, session helpers)
+- Storage API Patterns documentation in `.cursorrules`
+
+**UI/UX Enhancements**
+- Tab overflow scroll indicators with gradient shadows in JournalTabs
+- Progress Dashboard scroll hint when auto-scrolling to Epoch 2
+- Read-only model display for Epoch 2 showing "Model (from Epoch 1)"
+- Timer initialization from session storage
+
+### Fixed
+
+**Critical Bugs (USER-REPORTED)**
+- Timer persistence: Values now sync to session storage on unmount
+- Turn flicker: Epoch writes now fetch fresh session before merging
+- Suite transition stale state: Timer resets properly on session switch
+
+**Data & Calculations**
+- GyroDiagnostics Suite now starts at Formal instead of Epistemic (atomic `sessions.createMany()`)
+- Analyst model selection no longer resets unexpectedly
+- Analyst scores now editable after completion
+- Epoch 2 enforces same model as Epoch 1
+- SI calculation N/A issue resolved (all 6 metrics now required)
+- Pathology frequency divisor corrected from `/12` to `/4`
+- Alignment Rate now uses precise calculation (`secondsToMinutesPrecise()`)
+- Alignment badge fallback for invalid categories
+- TypeScript type safety improvements in import.ts
+
+**Architecture**
+- Migrated to `getActiveSession()` helper throughout (removes legacy state field access)
+- Eliminated ~150 lines of duplicate calculation logic (unified via `generateInsightFromSession()`)
+- Replaced manual `state.sessions.find()` with session helpers (6 instances)
+- Consistent z-index layering using constants
+
+### Changed
+
+**BREAKING - Schema 3.0 Migration**
+- Removed legacy top-level fields (`challenge`, `process`, `epochs`, `analysts`, `results`)
+- Sessions array is now Single Source of Truth
+- Session completion via `Session.completedInsightId` instead of global `state.results`
+- INITIAL_STATE reduced from 50+ lines to 12 lines
+
+**Code Refactoring**
+- SynthesisSection: 520→380 lines (-27%)
+- AnalystSection: 610→380 lines (-38%)
+- Simplified suite transitions (only updates `activeSessionId`)
+- Timer component: Added `initialDuration` prop and reset effect
+- Unified error handling via `handleStorageError()`
+- Prompts changed from "up to six turns" to "exactly six turns"
+
+**Performance**
+- Timer storage writes: 60→2 writes/min (-97%)
+- InsightsLibrary filtering with `useMemo()`
+- ReactMarkdown rendering memoized in InsightDetail
+- Removed ~100 lines of legacy state sync code
+
+**UI Improvements**
+- Challenge ordering now matches spec (Formal, Normative, Procedural, Strategic, Epistemic)
+- Setup step removed from Journal App
+- Session cards redesigned (3x more compact, 3-dot menu, grid layout)
+- Toast positioning moved to bottom-left
+- Dark mode fixes for copy buttons
+- **Multi-View Insights Architecture**: Three-tab Insights App (Library, Suite Reports, Model Tracker)
+- Retroactive suite detection for existing insights
+- Suite export functionality with aggregate metrics
+- Visual enhancements: sparkline charts, excellence badges (⭐), progress rings
+
+### Removed
+
+**Dead Code (~545 lines total)**
+- SetupSection.tsx (~200 lines)
+- 3 unused validation.ts functions (~45 lines)
+- Duplicate clipboard logic (~150 lines, now uses `useClipboard`)
+- Duplicate draft logic (~100 lines, now uses `useDrafts`)
+- Duplicate model selector UI (~50 lines, now uses `ModelSelect`)
+- Debug console.log statements
+
+### Technical Details
+
+- `sessions.createMany(items, activeIndex)`: Atomic batch session creation
+- Single Source of Truth enforcement via session helpers
+- All storage operations now atomic (return complete updated state)
+
+---
+
 ## [0.2.2-Alpha] - 2025-10-20
 
 ### Fixed
@@ -273,7 +386,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 End-to-end validation completed with demo challenge "AI Healthcare Ethics Test":
 - ✅ Two-epoch synthesis workflow (Claude 3.5 Sonnet, GPT-4o)
-- ✅ Four analyst evaluations (Llama 3.1 405B, Gemini 1.5 Pro)
+- ✅ Four analyst evaluations (Lllama 3.1 405B, Gemini 1.5 Pro)
 - ✅ Spec-compliant calculations (QI: 81.9%, AR: 0.0683/min, SI: N/A handled correctly)
 - ✅ Multi-session management, keyboard shortcuts, cross-tab sync
 

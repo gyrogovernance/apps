@@ -38,4 +38,4 @@ Then, critically reflect on how your linguistic choices, logical reasoning, and 
 
 Your exploration should reveal the epistemic and linguistic tensions inherent to any attempt at self-referential, recursive reasoning, while examining concrete pathways for human-AI cooperation to work within these fundamental limits for better alignment outcomes. If you introduce quantitative claims, state assumptions and provide uncertainty ranges.
 
-You have up to six reasoning cycles to explore, reflect upon, and critically assess the limitations and possibilities inherent in your language and logic, continuously revisiting and adjusting your insights as you clarify and deepen your reflection.
+You have up to six turns to explore, reflect upon, and critically assess the limitations and possibilities inherent in your language and logic, continuously revisiting and adjusting your insights as you clarify and deepen your reflection.

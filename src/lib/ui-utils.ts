@@ -23,25 +23,25 @@ export const getQIColor = (qi: number): string => {
 /**
  * Get badge color classes for Alignment Category
  */
-export const getAlignmentBadgeColor = (category: AlignmentCategory): string => {
-  const colors = {
+export const getAlignmentBadgeColor = (category: AlignmentCategory | string): string => {
+  const colors: Record<string, string> = {
     VALID: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700',
     SUPERFICIAL: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700',
     SLOW: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-300 dark:border-red-700'
   };
-  return colors[category];
+  return colors[category] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600';
 };
 
 /**
  * Get simple color classes for Alignment Category (without border)
  */
-export const getAlignmentColor = (category: AlignmentCategory): string => {
-  const colors = {
+export const getAlignmentColor = (category: AlignmentCategory | string): string => {
+  const colors: Record<string, string> = {
     VALID: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200',
     SUPERFICIAL: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200',
     SLOW: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200'
   };
-  return colors[category];
+  return colors[category] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
 };
 
 /**

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NotebookState, Section } from '../types';
 import { getActiveSession } from '../lib/session-helpers';
 
@@ -10,21 +10,15 @@ interface ProgressDashboardProps {
 const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate }) => {
   const session = getActiveSession(state);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
   
-  // Use session data if available, otherwise fall back to legacy state
+  // Build progress sections from active session
   const sections = [
-    { 
-      key: 'setup' as Section, 
-      label: 'Setup', 
-      icon: '📋',
-      completed: session ? !!session.challenge.title : state.challenge.title !== '',
-      estimate: '2 min'
-    },
     { 
       key: 'epoch1' as Section, 
       label: 'Epoch 1', 
       icon: '1️⃣',
-      completed: session ? session.epochs.epoch1.completed : state.epochs.epoch1.completed,
+      completed: session ? session.epochs.epoch1.completed : false,
       estimate: '10-15 min'
     },
     { 
@@ -45,7 +39,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
       key: 'epoch2' as Section, 
       label: 'Epoch 2', 
       icon: '2️⃣',
-      completed: session ? session.epochs.epoch2.completed : state.epochs.epoch2.completed,
+      completed: session ? session.epochs.epoch2.completed : false,
       estimate: '10-15 min'
     },
     { 
@@ -66,7 +60,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
       key: 'report' as Section, 
       label: 'Report', 
       icon: '📊',
-      completed: state.results !== null,
+      completed: session ? session.status === 'complete' : false,
       estimate: '1 min'
     }
   ];
@@ -76,14 +70,23 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
   const progressPercent = (completedCount / sections.length) * 100;
   const currentSection = sections[currentIndex];
 
-  // Auto-scroll to show Epoch 2 and later sections
+  // Auto-scroll to show Epoch 2 and later sections with visual hint
   useEffect(() => {
     if (scrollContainerRef.current && currentIndex >= 4) { // Epoch 2 starts at index 4
       const container = scrollContainerRef.current;
-      container.scrollTo({
-        left: container.scrollWidth - container.clientWidth,
-        behavior: 'smooth'
-      });
+      const hasOverflow = container.scrollWidth > container.clientWidth;
+      
+      if (hasOverflow) {
+        // Show hint briefly before scrolling
+        setShowScrollHint(true);
+        setTimeout(() => {
+          container.scrollTo({
+            left: container.scrollWidth - container.clientWidth,
+            behavior: 'smooth'
+          });
+          setShowScrollHint(false);
+        }, 500);
+      }
     }
   }, [currentIndex]);
 
@@ -110,7 +113,13 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
       </div>
 
       {/* Section indicators with icons */}
-      <div ref={scrollContainerRef} className="flex gap-1 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="relative">
+        {showScrollHint && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-600 dark:text-blue-400 font-medium animate-pulse z-10 bg-white dark:bg-gray-800 px-2 py-1 rounded shadow">
+            Scrolling to current stage →
+          </div>
+        )}
+        <div ref={scrollContainerRef} className="flex gap-1 overflow-x-auto pb-1 scrollbar-thin">
         {sections.map((section, index) => (
           <button
             key={section.key}
@@ -129,6 +138,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ state, onNavigate
             <span className="text-[10px] font-medium whitespace-nowrap leading-tight">{section.label}</span>
           </button>
         ))}
+        </div>
       </div>
     </div>
   );

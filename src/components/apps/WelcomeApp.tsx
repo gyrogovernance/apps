@@ -1,6 +1,9 @@
 import React from 'react';
 import { NotebookState } from '../../types';
 import AppCard from '../shared/AppCard';
+import { importGyroDiagnostics } from '../../lib/import';
+import { insights as insightsStorage } from '../../lib/storage';
+import { useToast } from '../shared/Toast';
 
 interface WelcomeAppProps {
   state: NotebookState;
@@ -16,6 +19,8 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
   onResume 
 }) => {
   const [isGuideOpen, setIsGuideOpen] = React.useState(true);
+  const [isImporting, setIsImporting] = React.useState(false);
+  const toast = useToast();
   const activeSessions = state.sessions.filter(s => s.status === 'active' || s.status === 'paused');
   const completedInsightsCount = state.sessions.filter(s => s.status === 'complete').length;
   const hasActiveSession = activeSessions.length > 0;
@@ -38,6 +43,43 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
     const newState = !isGuideOpen;
     setIsGuideOpen(newState);
     localStorage.setItem('welcome_guide_open', String(newState));
+  };
+
+  // Import official GyroDiagnostics results
+  const handleImportOfficialResults = async () => {
+    if (isImporting) return;
+    
+    setIsImporting(true);
+    try {
+      // Get the results.zip file from the public folder
+      const response = await fetch('results.zip');
+      if (!response.ok) {
+        throw new Error('Failed to fetch results.zip');
+      }
+      
+      const blob = await response.blob();
+      const file = new File([blob], 'results.zip', { type: 'application/zip' });
+      
+      const result = await importGyroDiagnostics(file);
+      
+      if (!result.success) {
+        toast.show(result.error || 'Import failed', 'error');
+        return;
+      }
+
+      // Refresh insights count
+      const insights = await insightsStorage.getAll();
+      const message = `Imported ${insights.length} insight(s) from ${result.filesProcessed}/${result.filesFound} file(s) in official results`;
+      toast.show(message, 'success');
+      
+      // Navigate to insights to show the imported data
+      onNavigate('insights');
+    } catch (error) {
+      console.error('Import failed:', error);
+      toast.show('Failed to import official results. Please try again.', 'error');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -121,22 +163,41 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
                 </div>
               </div>
 
-              {/* Smart Paste Detection */}
-              <div className="p-3 bg-white/60 dark:bg-gray-800/40 rounded border border-green-200 dark:border-green-800">
-                <div className="font-semibold text-green-800 dark:text-green-200 mb-1 flex items-center gap-1">
-                  <span>📋</span>
-                  <span>Smart Paste Detection (Enabled by Default)</span>
+              {/* Official Results Import */}
+              <div className="p-3 bg-white/60 dark:bg-gray-800/40 rounded border border-blue-200 dark:border-blue-800">
+                <div className="font-semibold text-blue-800 dark:text-blue-200 mb-1 flex items-center gap-1">
+                  <span>📊</span>
+                  <span>Official GyroDiagnostics Results</span>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-2">
-                  Automatically detects when you paste AI responses or analyst JSON. To enable clipboard permissions in Chrome:
+                <p className="text-gray-700 dark:text-gray-300 mb-3">
+                  Import the latest official evaluation results from the <a 
+                    href="https://github.com/gyrogovernance/diagnostics" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    GyroDiagnostics repository
+                  </a> to explore benchmark data and compare your models.
                 </p>
-                <ol className="list-decimal list-inside text-gray-600 dark:text-gray-400 space-y-1 ml-2 text-xs">
-                  <li>Click the extension icon in your toolbar</li>
-                  <li>When prompted, grant clipboard read permission</li>
-                  <li>Or manually: Right-click extension → "This can read and change site data" → "When you click the extension"</li>
-                </ol>
+                <button
+                  onClick={handleImportOfficialResults}
+                  disabled={isImporting}
+                  className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  {isImporting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Importing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>📥</span>
+                      <span>Import Official Results</span>
+                    </>
+                  )}
+                </button>
                 <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">
-                  💡 <strong>Don't want it?</strong> Disable in Settings → Smart Paste Detection
+                  💡 <strong>What's included:</strong> Pre-evaluated insights from frontier models (GPT-4o, Claude Sonnet 4.5, Grok-4)
                 </p>
               </div>
 

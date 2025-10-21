@@ -5,5 +5,4 @@ repomix --ignore ".gitignore, dist/, node_modules/, docs/, *.md, LICENSE, assets
 # Split the output into manageable chunks
 # Usage: node split-repomix.js [input-file] [max-lines-per-part]
 node split-repomix.js repomix-output.xml 2500  # Default
-node split-repomix.js repomix-output.xml 3000  # Larger chunks
 node split-repomix.js repomix-output.xml 2000  # Smaller chunks

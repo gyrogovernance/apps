@@ -22,8 +22,20 @@ const JournalHome: React.FC<JournalHomeProps> = ({
   onUpdate
 }) => {
   const [operationLoading, setOperationLoading] = React.useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
   const toast = useToast();
   const { confirm, ConfirmModal } = useConfirm();
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openDropdown) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openDropdown]);
 
   const handlePauseSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -97,10 +109,9 @@ const JournalHome: React.FC<JournalHomeProps> = ({
     }
   };
   // Filter out empty sessions from display
-  const nonEmptySessions = sessions.filter(s => !isSessionEmpty(s));
-  
-  const activeSessions = nonEmptySessions.filter(s => s.status === 'active' || s.status === 'paused');
-  const recentSessions = nonEmptySessions
+  // Show ALL sessions (including empty ones) for proper visibility
+  const activeSessions = sessions.filter(s => s.status === 'active' || s.status === 'paused');
+  const recentSessions = sessions
     .filter(s => s.status !== 'active' && s.status !== 'paused')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 5);
@@ -124,7 +135,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             🔄 Active Sessions
           </h2>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {activeSessions.map(session => {
               const progress = getSessionProgress(session);
               const progressPercent = (progress.current / progress.total) * 100;
@@ -133,109 +144,140 @@ const JournalHome: React.FC<JournalHomeProps> = ({
               return (
                 <div
                   key={session.id}
-                  className={`relative rounded-lg border-2 transition-all ${
+                  className={`relative rounded-lg border transition-all ${
                     isActive
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-400 hover:shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-400 hover:shadow-sm'
                   }`}
                 >
                   <button
                     onClick={() => onSelectSession(session.id)}
-                    className="w-full p-5 text-left"
+                    className="w-full p-3 text-left"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 pr-20">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                          {session.challenge.title}
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                            {session.challenge.type}
-                          </span>
-                          {session.status === 'paused' && (
-                            <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 text-xs rounded-full">
-                              ⏸️ Paused
-                            </span>
-                          )}
-                          {isActive && (
-                            <span className="px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 text-xs rounded-full">
-                              ▶️ Current
-                            </span>
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 
+                        className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1 mr-2"
+                        title={session.challenge.title}
+                      >
+                        {session.challenge.title}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatSessionDuration(session)}
+                        </span>
+                        {/* 3-dot menu button */}
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDropdown(openDropdown === session.id ? null : session.id);
+                            }}
+                            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                            title="Session options"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                            </svg>
+                          </button>
+                          
+                          {/* Dropdown Menu */}
+                          {openDropdown === session.id && (
+                            <div className="absolute right-0 top-8 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                              <div className="py-1">
+                                {session.status === 'active' ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePauseSession(session.id, e);
+                                      setOpenDropdown(null);
+                                    }}
+                                    disabled={operationLoading === session.id}
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                  >
+                                    <span>⏸️</span>
+                                    <span>Pause Session</span>
+                                  </button>
+                                ) : session.status === 'paused' ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleResumeSession(session.id, e);
+                                      setOpenDropdown(null);
+                                    }}
+                                    disabled={operationLoading === session.id}
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                  >
+                                    <span>▶️</span>
+                                    <span>Resume Session</span>
+                                  </button>
+                                ) : null}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCloneSession(session.id, e);
+                                    setOpenDropdown(null);
+                                  }}
+                                  disabled={operationLoading === session.id}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                  <span>📋</span>
+                                  <span>Clone Session</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteSession(session.id, e);
+                                    setOpenDropdown(null);
+                                  }}
+                                  disabled={operationLoading === session.id}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                  <span>🗑️</span>
+                                  <span>Delete Session</span>
+                                </button>
+                              </div>
+                            </div>
                           )}
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatSessionDuration(session)}
+                    </div>
+
+                    {/* Status Pills */}
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                        {session.challenge.type}
+                      </span>
+                      {isSessionEmpty(session) && (
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                          Not started
+                        </span>
+                      )}
+                      {session.status === 'paused' && (
+                        <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 text-xs rounded-full">
+                          ⏸️ Paused
+                        </span>
+                      )}
+                      {isActive && (
+                        <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 text-xs rounded-full">
+                          ▶️ Current
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div
+                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercent}%` }}
+                        />
                       </div>
-                    </div>
-
-                  {/* Progress Bar */}
-                  <div className="mb-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        Progress: {progress.label}
+                      <span className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                        {progress.current}/{progress.total}
                       </span>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        {progress.current}/{progress.total} stages
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                    {/* Models Used */}
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {session.process.model_epoch1 && (
-                        <span>Epoch 1: {session.process.model_epoch1}</span>
-                      )}
-                      {session.process.model_epoch2 && (
-                        <span className="ml-3">Epoch 2: {session.process.model_epoch2}</span>
-                      )}
                     </div>
                   </button>
-
-                  {/* Action Buttons */}
-                  <div className="absolute top-3 right-3 flex gap-1">
-                    {session.status === 'active' ? (
-                      <button
-                        onClick={(e) => handlePauseSession(session.id, e)}
-                        disabled={operationLoading === session.id}
-                        className="p-1.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Pause session"
-                      >
-                        {operationLoading === session.id ? '⏳' : '⏸️'}
-                      </button>
-                    ) : session.status === 'paused' ? (
-                      <button
-                        onClick={(e) => handleResumeSession(session.id, e)}
-                        disabled={operationLoading === session.id}
-                        className="p-1.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Resume session"
-                      >
-                        {operationLoading === session.id ? '⏳' : '▶️'}
-                      </button>
-                    ) : null}
-                    <button
-                      onClick={(e) => handleCloneSession(session.id, e)}
-                      disabled={operationLoading === session.id}
-                      className="p-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Clone session (reuse challenge)"
-                    >
-                      {operationLoading === session.id ? '⏳' : '📋'}
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteSession(session.id, e)}
-                      disabled={operationLoading === session.id}
-                      className="p-1.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete session"
-                    >
-                      {operationLoading === session.id ? '⏳' : '🗑️'}
-                    </button>
-                  </div>
                 </div>
               );
             })}
@@ -249,32 +291,33 @@ const JournalHome: React.FC<JournalHomeProps> = ({
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             📜 Recent Sessions
           </h2>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {recentSessions.map(session => (
               <button
                 key={session.id}
                 onClick={() => onSelectSession(session.id)}
-                className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-left"
+                className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-left"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                      {session.challenge.title}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">
-                        {session.challenge.type}
-                      </span>
-                      {session.status === 'complete' && (
-                        <span className="text-xs text-green-600 dark:text-green-400">
-                          ✓ Complete
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate flex-1 mr-2"
+                    title={session.challenge.title}
+                  >
+                    {session.challenge.title}
+                  </h4>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(session.updatedAt).toLocaleDateString()}
                   </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">
+                    {session.challenge.type}
+                  </span>
+                  {session.status === 'complete' && (
+                    <span className="text-xs text-green-600 dark:text-green-400">
+                      ✓ Complete
+                    </span>
+                  )}
                 </div>
               </button>
             ))}
@@ -282,7 +325,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
         </div>
       )}
 
-      {/* Empty State */}
+      {/* No Sessions State */}
       {activeSessions.length === 0 && recentSessions.length === 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📓</div>
@@ -290,13 +333,14 @@ const JournalHome: React.FC<JournalHomeProps> = ({
             No sessions yet
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Start a new evaluation from the Challenges app
+            Create a challenge to start evaluating your AI model
           </p>
           <button
             onClick={onNewSession}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 mx-auto"
           >
-            Go to Challenges
+            <span>🎯</span>
+            <span>Go to Challenges</span>
           </button>
         </div>
       )}

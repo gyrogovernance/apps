@@ -133,7 +133,7 @@ Our solution: Use whatever AI you can access, add mathematical rigor to validate
 
 ### Three-Phase Protocol
 1. **Participation**: Frame your governance challenge
-2. **Preparation**: AI generates 6 reasoning cycles across 2 epochs
+2. **Preparation**: AI generates 6 turns across 2 epochs
 3. **Provision**: Mathematical analysis produces validated report
 
 ### Tensegrity Geometry

@@ -182,9 +182,20 @@ export const SettingsApp: React.FC = () => {
     );
 
     if (confirmed) {
-      await chromeAPI.storage.local.clear();
-      setSettings(DEFAULT_SETTINGS);
-      toast.show('All data cleared', 'info');
+      try {
+        // Clear ALL storage keys including schema version
+        await chromeAPI.storage.local.clear();
+        setSettings(DEFAULT_SETTINGS);
+        toast.show('All data cleared successfully', 'success');
+        
+        // Force page reload to reset all state
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } catch (error) {
+        console.error('Clear data failed:', error);
+        toast.show('Failed to clear data', 'error');
+      }
     }
   };
 

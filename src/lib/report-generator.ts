@@ -14,8 +14,21 @@ import {
 import { behaviorScoresToArray } from './parsing';
 
 /**
- * Generate a complete GovernanceInsight from a finished session
- * @throws Error if session is not complete
+ * Generate a complete GovernanceInsight from a finished session.
+ * 
+ * Primary report generation function that transforms a completed session
+ * into a shareable GovernanceInsight. Performs metric calculations,
+ * aggregations, and data transformations.
+ * 
+ * Process: Validates 4 analyst evaluations, calculates QI/AR/SI per epoch,
+ * takes medians, aggregates pathologies, combines insights, packages into schema.
+ * 
+ * Requires both epochs completed (6 turns each) and all 4 analyst slots filled.
+ * SI computation is optional (returns NaN if any behavior score is N/A).
+ * 
+ * @param session - The completed evaluation session
+ * @returns Complete GovernanceInsight ready for export or library storage
+ * @throws Error if any epoch incomplete or analyst evaluation missing
  */
 export async function generateInsightFromSession(session: Session): Promise<GovernanceInsight> {
   // Helper for median calculation
@@ -89,9 +102,10 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
   const qualityIndex = medianQI;
 
   // Calculate pathology frequency across all analysts
+  // Note: There are 4 evaluations (2 analysts × 2 epochs), not 12 turns
   const totalPathologies = a1e1.pathologies.length + a2e1.pathologies.length + 
                            a1e2.pathologies.length + a2e2.pathologies.length;
-  const pathologyFrequency = totalPathologies / 12;
+  const pathologyFrequency = totalPathologies / 4;
 
   // Combine insights from all analyst evaluations
   const combinedInsights = `# Epoch 1 - Analyst 1\n\n${a1e1.insights}\n\n# Epoch 1 - Analyst 2\n\n${a2e1.insights}\n\n# Epoch 2 - Analyst 1\n\n${a1e2.insights}\n\n# Epoch 2 - Analyst 2\n\n${a2e2.insights}`;

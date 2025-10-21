@@ -17,6 +17,34 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
   const [activeTab, setActiveTab] = React.useState<'overview' | 'structure' | 'behavior' | 'specialization' | 'transcript'>('overview');
   const toast = useToast();
 
+  // Memoize expensive ReactMarkdown rendering - only re-render when markdown changes
+  const renderedInsights = React.useMemo(() => {
+    if (!insight.insights?.combined_markdown) return null;
+    
+    return (
+      <ReactMarkdown
+        components={{
+          h1: ({node, ...props}) => <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3" {...props} />,
+          h2: ({node, ...props}) => <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-5 mb-2" {...props} />,
+          h3: ({node, ...props}) => <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2" {...props} />,
+          p: ({node, ...props}) => <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3" {...props} />,
+          ul: ({node, ...props}) => <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1" {...props} />,
+          ol: ({node, ...props}) => <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1" {...props} />,
+          li: ({node, ...props}) => <li className="text-gray-700 dark:text-gray-300" {...props} />,
+          strong: ({node, ...props}) => <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />,
+          em: ({node, ...props}) => <em className="italic text-gray-800 dark:text-gray-200" {...props} />,
+          code: ({node, inline, ...props}: any) => 
+            inline 
+              ? <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono" {...props} />
+              : <code className="block p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono overflow-x-auto" {...props} />,
+          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-green-400 dark:border-green-600 pl-4 italic text-gray-700 dark:text-gray-300 my-3" {...props} />,
+        }}
+      >
+        {insight.insights.combined_markdown}
+      </ReactMarkdown>
+    );
+  }, [insight.insights?.combined_markdown]);
+
   const handleExportMarkdown = () => {
     const markdown = exportAsMarkdown(insight);
     const blob = new Blob([markdown], { type: 'text/markdown' });
@@ -95,29 +123,10 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
         </div>
 
         {/* Analyst Insights - THE MAIN CONTENT */}
-        {insight.insights?.combined_markdown && (
+        {renderedInsights && (
           <>
             <div className="prose prose-sm dark:prose-invert max-w-none mb-4">
-              <ReactMarkdown
-                components={{
-                  h1: ({node, ...props}) => <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3" {...props} />,
-                  h2: ({node, ...props}) => <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-5 mb-2" {...props} />,
-                  h3: ({node, ...props}) => <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-4 mb-2" {...props} />,
-                  p: ({node, ...props}) => <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3" {...props} />,
-                  ul: ({node, ...props}) => <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1" {...props} />,
-                  ol: ({node, ...props}) => <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1" {...props} />,
-                  li: ({node, ...props}) => <li className="text-gray-700 dark:text-gray-300" {...props} />,
-                  strong: ({node, ...props}) => <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />,
-                  em: ({node, ...props}) => <em className="italic text-gray-800 dark:text-gray-200" {...props} />,
-                  code: ({node, inline, ...props}: any) => 
-                    inline 
-                      ? <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono" {...props} />
-                      : <code className="block p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono overflow-x-auto" {...props} />,
-                  blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-green-400 dark:border-green-600 pl-4 italic text-gray-700 dark:text-gray-300 my-3" {...props} />,
-                }}
-              >
-                {insight.insights.combined_markdown}
-              </ReactMarkdown>
+              {renderedInsights}
             </div>
             
             <button

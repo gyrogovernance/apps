@@ -8,6 +8,7 @@ interface SessionViewProps {
   epochKey: 'epoch1' | 'epoch2';
   onNext: () => void;
   onBack: () => void;
+  onBackToList?: () => void;
 }
 
 /**
@@ -20,18 +21,31 @@ const SessionView: React.FC<SessionViewProps> = ({
   onUpdate,
   epochKey,
   onNext,
-  onBack
+  onBack,
+  onBackToList
 }) => {
   // For now, delegate to SynthesisSection which already has session sync
   // In future iteration, could load session here and pass specific epoch data
   return (
-    <SynthesisSection
-      state={state}
-      onUpdate={onUpdate}
-      epochKey={epochKey}
-      onNext={onNext}
-      onBack={onBack}
-    />
+    <div>
+      {onBackToList && (
+        <div className="mb-4">
+          <button
+            onClick={onBackToList}
+            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
+          >
+            ← Back to Journal List
+          </button>
+        </div>
+      )}
+      <SynthesisSection
+        state={state}
+        onUpdate={onUpdate}
+        epochKey={epochKey}
+        onNext={onNext}
+        onBack={onBack}
+      />
+    </div>
   );
 };
 

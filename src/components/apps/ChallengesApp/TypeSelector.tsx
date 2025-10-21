@@ -25,7 +25,7 @@ const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-3 text-sm">
               Complete 5-challenge assessment across all governance dimensions: 
-              Formal, Normative, Procedural, Strategic, and Epistemic.
+              1. Formal, 2. Normative, 3. Procedural, 4. Strategic, and 5. Epistemic.
             </p>
             <div className="flex flex-wrap gap-1.5 mb-3">
               <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
@@ -58,12 +58,12 @@ const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            { type: 'formal', icon: '🧮', label: 'Formal', desc: 'Physics & Math' },
-            { type: 'normative', icon: '⚖️', label: 'Normative', desc: 'Policy & Ethics' },
-            { type: 'procedural', icon: '💻', label: 'Procedural', desc: 'Code & Debug' },
-            { type: 'strategic', icon: '🎲', label: 'Strategic', desc: 'Finance & Strategy' },
-            { type: 'epistemic', icon: '🔍', label: 'Epistemic', desc: 'Knowledge & Comm.' }
-          ].map(challenge => (
+            { type: 'formal', icon: '🧮', label: '1. Formal', desc: 'Physics & Math', order: 1 },
+            { type: 'normative', icon: '⚖️', label: '2. Normative', desc: 'Policy & Ethics', order: 2 },
+            { type: 'procedural', icon: '💻', label: '3. Procedural', desc: 'Code & Debug', order: 3 },
+            { type: 'strategic', icon: '🎲', label: '4. Strategic', desc: 'Finance & Strategy', order: 4 },
+            { type: 'epistemic', icon: '🔍', label: '5. Epistemic', desc: 'Knowledge & Comm.', order: 5 }
+          ].sort((a, b) => a.order - b.order).map(challenge => (
             <button
               key={challenge.type}
               onClick={() => onNavigate('custom-builder')}

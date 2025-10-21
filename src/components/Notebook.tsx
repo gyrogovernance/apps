@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NotebookState, Section, AppScreen, ChallengeType, Platform, INITIAL_STATE } from '../types';
 import { storage, sessions } from '../lib/storage';
 import { chromeAPI } from '../lib/chrome-mock';
+import { getSessionById } from '../lib/session-helpers';
 import { useToast } from './shared/Toast';
 import { useConfirm } from './shared/Modal';
 import { PersistentHeader } from './shared/PersistentHeader';
@@ -30,11 +31,9 @@ const Notebook: React.FC = () => {
 
   // Load state on mount and listen for storage changes
   useEffect(() => {
-    console.log('Notebook: Loading initial state...');
     const loadState = async () => {
       try {
         const loadedState = await storage.get();
-        console.log('Notebook: State loaded:', loadedState);
         setState(loadedState);
       } catch (error) {
         console.error('Notebook: Error loading state:', error);
@@ -51,7 +50,6 @@ const Notebook: React.FC = () => {
       if (areaName === 'local' && changes['notebook_state']) {
         const newState = changes['notebook_state'].newValue;
         if (newState) {
-          console.log('Storage updated externally, syncing state...');
           setState(newState);
         }
       }
@@ -72,10 +70,6 @@ const Notebook: React.FC = () => {
       const newState: NotebookState = {
         ...prev,
         ...u,
-        challenge: u.challenge ? { ...prev.challenge, ...u.challenge } : prev.challenge,
-        process: u.process ? { ...prev.process, ...u.process } : prev.process,
-        epochs: u.epochs ? { ...prev.epochs, ...u.epochs } : prev.epochs,
-        analysts: u.analysts ? { ...prev.analysts, ...u.analysts } : prev.analysts,
         ui: u.ui ? { ...prev.ui, ...u.ui } : prev.ui,
         sessions: u.sessions !== undefined ? u.sessions : prev.sessions,
         activeSessionId: u.activeSessionId !== undefined ? u.activeSessionId : prev.activeSessionId,
@@ -136,7 +130,8 @@ const Notebook: React.FC = () => {
         ui: {
           ...freshState.ui,
           currentApp: 'journal',
-          currentSection: 'setup'
+          journalView: 'home', // Show Journal Home, not inside session
+          currentSection: 'epoch1'
         }
       });
       
@@ -152,6 +147,9 @@ const Notebook: React.FC = () => {
   const handleStartGyroSuite = async (platform: Platform) => {
     setOperationLoading(true);
     try {
+      // Generate unique suite run ID for linking insights
+      const suiteRunId = `suite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
       // Create 5 sessions for Gyro Suite
       const suiteTypes = ['formal', 'normative', 'procedural', 'strategic', 'epistemic'] as const;
       const suiteTitles: Record<typeof suiteTypes[number], string> = {
@@ -162,45 +160,35 @@ const Notebook: React.FC = () => {
         epistemic: 'GyroDiagnostics - Epistemic (Knowledge & Communication)'
       };
 
-      const sessionIds: string[] = [];
-      
-      for (const type of suiteTypes) {
-        const challenge = {
+      // Build challenge items for batch creation
+      const items = suiteTypes.map(type => ({
+        challenge: {
           title: suiteTitles[type],
           description: `Complete ${type} challenge as part of GyroDiagnostics Evaluation Suite`,
           type: type as ChallengeType,
           domain: ['GyroDiagnostics', type]
-        };
-        const session = await sessions.create(challenge, platform);
-        sessionIds.push(session.id);
-      }
+        },
+        platform
+      }));
 
-      // Reload entire state from storage (single source of truth)
-      const freshState = await storage.get();
+      // Create all sessions atomically with first session active
+      const { sessionIds, state: freshState } = await sessions.createMany(items, 0);
       
       // Start with first challenge (Formal)
-      const firstSession = freshState.sessions.find(s => s.id === sessionIds[0]);
+      const firstSession = getSessionById(freshState, sessionIds[0]);
       if (!firstSession) throw new Error('Failed to load first session');
 
       updateState({
         ...freshState,
-        // Set suite tracking
         activeSessionId: sessionIds[0],
         gyroSuiteSessionIds: sessionIds,
         gyroSuiteCurrentIndex: 0,
-        // Sync first session to legacy fields
-        challenge: firstSession.challenge,
-        process: firstSession.process,
-        epochs: firstSession.epochs,
-        analysts: {
-          analyst1: null,
-          analyst2: null
-        },
-        results: null,
+        currentSuiteRunId: suiteRunId, // NEW: track this suite run
         ui: {
           ...freshState.ui,
           currentApp: 'journal',
-          currentSection: 'setup'
+          journalView: 'home', // Show Journal Home, not inside session
+          currentSection: 'epoch1'
         }
       });
       

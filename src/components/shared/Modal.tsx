@@ -1,4 +1,5 @@
 import React, { ReactNode, useState } from 'react';
+import { Z_INDEX } from '../../lib/constants';
 
 interface ModalProps {
   isOpen: boolean;
@@ -13,11 +14,13 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" 
+      className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm" 
+      style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       onClick={onClose}
     >
       <div 
         className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full mx-4 p-6 animate-scale-in"
+        style={{ zIndex: Z_INDEX.MODAL_CONTENT }}
         onClick={e => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">

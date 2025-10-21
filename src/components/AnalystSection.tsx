@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { NotebookState } from '../types';
 import { generateAnalystPrompt } from '../lib/prompts';
 import { validateAnalystJSON } from '../lib/parsing';
-import { sessions, drafts } from '../lib/storage';
+import { sessions } from '../lib/storage';
 import { getActiveSession } from '../lib/session-helpers';
 import { useToast } from './shared/Toast';
 import { useSettings } from '../hooks/useSettings';
-import { AI_MODELS } from '../lib/model-list';
+import { useDrafts } from '../hooks/useDrafts';
+import { CopyableDetails } from './shared/CopyableDetails';
+import { ModelSelect } from './shared/ModelSelect';
 
 interface AnalystSectionProps {
   state: NotebookState;
@@ -36,7 +38,14 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
 
   const analystNumber = analystKey === 'analyst1' ? 1 : 2;
   const epochNumber = epochKey === 'epoch1' ? 1 : 2;
-  const [jsonInput, setJsonInput] = useState('');
+  const draftKey = `${analystKey}_${epochKey}`;
+  
+  const { value: jsonInput, setValue: setJsonInput, clear: clearDraft } = useDrafts({
+    sessionId: session.id,
+    key: draftKey,
+    enabled: settings?.autoSaveDrafts || false
+  });
+  
   const [modelName, setModelName] = useState(() => {
     // Always use the specific analyst's model, regardless of epoch
     const modelKey = analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2';
@@ -46,58 +55,27 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     valid: boolean;
     errors: string[];
   } | null>(null);
-  const [copyStatus, setCopyStatus] = useState<string>('');
-  const [copyFeedback, setCopyFeedback] = useState<{
-    prompt?: 'success' | 'error' | null;
-    transcript?: 'success' | 'error' | null;
-    fullPrompt?: 'success' | 'error' | null;
-    shortPrompt?: 'success' | 'error' | null;
-  }>({});
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Load draft on mount (use combined key for per-epoch drafts)
-  const draftKey = `${analystKey}_${epochKey}`;
+  const isComplete = session.analysts[epochKey][analystKey]?.status === 'complete';
 
-  // Reset local fields when stage changes, then load draft for that stage
-  useEffect(() => {
-    let cancelled = false;
-    const init = async () => {
-      // Clear any carry-over state immediately
-      setJsonInput('');
-      setValidationResult(null);
-
-      if (settings?.autoSaveDrafts && session.id) {
-        try {
-          const draft = await drafts.load(session.id, draftKey);
-          if (!cancelled && draft && draft.trim()) {
-            setJsonInput(draft);
-          }
-        } catch {
-          // ignore
-        }
-      }
-    };
-    init();
-    return () => { cancelled = true; };
-  }, [session.id, draftKey, settings?.autoSaveDrafts]);
-
-  // Update model name when session changes (e.g., when going back to Epoch 1)
+  // Sync model name when session changes (e.g., switching between sessions)
+  // Note: modelName is NOT in deps to avoid resetting user input while typing
   useEffect(() => {
     const modelKey = analystKey === 'analyst1' ? 'model_analyst1' : 'model_analyst2';
     const currentModel = session.process[modelKey] || '';
-    if (currentModel !== modelName) {
-      setModelName(currentModel);
-    }
-  }, [session.process, analystKey, modelName]);
+    setModelName(currentModel);
+  }, [session.process, analystKey]);
 
-  // Auto-save draft
+  // Load existing data when editing a completed evaluation
   useEffect(() => {
-    if (settings?.autoSaveDrafts && jsonInput && session.id) {
-      const timeout = setTimeout(() => {
-        drafts.save(session.id!, draftKey, jsonInput).catch(() => {/* ignore */});
-      }, 1000);
-      return () => clearTimeout(timeout);
+    if (isEditing && isComplete) {
+      const existingData = session.analysts[epochKey][analystKey]?.data;
+      if (existingData) {
+        setJsonInput(JSON.stringify(existingData, null, 2));
+      }
     }
-  }, [jsonInput, session.id, draftKey, settings?.autoSaveDrafts]);
+  }, [isEditing, isComplete, session.analysts, epochKey, analystKey, setJsonInput]);
 
   // Generate transcript for the specific epoch only
   const getEpochTranscript = (): string => {
@@ -105,16 +83,6 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     return epoch.turns
       .map(t => `{Turn ${t.number}}\n${t.content}`)
       .join('\n\n');
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyStatus('Copied!');
-      setTimeout(() => setCopyStatus(''), 2000);
-    } catch (err) {
-      toast.show('Failed to copy to clipboard', 'error');
-    }
   };
 
   const getTranscriptText = () => {
@@ -126,23 +94,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
       .join('\n\n');
   };
 
-  const handleCopy = async (text: string, type: keyof typeof copyFeedback) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyFeedback(prev => ({ ...prev, [type]: 'success' }));
-      setTimeout(() => {
-        setCopyFeedback(prev => ({ ...prev, [type]: null }));
-      }, 2000);
-    } catch (error) {
-      setCopyFeedback(prev => ({ ...prev, [type]: 'error' }));
-      setTimeout(() => {
-        setCopyFeedback(prev => ({ ...prev, [type]: null }));
-      }, 2000);
-    }
-  };
-
   const handleValidate = async () => {
-    console.log('handleValidate called', { jsonInput: jsonInput.trim(), modelName: modelName.trim() });
     
     if (!jsonInput.trim()) {
       toast.show('Please paste the JSON response', 'error');
@@ -179,7 +131,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
 
         // Clear draft
         if (settings?.autoSaveDrafts) {
-          await drafts.clear(session.id, draftKey);
+          await clearDraft();
         }
 
         // Update parent state with partial to avoid clobbering UI
@@ -213,187 +165,68 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     session.challenge.type
   );
 
-  const isComplete = session.analysts[epochKey][analystKey]?.status === 'complete';
+  const showForm = !isComplete || isEditing;
 
   return (
     <div className="section-card">
       <h2 className="section-header">
-        <span>3. Provision: Epoch {epochNumber} - Analyst {analystNumber} Evaluation</span>
+        <div className="flex flex-col gap-1">
+          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            {session.challenge.title}
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            3. Provision: Epoch {epochNumber} - Analyst {analystNumber} Evaluation
+          </div>
+        </div>
         {isComplete && <span className="success-badge">✓ Completed</span>}
       </h2>
 
       {/* Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-3 mb-4 text-sm">
-        <p className="font-medium mb-1 text-gray-900 dark:text-gray-100">Instructions:</p>
-        <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
-          <li>Copy the analyst prompt below</li>
-          <li>Paste it into a <strong>different AI model</strong> than used for synthesis</li>
-          <li>Copy the JSON response and paste it here</li>
-          <li>Validate to ensure proper format</li>
-        </ol>
-      </div>
+      {showForm && (
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-3 mb-4 text-sm">
+          <p className="font-medium mb-1 text-gray-900 dark:text-gray-100">Instructions:</p>
+          <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
+            <li>Copy the analyst prompt below</li>
+            <li>Paste it into a <strong>different AI model</strong> than used for synthesis</li>
+            <li>Copy the JSON response and paste it here</li>
+            <li>Validate to ensure proper format</li>
+          </ol>
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* Model Name */}
-        <div>
-          <label className="label-text">Analyst Model Name *</label>
-          <input
-            type="text"
+        {showForm && (
+          <ModelSelect
             value={modelName}
-            onChange={(e) => setModelName(e.target.value)}
-            list={`analyst-model-suggestions-${analystKey}-${epochKey}`}
-            placeholder="Select or type model name (e.g., gpt-5-chat, claude-opus-4-1)"
-            className="input-field"
+            onChange={setModelName}
+            id={`analyst-model-${analystKey}-${epochKey}`}
+            label="Analyst Model Name"
+            helperText="Use a different model than the synthesis epochs. Select from list or enter custom name."
+            required={true}
           />
-          <datalist id={`analyst-model-suggestions-${analystKey}-${epochKey}`}>
-            {AI_MODELS.map((model) => (
-              <option key={model.value} value={model.value} />
-            ))}
-          </datalist>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Use a different model than the synthesis epochs. Select from list or enter custom name.
-          </p>
-        </div>
+        )}
 
         {/* Copy Options for Analyst 2 */}
-        {analystKey === 'analyst2' && (
+        {showForm && analystKey === 'analyst2' && (
           <div className="space-y-2">
             <label className="label-text">Copy Options</label>
             <div className="space-y-2">
-              {/* Transcript */}
-              <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
-                  ▼
-                </span>
-                <span className="text-sm font-medium">Transcript</span>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleCopy(getTranscriptText(), 'transcript');
-                }}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                title="Copy transcript"
-              >
-                {copyFeedback.transcript === 'success' ? '✅' : copyFeedback.transcript === 'error' ? '❌' : '📋'}
-              </button>
-            </summary>
-                <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg text-gray-900 dark:text-gray-100">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Copy this to provide the full conversation context to a different AI model for analysis.
-                  </p>
-                  <div className="relative">
-                    <textarea
-                      value={getTranscriptText()}
-                      readOnly
-                      rows={6}
-                      className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
-                    />
-                    <div className="absolute bottom-2 right-2 flex gap-1">
-                      <button
-                        onClick={() => copyToClipboard(getTranscriptText())}
-                        className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
-                      >
-                        <span className="text-sm">📋</span>
-                        <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              {/* Full Analyst Prompt */}
-              <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
-                  ▼
-                </span>
-                <span className="text-sm font-medium">Full Analyst Prompt</span>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleCopy(analystPrompt, 'fullPrompt');
-                }}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                title="Copy full prompt"
-              >
-                {copyFeedback.fullPrompt === 'success' ? '✅' : copyFeedback.fullPrompt === 'error' ? '❌' : '📋'}
-              </button>
-            </summary>
-                <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg text-gray-900 dark:text-gray-100">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Use this when you want the full context and detailed instructions for the analyst.
-                  </p>
-                  <div className="relative">
-                    <textarea
-                      value={analystPrompt}
-                      readOnly
-                      rows={8}
-                      className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
-                    />
-                    <div className="absolute bottom-2 right-2 flex gap-1">
-                      <button
-                        onClick={() => copyToClipboard(analystPrompt)}
-                        className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
-                      >
-                        <span className="text-sm">📋</span>
-                        <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              {/* Short Analyst Prompt */}
-              <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
-                  ▼
-                </span>
-                <span className="text-sm font-medium">Short Analyst Prompt</span>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleCopy("You are a different analyst, please provide your own review in the same JSON format", 'shortPrompt');
-                }}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                title="Copy short prompt"
-              >
-                {copyFeedback.shortPrompt === 'success' ? '✅' : copyFeedback.shortPrompt === 'error' ? '❌' : '📋'}
-              </button>
-            </summary>
-                <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg text-gray-900 dark:text-gray-100">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Use this for token economy when using a different model in the same chat session.
-                  </p>
-                  <div className="relative">
-                    <textarea
-                      value="You are a different analyst, please provide your own review in the same JSON format"
-                      readOnly
-                      rows={3}
-                      className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
-                    />
-                    <div className="absolute bottom-2 right-2 flex gap-1">
-                      <button
-                        onClick={() => copyToClipboard("You are a different analyst, please provide your own review in the same JSON format")}
-                        className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
-                      >
-                        <span className="text-sm">📋</span>
-                        <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </details>
+              <CopyableDetails
+                title="Transcript"
+                content={getTranscriptText()}
+                rows={6}
+              />
+              <CopyableDetails
+                title="Full Analyst Prompt"
+                content={analystPrompt}
+                rows={8}
+              />
+              <CopyableDetails
+                title="Short Analyst Prompt"
+                content="You are a different analyst, please provide your own review in the same JSON format"
+                rows={3}
+              />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Choose what to copy based on your analysis workflow preference.
@@ -403,56 +236,21 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
 
         {/* Analyst Prompt - Only show for Analyst 1 */}
         {analystKey === 'analyst1' && (
-        <div>
-          <label className="label-text">Analyst Prompt (Copy this)</label>
-            <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 dark:text-gray-400 group-open:rotate-180 transition-transform" title="Click to expand">
-                  ▼
-                </span>
-                <span className="text-sm font-medium">View Full Prompt</span>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleCopy(analystPrompt, 'prompt');
-                }}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                title="Copy prompt"
-              >
-                {copyFeedback.prompt === 'success' ? '✅' : copyFeedback.prompt === 'error' ? '❌' : '📋'}
-              </button>
-            </summary>
-              <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-b-lg">
-          <div className="relative">
-            <textarea
-              value={analystPrompt}
-              readOnly
+          <div>
+            <label className="label-text">Analyst Prompt (Copy this)</label>
+            <CopyableDetails
+              title="View Full Prompt"
+              content={analystPrompt}
               rows={12}
-                    className="textarea-field bg-gray-50 dark:bg-gray-700 font-mono text-sm pb-8"
             />
-                  <div className="absolute bottom-2 right-2 flex gap-1">
-            <button
-              onClick={() => copyToClipboard(analystPrompt)}
-                      className="btn-secondary flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-400 dark:border-gray-500 shadow-md min-w-[60px] justify-center"
-            >
-                      <span className="text-sm">📋</span>
-                      <span className="whitespace-nowrap">{copyStatus || 'Copy'}</span>
-            </button>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  This prompt includes the full transcript from Epoch {epochNumber}
-                </p>
-              </div>
-            </details>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              This prompt includes the full transcript from Epoch {epochNumber}
+            </p>
           </div>
         )}
 
         {/* JSON Response Input */}
-        {!isComplete && (
+        {showForm && (
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="label-text">Paste JSON Response</label>
@@ -518,7 +316,6 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
                         toast.show('Clipboard is empty', 'error');
                       }
                     } catch (err) {
-                      console.error('Failed to read clipboard:', err);
                       toast.show('Failed to read from clipboard. Make sure you have permission.', 'error');
                     }
                   }}
@@ -578,11 +375,19 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
         )}
 
         {/* Completed View */}
-        {isComplete && (
+        {isComplete && !isEditing && (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded p-4">
-            <div className="flex items-center gap-2 text-green-800 dark:text-green-200 mb-2">
-              <span className="text-lg">✓</span>
-              <span className="font-medium">Analyst {analystNumber} evaluation completed</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                <span className="text-lg">✓</span>
+                <span className="font-medium">Analyst {analystNumber} evaluation completed</span>
+              </div>
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="btn-secondary text-sm"
+              >
+                Edit Scores
+              </button>
             </div>
             <div className="text-sm text-green-700 dark:text-green-300">
               Model: {analystKey === 'analyst1' ? session.process.model_analyst1 : session.process.model_analyst2}
@@ -596,7 +401,18 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
         <button onClick={onBack} className="btn-secondary">
           ← Back
         </button>
-        {isComplete && (
+        {isEditing && (
+          <button 
+            onClick={() => {
+              setIsEditing(false);
+              setValidationResult(null);
+            }}
+            className="btn-secondary"
+          >
+            Cancel Edit
+          </button>
+        )}
+        {isComplete && !isEditing && (
           <button onClick={handleNext} className="btn-primary">
             Next →
           </button>
