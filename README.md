@@ -23,10 +23,10 @@
 
 ---
 
-![Ai Inspector Browser Extension](/assets/ai_inspector_cover.jpg)
-# 🌍 Ai Inspector - Browser Extension
+![AI Inspector Browser Extension](/assets/ai_inspector_cover.jpg)
+# 🔍 AI Inspector - Browser Extension
 
-**Transform everyday AI conversations into rigorous governance analysis.** This browser extension validates AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
+**Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
 > **⚠️ ALPHA RELEASE**  
 > Core features are implemented but may have bugs. See [CHANGELOG](/CHANGELOG.md) for updates.
@@ -45,7 +45,7 @@
 
 **You provide**: A governance challenge  
 **AI provides**: Structured reasoning through synthesis  
-**We provide**: Mathematical quality assessment  
+**AI Inspector provides**: Mathematical quality assessment and inspection  
 **Community receives**: Public knowledge repository
 
 ---
@@ -69,7 +69,7 @@
    - Any SDG-aligned topic
 3. **Copy prompts** to your AI chat (ChatGPT, Claude, etc.)
 4. **Capture responses** using the element picker
-5. **Get validated analysis** with three key metrics:
+5. **Get inspected analysis** with three key metrics:
    - Quality Index (overall performance)
    - Alignment Rate (reasoning efficiency)
    - Superintelligence Index (structural coherence)
@@ -81,8 +81,8 @@
 
 ## ✨ Core Capabilities
 
-### 🔬 Mathematical Validation
-Evaluates AI responses across 20 metrics in three dimensions:
+### 🔬 Mathematical Inspection
+Inspects AI responses across 20 metrics in three dimensions:
 - **Structure**: Reasoning coherence and integrity
 - **Behavior**: Accuracy and reliability patterns
 - **Specialization**: Domain-specific expertise
@@ -96,7 +96,10 @@ Evaluates AI responses across 20 metrics in three dimensions:
 Compatible with ChatGPT, Claude, Gemini, LMArena, Poe, or any chat interface - no special access required.
 
 ### 🤝 Knowledge Commons
-Export validated findings to contribute to open governance research under CC0 license.
+Export inspected findings to contribute to open governance research under CC0 license.
+
+### 🕵️‍♂️ Lie Detection Mode
+Quickly inspect for deception using aperture analysis from your Hodge decomposition framework—spot scripted lies or chaotic fabrications in just 3-6 turns.
 
 ---
 
@@ -105,7 +108,10 @@ Export validated findings to contribute to open governance research under CC0 li
 **Communities**: Evidence-based policy development  
 **Researchers**: Reproducible governance experiments  
 **Policy Makers**: Quality assessment of AI recommendations  
-**NGOs**: Validated advocacy proposals
+**NGOs**: Validated advocacy proposals  
+**Citizens**: Direct participation in AI governance
+
+---
 
 ## 📖 Documentation
 
@@ -114,24 +120,22 @@ Export validated findings to contribute to open governance research under CC0 li
 - **[Import/Export Guide](docs/IMPORT_EXPORT.md)** - Data management and migration
 - **[Developer Guide](DEV_GUIDE.md)** - Technical implementation details
 
-**Citizens**: Direct participation in AI governance
-
 ---
 
 ## 🎯 Why This Matters
 
-The [2025 AI Safety Index](https://futureoflife.org/ai-safety-index-summer-2025/) shows meaningful AI evaluation remains restricted to corporate insiders. Communities tackling real challenges need accessible validation tools.
+The [2025 AI Safety Index](https://futureoflife.org/ai-safety-index-summer-2025/) shows meaningful AI evaluation remains restricted to corporate insiders. Communities tackling real challenges need accessible inspection tools.
 
-Our solution: Use whatever AI you can access, add mathematical rigor to validate the outputs.
+Our solution: Use whatever AI you can access, add mathematical rigor to inspect the outputs.
 
 ---
 
 ## 📈 What Makes This Different
 
-| Conventional AI Tools | GyroGovernance Framework |
+| Conventional AI Tools | AI Inspector Framework |
 |----------------------|--------------------------|
 | Requires enterprise access | Uses your existing chat access |
-| Tests capabilities | Validates governance alignment |
+| Tests capabilities | Inspects governance alignment |
 | Proprietary black box | Open-source transparency |
 | Binary pass/fail | Nuanced quality spectrum |
 | Expert-only | Citizen-accessible |
@@ -143,7 +147,7 @@ Our solution: Use whatever AI you can access, add mathematical rigor to validate
 ### Three-Phase Protocol
 1. **Participation**: Frame your governance challenge
 2. **Preparation**: AI generates 6 turns across 2 epochs
-3. **Provision**: Mathematical analysis produces validated report
+3. **Provision**: Mathematical inspection produces validated report
 
 ### Tensegrity Geometry
 The framework uses tetrahedral (K₄) topology to eliminate bias:
@@ -151,7 +155,7 @@ The framework uses tetrahedral (K₄) topology to eliminate bias:
 - Decomposes into coherence vs. adaptation components
 - Measures against theoretical optimum (A* ≈ 0.02070)
 
-This isn't subjective judgment - it's mathematical measurement of reasoning structure.
+This isn't subjective judgment - it's mathematical inspection of reasoning structure.
 
 ---
 
@@ -164,75 +168,3 @@ git clone https://github.com/gyrogovernance/apps.git
 cd apps
 npm install
 npm run dev    # Start development mode
-```
-
-Load `dist/` folder in Chrome as unpacked extension.
-
-### Architecture
-
-```
-src/
-├── components/     # React UI modules
-├── lib/           # Validation engine
-│   ├── calculations.ts  # Mathematical core
-│   ├── prompts.ts      # Challenge templates
-│   └── parsing.ts      # Response processing
-└── types/         # TypeScript definitions
-```
-
-**Stack**: Manifest V3 • React • TypeScript • Tailwind • math.js
-
-### Contributing
-
-Priority areas:
-- Firefox/Edge compatibility
-- Multilingual templates
-- Additional SDG challenges
-- UI/UX improvements
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
-
-## 📖 Citation
-
-```bibtex
-@misc{gyrogovernanceapps,
-  title={AI-Empowered Governance Apps: Gyroscopic Alignment Policy Development Lab},
-  author={Korompilias, Basil},
-  year={2025},
-  howpublished={GitHub Repository},
-  url={https://github.com/gyrogovernance/apps},
-  note={Apps for AI-Empowered Governance and Policy Development}
-}
-```
-
----
-
-## 🤝 Collaboration
-
-**Research Integration**: Incorporate our validation framework  
-**Advocacy Support**: Generate evidence-based proposals  
-**Technical Extensions**: Add domain-specific challenges  
-
-[Open an issue](https://github.com/gyrogovernance/apps/issues) • [Start a discussion](https://github.com/gyrogovernance/apps/discussions)
-
----
-
-## 📄 License
-
-MIT License. See [LICENSE](LICENSE) for details.
-
-© 2025 Basil Korompilias.
-
----
-
-<div style="border: 1px solid #ccc; padding: 1em; font-size: 0.6em; background-color:rgba(249, 249, 249, 0.1); border-radius: 6px; line-height: 1.5;">
-  <p><strong>🤖 AI Disclosure</strong></p>
-  <p>All software architecture, design, implementation, documentation, and evaluation frameworks in this project were authored and engineered by its Author.</p>
-  <p>Artificial intelligence was employed solely as a technical assistant, limited to code drafting, formatting, verification, and editorial services, always under direct human supervision.</p>
-  <p>All foundational ideas, design decisions, and conceptual frameworks originate from the Author.</p>
-  <p>Responsibility for the validity, coherence, and ethical direction of this project remains fully human.</p>
-  <p><strong>Acknowledgements:</strong><br>
-  This project benefited from AI language model services accessed through LMArena, Cursor IDE, OpenAI (ChatGPT), Anthropic (Claude), XAI (Grok), Deepseek, and Google (Gemini).</p>
-</div>
