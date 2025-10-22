@@ -30,6 +30,10 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
     ? chrome.runtime.getURL('icons/gyrogovernance_stamp.png')
     : 'dist/icons/gyrogovernance_stamp.png';
 
+  const headerImageUrl = typeof chrome !== 'undefined' && chrome.runtime?.getURL 
+    ? chrome.runtime.getURL('icons/ai_inspector_app_top.svg')
+    : 'dist/icons/ai_inspector_app_top.svg';
+
   // Load guide state from localStorage on mount
   React.useEffect(() => {
     const savedState = localStorage.getItem('welcome_guide_open');
@@ -83,11 +87,21 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
+    <>
+      {/* Header Image - Full width, no padding */}
+      <div>
+        <img 
+          src={headerImageUrl}
+          alt="GyroDiagnostics AI Inspector" 
+          className="w-full h-auto block"
+        />
+      </div>
+
+      <div className="p-6 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
         <p className="text-gray-700 dark:text-gray-300 text-base font-semibold">
-          Transform AI conversations into validated governance insights using the GyroDiagnostics framework.
+          Inspect AI outputs for truth, alignment, and governance quality using mathematical assessment.
         </p>
       </div>
 
@@ -284,7 +298,7 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

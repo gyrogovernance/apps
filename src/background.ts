@@ -1,7 +1,7 @@
 // Background service worker for the extension
 
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log('AI-Empowered Governance Apps installed');
+  console.log('AI Inspector installed');
   
   // Set side panel to open when action button is clicked
   try {

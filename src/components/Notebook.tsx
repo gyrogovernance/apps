@@ -220,7 +220,7 @@ const Notebook: React.FC = () => {
     return (
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400 text-sm">
-          Loading AI-Empowered Governance Apps...
+          Loading AI Inspector...
         </div>
       </div>
     );

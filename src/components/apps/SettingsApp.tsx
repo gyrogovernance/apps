@@ -319,7 +319,7 @@ export const SettingsApp: React.FC = () => {
             📖 About GyroDiagnostics
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            AI-Empowered Governance Apps v0.2.1
+            AI Inspector v0.2.3
           </p>
           <p className="text-xs text-gray-600 dark:text-gray-400">
             Open-source framework for evaluating AI models through structured governance challenges.

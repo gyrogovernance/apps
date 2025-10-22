@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -29,11 +30,27 @@ module.exports = {
       template: './public/sidepanel.html',
       inject: true,
     }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'assets', to: 'icons', noErrorOnMissing: true },
+        { from: 'public/icons', to: 'icons', noErrorOnMissing: true }
+      ]
+    })
   ],
   devServer: {
-    static: {
-      directory: path.join(__dirname, 'dev-dist'),
-    },
+    static: [
+      {
+        directory: path.join(__dirname, 'dev-dist'),
+      },
+      {
+        directory: path.join(__dirname, 'assets'),
+        publicPath: '/icons',
+      },
+      {
+        directory: path.join(__dirname, 'public/icons'),
+        publicPath: '/icons',
+      }
+    ],
     port: 3000,
     hot: true,
     open: true,

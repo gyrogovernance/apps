@@ -101,7 +101,7 @@ ${insight.quality?.pathologies?.detected && insight.quality.pathologies.detected
 
 ---
 
-_Generated with AI-Empowered Governance Apps_
+_Generated with AI Inspector_
 `;
   
   return md;

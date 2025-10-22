@@ -42,7 +42,8 @@ module.exports = {
         { from: 'public/manifest.json', to: 'manifest.json' },
         { from: 'public/sidepanel.html', to: 'sidepanel.html' },
         { from: 'public/results.zip', to: 'results.zip' },
-        { from: 'assets', to: 'icons', noErrorOnMissing: true }
+        { from: 'assets', to: 'icons', noErrorOnMissing: true },
+        { from: 'public/icons', to: 'icons', noErrorOnMissing: true }
       ]
     })
   ]

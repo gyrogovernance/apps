@@ -1,7 +1,7 @@
 {
-  "name": "aiempowered-governance-lab",
+  "name": "ai-inspector",
   "version": "0.2.3",
-  "description": "Generate validated insights on governance challenges through structured AI-empowered processes",
+  "description": "Browser extension to inspect AI outputs for truth, alignment, and governance quality using mathematical assessment",
   "scripts": {
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
