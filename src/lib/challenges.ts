@@ -131,7 +131,7 @@ Develop a comprehensive governance model that prioritizes human dignity and heal
     description: "Ensure inclusive and equitable quality education",
     type: 'epistemic',
     domain: ['SDG-4', 'education', 'learning'],
-    icon: '📚',
+    icon: '📖',
     color: '#C5192D',
     prompt: `Design an AI-Empowered framework for global education that ensures quality, equity, and lifelong learning.
 

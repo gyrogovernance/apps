@@ -18,7 +18,7 @@ interface TimerProps {
   className?: string;
 }
 
-export const Timer: React.FC<TimerProps> = ({ 
+export const Timer: React.FC<TimerProps> = React.memo(({ 
   sessionId, 
   epochKey, 
   initialDuration = 0,
@@ -150,5 +150,5 @@ export const Timer: React.FC<TimerProps> = ({
       </div>
     </div>
   );
-};
+});
 

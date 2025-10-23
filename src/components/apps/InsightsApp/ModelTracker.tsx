@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { GovernanceInsight } from '../../../types';
+import { getAlignmentColor, getQIColor } from '../../../lib/ui-utils';
+import { formatDuration, formatDate } from '../../../lib/export-utils';
+import GlassCard from '../../shared/GlassCard';
 
 interface SuiteAggregate {
   suiteRunId: string;
@@ -18,82 +21,6 @@ interface ModelTrackerProps {
   onViewInsight: (insightId: string) => void;
 }
 
-// Detect implicit suites from existing GyroDiagnostics insights (robust version)
-const detectImplicitSuites = (insights: GovernanceInsight[]): Record<string, GovernanceInsight[]> => {
-  const implicitSuites: Record<string, GovernanceInsight[]> = {};
-  
-  // Filter to GyroDiagnostics insights without suiteRunId (broader detection)
-  const isGD = (i: GovernanceInsight) =>
-    i.suiteRunId ||
-    i.metadata?.evaluation_method === 'GyroDiagnostics' ||
-    (i.tags && i.tags.includes('gyroDiagnostics')) ||
-    (i.challenge?.domain && i.challenge.domain.map(d => d.toLowerCase()).includes('gyrodiagnostics')) ||
-    (i.challenge?.title && i.challenge.title.toLowerCase().includes('gyrodiagnostics'));
-
-  const gyroInsights = insights
-    .filter(i => !i.suiteRunId && isGD(i))
-    .sort((a, b) => new Date(a.process.created_at).getTime() - new Date(b.process.created_at).getTime());
-
-  // Group by model (normalize name) with time window check
-  const modelGroups: Record<string, GovernanceInsight[]> = {};
-  
-  gyroInsights.forEach(insight => {
-    // Normalize model name (remove common suffixes like -thinking-32k)
-    let model = insight.process.models_used.synthesis_epoch1 || 'Unknown';
-    model = model.replace(/-thinking.*$|-instruct.*$|-flash.*$/i, '').trim();
-    
-    if (!modelGroups[model]) {
-      modelGroups[model] = [];
-    }
-    modelGroups[model].push(insight);
-  });
-
-  // For each model group, find clusters within 24-hour windows
-  Object.entries(modelGroups).forEach(([model, modelInsights]) => {
-    let currentCluster: GovernanceInsight[] = [];
-    let clusterStartTime: number | null = null;
-    
-    modelInsights.forEach(insight => {
-      const time = new Date(insight.process.created_at).getTime();
-      
-      if (clusterStartTime === null || time - clusterStartTime > 24 * 60 * 60 * 1000) {
-        // Start new cluster if >24h from previous
-        if (currentCluster.length >= 5) {
-          processCluster(model, currentCluster, implicitSuites);
-        }
-        currentCluster = [insight];
-        clusterStartTime = time;
-      } else {
-        currentCluster.push(insight);
-      }
-    });
-    
-    // Process final cluster
-    if (currentCluster.length >= 5) {
-      processCluster(model, currentCluster, implicitSuites);
-    }
-  });
-
-  return implicitSuites;
-};
-
-// Helper to process a potential cluster
-const processCluster = (
-  model: string,
-  cluster: GovernanceInsight[],
-  implicitSuites: Record<string, GovernanceInsight[]>
-) => {
-  // Check for exactly 5 unique challenge types (case-insensitive)
-  const uniqueTypes = [...new Set(cluster.map(i => i.challenge.type.toLowerCase()))];
-  const expectedTypes = new Set(['epistemic', 'formal', 'normative', 'procedural', 'strategic']);
-  
-  if (uniqueTypes.length === 5 && uniqueTypes.every(t => expectedTypes.has(t))) {
-    // Generate implicit ID based on model + start time
-    const startDate = new Date(cluster[0].process.created_at).toISOString().slice(0,10);
-    const suiteRunId = `implicit_${model.replace(/[^a-z0-9]/gi, '_')}_${startDate}`;
-    implicitSuites[suiteRunId] = cluster;
-  }
-};
 
 export const ModelTracker: React.FC<ModelTrackerProps> = ({
   insights,
@@ -101,10 +28,9 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
 }) => {
   const [selectedModel, setSelectedModel] = useState<string>('');
 
-  // Group insights by suiteRunId and calculate aggregates (same logic as SuiteReports)
+  // Group insights by suiteRunId and calculate aggregates
   const suites = useMemo(() => {
-    // First, group by explicit suiteRunId
-    const explicitGrouped = insights.reduce((acc, insight) => {
+    const grouped = insights.reduce((acc, insight) => {
       if (!insight.suiteRunId) return acc;
       
       if (!acc[insight.suiteRunId]) {
@@ -113,12 +39,6 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
       acc[insight.suiteRunId].push(insight);
       return acc;
     }, {} as Record<string, GovernanceInsight[]>);
-
-    // Then, detect implicit suites (retroactive grouping for existing data)
-    const implicitSuites = detectImplicitSuites(insights);
-
-    // Combine both explicit and implicit suites
-    const grouped = { ...explicitGrouped, ...implicitSuites };
 
     // Filter to only complete suites (5 challenges)
     const completeSuites = Object.entries(grouped)
@@ -197,35 +117,6 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
     return suites.filter(suite => suite.modelName === selectedModel);
   }, [suites, selectedModel]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
-
-  const getQIColor = (qi: number) => {
-    if (qi >= 70) return 'text-green-600 dark:text-green-400';
-    if (qi >= 50) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-  };
-
-  const getARCategoryColor = (category: string) => {
-    switch (category) {
-      case 'VALID': return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200';
-      case 'SUPERFICIAL': return 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200';
-      case 'SLOW': return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200';
-      default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-    }
-  };
-
   if (suites.length === 0) {
     return (
       <div className="text-center py-12">
@@ -285,88 +176,149 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
         ) : (
           <div className="space-y-3">
             {suitesForModel.map((suite, index) => (
-              <div
+              <GlassCard
                 key={suite.suiteRunId}
-                className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                className="p-4 hover:shadow-md transition-shadow"
+                hover
               >
-                {/* Timeline indicator with progress ring */}
-                <div className="flex flex-col items-center relative">
-                  <svg width="24" height="24" className="transform -rotate-90">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-gray-200 dark:text-gray-700"
-                    />
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeDasharray={`${(suite.medianQI / 100) * 62.83} 62.83`}
-                      className={suite.medianQI >= 70 ? 'text-green-500' : suite.medianQI >= 50 ? 'text-yellow-500' : 'text-red-500'}
-                    />
-                  </svg>
-                  {index < suitesForModel.length - 1 && (
-                    <div className="w-0.5 h-8 bg-gray-300 dark:bg-gray-600 mt-2"></div>
-                  )}
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                    {suite.modelName} - Suite #{suitesForModel.length - index}
+                  </h4>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {formatDate(suite.completedAt)}
+                  </span>
                 </div>
 
-                {/* Suite info */}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                      {suite.modelName} - Suite #{suitesForModel.length - index}
-                    </h4>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {formatDate(suite.completedAt)}
+                {/* Duration and Pathologies */}
+                <div className="flex items-center gap-4 text-sm mb-3">
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Duration: </span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {formatDuration(suite.totalDuration)}
                     </span>
                   </div>
-                  
-                  {/* Metrics */}
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">QI: </span>
-                      <span className={`font-medium ${getQIColor(suite.medianQI)}`}>
-                        {suite.medianQI.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">SI: </span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {suite.medianSI.toFixed(1)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">AR: </span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {suite.medianAR.toFixed(3)}/min
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Duration: </span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {formatDuration(suite.totalDuration)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* AR Category */}
-                  <div className="mt-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getARCategoryColor(suite.mostCommonARCategory)}`}>
-                      {suite.mostCommonARCategory} AR
-                    </span>
-                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                      {suite.totalPathologies} pathologies
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Pathologies: </span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {suite.totalPathologies}
                     </span>
                   </div>
                 </div>
-              </div>
+
+                {/* Progress Rings - Horizontal Row */}
+                <div className="flex items-center justify-center gap-6 mb-3">
+                  {/* QI Ring */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <svg width="48" height="48" className="transform -rotate-90">
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          className="text-gray-200 dark:text-gray-700"
+                        />
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          strokeDasharray={`${(suite.medianQI / 100) * 125.66} 125.66`}
+                          strokeLinecap="round"
+                          className={suite.medianQI >= 80 ? 'text-yellow-500' : suite.medianQI >= 60 ? 'text-yellow-500' : suite.medianQI >= 40 ? 'text-orange-500' : 'text-red-500'}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-base font-bold text-gray-700 dark:text-gray-300">
+                          {Math.round(suite.medianQI)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">QI</div>
+                  </div>
+
+                  {/* SI Ring */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <svg width="48" height="48" className="transform -rotate-90">
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          className="text-gray-200 dark:text-gray-700"
+                        />
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          strokeDasharray={`${Math.min((suite.medianSI / 15) * 125.66, 125.66)} 125.66`}
+                          strokeLinecap="round"
+                          className={suite.medianSI >= 12 ? 'text-blue-500' : suite.medianSI >= 8 ? 'text-blue-500' : suite.medianSI >= 4 ? 'text-yellow-500' : 'text-red-500'}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-base font-bold text-gray-700 dark:text-gray-300">
+                          {suite.medianSI.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">SI</div>
+                  </div>
+
+                  {/* AR Ring */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <svg width="48" height="48" className="transform -rotate-90">
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          className="text-gray-200 dark:text-gray-700"
+                        />
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          strokeDasharray={`${Math.min((suite.medianAR / 0.5) * 125.66, 125.66)} 125.66`}
+                          strokeLinecap="round"
+                          className={suite.medianAR >= 0.3 ? 'text-yellow-500' : suite.medianAR >= 0.2 ? 'text-yellow-500' : suite.medianAR >= 0.1 ? 'text-yellow-500' : 'text-red-500'}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-base font-bold text-gray-700 dark:text-gray-300">
+                          {suite.medianAR.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">AR</div>
+                  </div>
+                </div>
+
+                {/* AR Category Badge */}
+                <div className="flex justify-center">
+                  <span className={`px-3 py-1 rounded text-xs font-medium ${getAlignmentColor(suite.mostCommonARCategory)}`}>
+                    {suite.mostCommonARCategory} AR
+                  </span>
+                </div>
+              </GlassCard>
             ))}
           </div>
         )}
@@ -427,7 +379,7 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
                       <span className="font-medium text-gray-900 dark:text-gray-100">
                         {suite.medianAR.toFixed(3)}/min
                       </span>
-                      <div className={`inline-block ml-2 px-1 py-0.5 rounded text-xs ${getARCategoryColor(suite.mostCommonARCategory)}`}>
+                      <div className={`inline-block ml-2 px-1 py-0.5 rounded text-xs ${getAlignmentColor(suite.mostCommonARCategory)}`}>
                         {suite.mostCommonARCategory}
                       </div>
                     </td>

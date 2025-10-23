@@ -15,62 +15,25 @@ interface InsightsAppProps {
 
 type InsightsTab = 'library' | 'suites' | 'tracker';
 
-// Detect implicit suites from existing GyroDiagnostics insights (broader detection)
-const detectImplicitSuites = (insights: GovernanceInsight[]): Record<string, GovernanceInsight[]> => {
-  const implicit: Record<string, GovernanceInsight[]> = {};
-
-  const isGD = (i: GovernanceInsight) =>
-    i.suiteRunId ||
-    i.metadata?.evaluation_method === 'GyroDiagnostics' ||
-    (i.tags && i.tags.includes('gyroDiagnostics')) ||
-    (i.challenge?.domain && i.challenge.domain.map(d => d.toLowerCase()).includes('gyrodiagnostics')) ||
-    (i.challenge?.title && i.challenge.title.toLowerCase().includes('gyrodiagnostics'));
-
-  const gyroInsights = insights
-    .filter(i => !i.suiteRunId && isGD(i))
-    .sort((a, b) => new Date(a.process.created_at).getTime() - new Date(b.process.created_at).getTime());
-
-  // normalize model and cluster within 24h
-  const norm = (m: string) => (m || 'Unknown').replace(/-thinking.*$|-instruct.*$|-flash.*$/i, '').trim();
-
-  const groupsByModel: Record<string, GovernanceInsight[]> = {};
-  gyroInsights.forEach(i => {
-    const model = norm(i.process.models_used.synthesis_epoch1);
-    (groupsByModel[model] ||= []).push(i);
-  });
-
-  Object.entries(groupsByModel).forEach(([model, arr]) => {
-    let cluster: GovernanceInsight[] = [];
-    let start: number | null = null;
-
-    arr.forEach(i => {
-      const t = new Date(i.process.created_at).getTime();
-      if (start === null || t - start > 24 * 60 * 60 * 1000) {
-        if (cluster.length >= 5) acceptCluster(model, cluster, implicit);
-        cluster = [i];
-        start = t;
-      } else {
-        cluster.push(i);
-      }
-    });
-    if (cluster.length >= 5) acceptCluster(model, cluster, implicit);
-  });
-
-  return implicit;
-
-  function acceptCluster(model: string, cluster: GovernanceInsight[], map: Record<string, GovernanceInsight[]>) {
-    const types = new Set(cluster.map(i => (i.challenge.type || '').toLowerCase()));
-    const needed = new Set(['epistemic', 'formal', 'normative', 'procedural', 'strategic']);
-    if (types.size === 5 && [...types].every(t => needed.has(t))) {
-      const startDate = new Date(cluster[0].process.created_at).toISOString().slice(0,10);
-      const id = `implicit_${model.replace(/[^a-z0-9]/gi, '_')}_${startDate}`;
-      map[id] = cluster;
-    }
-  }
-};
 
 const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
   const [selectedInsightId, setSelectedInsightId] = useState<string | null>(null);
+
+  // Scroll to top whenever the insights view or selected insight changes
+  useEffect(() => {
+    const scrollToTop = () => {
+      const scrollableContainer = document.querySelector('.overflow-y-auto');
+      if (scrollableContainer) {
+        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    scrollToTop();
+    const timeoutId = setTimeout(scrollToTop, 50);
+    return () => clearTimeout(timeoutId);
+  }, [state.ui.insightsView, selectedInsightId]);
   const [selectedInsight, setSelectedInsight] = useState<GovernanceInsight | null>(null);
   const [allInsights, setAllInsights] = useState<GovernanceInsight[]>([]);
   const [activeTab, setActiveTab] = useState<InsightsTab>('library');
@@ -87,27 +50,21 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
     loadInsights();
   }, []);
 
-  // Count both explicit and implicit suites
+  // Count suites (all insights now have suiteRunId)
   const suitesCount = useMemo(() => {
-    // explicit
-    const explicitGrouped = allInsights.reduce((acc, i) => {
+    const grouped = allInsights.reduce((acc, i) => {
       if (!i.suiteRunId) return acc;
       (acc[i.suiteRunId] ||= []).push(i);
       return acc;
     }, {} as Record<string, GovernanceInsight[]>);
-    const explicitComplete = Object.values(explicitGrouped).filter(s => s.length === 5).length;
-
-    // implicit
-    const implicitGrouped = detectImplicitSuites(allInsights);
-    const implicitComplete = Object.values(implicitGrouped).filter(s => s.length === 5).length;
-
-    return explicitComplete + implicitComplete;
+    
+    // Count complete suites (5 challenge types)
+    return Object.values(grouped).filter(s => s.length === 5).length;
   }, [allInsights]);
 
   // Export suite handler
   const handleExportSuite = (suiteRunId: string, insightIds?: string[]) => {
     try {
-      // Prefer explicit IDs (works for implicit)
       const suiteInsights = insightIds && insightIds.length
         ? allInsights.filter(i => insightIds.includes(i.id))
         : allInsights.filter(i => i.suiteRunId === suiteRunId);
@@ -299,20 +256,18 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            📚 Library ({allInsights.length})
+            📖 Library ({allInsights.length})
           </button>
-          {(suitesCount > 0) && (
-            <button
-              onClick={() => setActiveTab('suites')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'suites'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              🎯 Suite Reports ({suitesCount})
-            </button>
-          )}
+          <button
+            onClick={() => setActiveTab('suites')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'suites'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            🎯 Suite Reports ({suitesCount})
+          </button>
           <button
             onClick={() => setActiveTab('tracker')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${

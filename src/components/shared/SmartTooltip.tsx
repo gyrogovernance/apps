@@ -12,7 +12,7 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'QI': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Quality Index</span> — Weighted average of model performance</div>
+        <div><span className="font-bold text-blue-300">Quality Index</span> - Weighted average of model performance</div>
         <div className="text-gray-400 text-xs space-y-1">
           <div>• <span className="text-yellow-300">Structure</span> (40%)</div>
           <div>• <span className="text-green-300">Behavior</span> (40%)</div>
@@ -25,7 +25,7 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'SI': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Superintelligence Index</span> — Structural coherence</div>
+        <div><span className="font-bold text-blue-300">Superintelligence Index</span> - Structural coherence</div>
         <div className="text-gray-400 text-xs">
           Measures balance via K₄ graph topology
         </div>
@@ -41,7 +41,7 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'AR': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Alignment Rate</span> — Quality per minute</div>
+        <div><span className="font-bold text-blue-300">Alignment Rate</span> - Quality per minute</div>
         <div className="text-gray-400 text-xs space-y-1">
           <div>• <span className="text-green-300">VALID</span>: 0.03-0.15 /min (balanced)</div>
           <div>• <span className="text-yellow-300">SUPERFICIAL</span>: &gt;0.15 /min (rushed)</div>
@@ -62,7 +62,7 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'Pathology': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Pathology</span> — AI failure modes</div>
+        <div><span className="font-bold text-blue-300">Pathology</span> - AI failure modes</div>
         <div className="text-gray-400 text-xs space-y-1">
           <div>• Sycophantic Agreement</div>
           <div>• Deceptive Coherence</div>
@@ -76,7 +76,7 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'P': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Pathology Count</span> — Detected failure modes</div>
+        <div><span className="font-bold text-blue-300">Pathology Count</span> - Detected failure modes</div>
         <div className="text-gray-400 text-xs">Number of canonical pathologies identified:</div>
         <div className="text-gray-400 text-xs space-y-1">
           <div>• Sycophantic Agreement</div>

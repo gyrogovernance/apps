@@ -6,6 +6,7 @@ import { exportAsJSON, exportAsMarkdown, downloadFile, generateFilename } from '
 import { useToast } from '../../shared/Toast';
 import { SmartTooltip } from '../../shared/SmartTooltip';
 import { Z_INDEX } from '../../../lib/constants';
+import GlassCard from '../../shared/GlassCard';
 
 interface InsightsLibraryProps {
   onSelectInsight: (insightId: string) => void;
@@ -145,7 +146,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
 
   return (
     <div className="h-full flex flex-col p-4">
-      {/* Header */}
+      {/* Header - Fixed */}
       <div className="mb-4">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <span>💡</span>
@@ -156,8 +157,9 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
         </p>
       </div>
 
-      {/* Filters - Compact Layout */}
-      <div className="mb-4 space-y-2">
+      <GlassCard className="flex-1 flex flex-col overflow-hidden">
+      {/* Filters - Fixed at top */}
+      <div className="p-4 pb-3 space-y-2">
         {/* Search */}
         <input
           type="text"
@@ -206,8 +208,8 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
         )}
       </div>
 
-      {/* Insights List - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Insights List - Scrollable only */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
         {sortedInsights.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-4xl mb-3">📭</div>
@@ -237,89 +239,86 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
               return (
                 <div
                   key={insight.id}
-                  className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
+                  className="relative p-3 bg-white/60 dark:bg-gray-800/90 rounded border border-blue-200 dark:border-blue-800 hover:bg-white/80 dark:hover:bg-gray-800 transition-all cursor-pointer"
                   onClick={() => onSelectInsight(insight.id)}
                 >
-                  {/* Compact Card Content */}
-                  <div className="p-3">
-                    {/* Title Row */}
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1 pr-2">
-                        {insight.challenge?.title || 'Untitled'}
-                      </h3>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === insight.id ? null : insight.id);
-                        }}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
-                      >
-                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                        </svg>
-                      </button>
+                  {/* Title Row */}
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1 pr-2">
+                      {insight.challenge?.title || 'Untitled'}
+                    </h3>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === insight.id ? null : insight.id);
+                      }}
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+                    >
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Excellence Badge */}
+                  {qi >= 80 && (
+                    <div className="absolute top-2 right-2">
+                      <span className="text-lg" title="High Quality Result">⭐</span>
                     </div>
+                  )}
 
-                    {/* Excellence Badge */}
-                    {qi >= 80 && (
-                      <div className="absolute top-2 right-2">
-                        <span className="text-lg" title="High Quality Result">⭐</span>
+                  {/* Meta Row */}
+                  <div className="flex items-center gap-2 mb-2 text-xs">
+                    <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded">
+                      {insight.challenge?.type || 'custom'}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400">•</span>
+                    <span className="text-gray-500 dark:text-gray-400 truncate flex-1" title={synthesizer}>
+                      {synthesizer}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-500">{date}</span>
+                  </div>
+
+                  {/* Metrics Row - Compact Grid */}
+                  <div className="grid grid-cols-4 gap-2 text-xs">
+                    <div className="text-center">
+                      <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                        <SmartTooltip term="QI">
+                          <span className="cursor-help">QI</span>
+                        </SmartTooltip>
                       </div>
-                    )}
-
-                    {/* Meta Row */}
-                    <div className="flex items-center gap-2 mb-2 text-xs">
-                      <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded">
-                        {insight.challenge?.type || 'custom'}
-                      </span>
-                      <span className="text-gray-500 dark:text-gray-400">•</span>
-                      <span className="text-gray-500 dark:text-gray-400 truncate flex-1" title={synthesizer}>
-                        {synthesizer}
-                      </span>
-                      <span className="text-gray-400 dark:text-gray-500">{date}</span>
+                      <div className={`font-bold ${getQIColor(qi)}`}>
+                        {qi.toFixed(0)}%
+                      </div>
                     </div>
-
-                    {/* Metrics Row - Compact Grid */}
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <div className="text-center">
-                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
-                          <SmartTooltip term="QI">
-                            <span className="cursor-help">QI</span>
-                          </SmartTooltip>
-                        </div>
-                        <div className={`font-bold ${getQIColor(qi)}`}>
-                          {qi.toFixed(0)}%
-                        </div>
+                    <div className="text-center">
+                      <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                        <SmartTooltip term="SI">
+                          <span className="cursor-help">SI</span>
+                        </SmartTooltip>
                       </div>
-                      <div className="text-center">
-                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
-                          <SmartTooltip term="SI">
-                            <span className="cursor-help">SI</span>
-                          </SmartTooltip>
-                        </div>
-                        <div className="font-bold text-gray-900 dark:text-gray-100">
-                          {(si == null || isNaN(si)) ? '-' : si.toFixed(1)}
-                        </div>
+                      <div className="font-bold text-gray-900 dark:text-gray-100">
+                        {(si == null || isNaN(si)) ? '-' : si.toFixed(1)}
                       </div>
-                      <div className="text-center">
-                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
-                          <SmartTooltip term="AR">
-                            <span className="cursor-help">AR</span>
-                          </SmartTooltip>
-                        </div>
-                        <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${getAlignmentColor(alignment)}`}>
-                          {alignment === 'VALID' ? 'V' : alignment === 'SUPERFICIAL' ? 'S' : 'L'}
-                        </span>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                        <SmartTooltip term="AR">
+                          <span className="cursor-help">AR</span>
+                        </SmartTooltip>
                       </div>
-                      <div className="text-center">
-                        <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
-                          <SmartTooltip term="P">
-                            <span className="cursor-help">P</span>
-                          </SmartTooltip>
-                        </div>
-                        <div className="font-bold text-gray-900 dark:text-gray-100">
-                          {pathologyCount}
-                        </div>
+                      <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${getAlignmentColor(alignment)}`}>
+                        {alignment === 'VALID' ? 'V' : alignment === 'SUPERFICIAL' ? 'S' : 'L'}
+                      </span>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                        <SmartTooltip term="P">
+                          <span className="cursor-help">P</span>
+                        </SmartTooltip>
+                      </div>
+                      <div className="font-bold text-gray-900 dark:text-gray-100">
+                        {pathologyCount}
                       </div>
                     </div>
                   </div>
@@ -369,6 +368,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
           </div>
         )}
       </div>
+      </GlassCard>
     </div>
   );
 };

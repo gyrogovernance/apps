@@ -1,37 +1,65 @@
 # GyroGovernance Apps - General Specifications
 
-> **AI-Empowered Governance Apps Browser Extension**  
-> **Version 0.2.3-Alpha**  
-> **Last Updated: October 21, 2025**
+> **AI-Empowered Governance Apps Platform**
 
 ---
 
 ## 📋 Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Core Applications](#core-applications)
-4. [User Journey](#user-journey)
-5. [Data Flow](#data-flow)
-6. [Technical Specifications](#technical-specifications)
-7. [Integration Points](#integration-points)
-8. [Future Roadmap](#future-roadmap)
+2. [Product Suite](#product-suite)
+3. [Architecture](#architecture)
+4. [Core Applications](#core-applications)
+5. [User Journey](#user-journey)
+6. [Data Flow](#data-flow)
+7. [Technical Specifications](#technical-specifications)
+8. [Integration Points](#integration-points)
+9. [Future Roadmap](#future-roadmap)
 
 ---
 
 ## 🎯 Overview
 
-The **GyroGovernance Apps** browser extension is a comprehensive platform for **AI-Empowered Participatory Governance**, built on the foundation of the **GyroDiagnostics** framework. It transforms everyday AI conversations into rigorous governance analysis, enabling communities, researchers, and policy makers to validate AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
+**GyroGovernance Apps** is a comprehensive platform for **AI-Empowered Participatory Governance**, built on the foundation of the **GyroDiagnostics** framework. The platform provides tools that transform everyday AI conversations into rigorous governance analysis, enabling communities, researchers, and policy makers to validate AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
-### Mission Statement
+### Platform Scope
+
+GyroGovernance Apps serves as the **general domain** for a suite of governance evaluation tools. Currently, it includes:
+
+1. **AI Inspector** (Browser Extension) - The flagship tool for AI model evaluation and governance analysis
+
+Future applications may include web apps, desktop tools, mobile applications, and specialized platforms for specific governance domains.
+
+---
+
+## 🔧 Product Suite
+
+### AI Inspector (Browser Extension)
+
+**Status**: Active Development  
+**Platform**: Chrome Browser Extension (Manifest V3)  
+**Purpose**: Real-time AI model evaluation using clipboard-based workflow
+
+The AI Inspector browser extension is a comprehensive platform for evaluating AI model responses against governance challenges. It transforms everyday AI conversations into rigorous governance analysis through quantitative metrics and structured evaluation protocols.
+
+#### Key Features
+
+- **Multi-App Architecture**: Welcome, Challenges, Journal, Insights, Settings
+- **Multi-Session Support**: Manage multiple evaluations simultaneously with browser-style tabs
+- **Real-Time Sync**: Cross-tab synchronization using Chrome storage API
+- **Glassmorphism UI**: Modern, unified design system with dark mode support
+- **Platform Agnostic**: Clipboard-based workflow compatible with any AI service
+- **Export Capabilities**: JSON and Markdown export for sharing and archiving
+
+#### Mission Statement
 
 > **Transform everyday AI conversations into rigorous governance analysis by democratizing access to sophisticated AI evaluation tools, enabling communities to validate AI-generated solutions for sustainable development and policy challenges through quantitative metrics.**
 
-### Key Principles
+#### Key Principles
 
 - **Participatory Governance**: Enables communities to validate AI solutions for real-world challenges
 - **Platform Agnostic**: Clipboard-based workflow works with any AI model (ChatGPT, Claude, Gemini, etc.)
-- **Open Source**: All insights and evaluation data contribute to public knowledge commons (CC0)
+- **Open Source**: All code is open source with local-first data storage
 - **Scientific Rigor**: Based on mathematical-physics principles from the Common Governance Model (CGM)
 - **Sustainable Development**: Focused on UN SDGs and community-driven policy challenges
 - **Reproducible**: All evaluations use public API access for independent verification
@@ -40,34 +68,43 @@ The **GyroGovernance Apps** browser extension is a comprehensive platform for **
 
 ## 🏗️ Architecture
 
-### High-Level Architecture
+### AI Inspector Extension Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    GyroGovernance Apps                     │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Welcome   │  │ Challenges  │  │   Journal   │        │
-│  │     App     │  │     App     │  │     App     │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │  Insights   │  │  Settings   │  │   Shared    │        │
-│  │     App     │  │     App     │  │ Components  │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-├─────────────────────────────────────────────────────────────┤
-│                    Core Libraries                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Storage   │  │  Session    │  │   Report    │        │
-│  │ Management  │  │  Helpers    │  │ Generator   │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │Calculations │  │   Import    │  │   Export    │        │
-│  │ & Metrics   │  │   Utils     │  │   Utils     │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-└─────────────────────────────────────────────────────────────┘
-```
+The AI Inspector extension uses a modular, app-based architecture with the following components:
+
+#### Application Layer
+- **Welcome App** - Landing page with quick start guide and navigation
+- **Challenges App** - Challenge selection and configuration
+  - Type Selector
+  - GyroDiagnostics Suite
+  - SDG Gallery
+  - Custom Builder
+  - Prompt Workshop
+- **Journal App** - Session management and evaluation workflow
+  - Session List
+  - Synthesis Section
+  - Analyst Section
+  - Report Section
+- **Insights App** - Results library and analysis
+  - Insights Library
+  - Insight Detail
+  - Model Tracker
+  - Suite Reports
+- **Detector App** - Rapid multi-dimensional quality assessment for AI conversation transcripts
+  - Detector Input
+  - Detector Analyst (Dual Evaluation)
+  - Detector Results
+  - Truth Spectrum Gauge
+- **Settings App** - Configuration and preferences
+- **Shared Components** - Reusable UI elements
+
+#### Core Libraries
+- **Storage Management** - Chrome storage API integration
+- **Session Helpers** - Session data access and manipulation
+- **Report Generator** - Insight generation and formatting
+- **Calculations & Metrics** - GyroDiagnostics calculations
+- **Import Utils** - Data import functionality
+- **Export Utils** - Data export functionality
 
 ### Data Architecture
 
@@ -103,6 +140,11 @@ Notebook (Root Router)
 │   ├── SuiteReports
 │   ├── ModelTracker
 │   └── InsightDetail
+├── DetectorApp
+│   ├── DetectorInput
+│   ├── DetectorAnalyst (Dual Evaluation)
+│   ├── DetectorResults
+│   └── TruthSpectrumGauge
 └── SettingsApp
     ├── Data Management
     ├── Import/Export
@@ -156,7 +198,7 @@ Notebook (Root Router)
 - **Progress Tracking**: Real-time evaluation progress with visual indicators
 - **Synthesis Interface**: 6-turn reasoning cycles with timer and model selection
 - **Analyst Interface**: Dual-analyst evaluation with scoring forms
-- **Report Generation**: Automated insight creation with metrics calculation
+- **Report Generation**: Insight Overview with metrics calculation
 
 **Session States**:
 - **Active**: Currently in progress
@@ -180,7 +222,7 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 - **Detail View**: Comprehensive insight analysis with metrics breakdown
 
 **Multi-View Architecture**:
-- **📚 Library**: Individual insight browsing and management
+- **📖 Library**: Individual insight browsing and management
 - **🎯 Suite Reports**: Complete evaluation suite analysis
 - **📊 Model Tracker**: Cross-model performance comparison
 
@@ -190,7 +232,34 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 - **Progress Rings**: Visual completion indicators
 - **Status Badges**: Evaluation state and quality indicators
 
-### 5. Settings App
+### 5. Detector App
+
+**Purpose**: Rapid multi-dimensional quality assessment for AI conversation transcripts
+
+**Key Features**:
+- **Transcript Input**: Paste any AI conversation (3-6 turns recommended)
+- **Multi-criteria Evaluation**: Seamless rubric-based assessment across 12 evaluation criteria
+- **Dual Analyst Evaluation**: Two different AI models assess using structured rubrics
+- **Risk Score (DRS)**: Mathematical 0-100 scoring based on scoring imbalance analysis
+- **Risk Score Gauge**: Visual circular indicator showing deception risk level
+- **Scoring Imbalance Detection**: Identifies when surface metrics (fluency) score high while foundational metrics (truthfulness) score low
+- **Pathology Detection**: Identifies specific failure modes through scoring pattern analysis
+- **Export Options**: Save as insight or export Markdown/JSON reports
+
+**Workflow**:
+1. **Input**: Paste AI conversation transcript
+2. **Analysis**: Two AI models evaluate using structured evaluation rubrics
+3. **Scoring**: Calculate Risk Score using geometric balance of evaluation criteria
+4. **Visualization**: Display Risk Score Gauge and detailed metrics
+5. **Export**: Save results as insight or export reports
+
+**Technical Implementation**:
+- **Multi-dimensional Assessment**: 12 predefined quality criteria with detailed scoring guidelines
+- **Scoring Pattern Analysis**: Detects imbalances between surface and foundational metrics
+- **Draft Persistence**: Temporary storage during analysis workflow
+- **Insight Integration**: Saves completed analyses as GovernanceInsights
+
+### 6. Settings App
 
 **Purpose**: Configuration and data management
 
@@ -226,6 +295,12 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
    - Review validated governance insights
    - Compare AI solutions across different approaches
    - Export results for policy development or research
+
+5. **AI Lie Detection** (Alternative Workflow)
+   - Paste any AI conversation transcript
+   - Get rapid structural deception analysis
+   - View Truth Spectrum Gauge and Risk Score
+   - Save results as insights or export detailed reports
 
 ### Power User Workflow
 
@@ -263,6 +338,9 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 - **Climate Adaptation**: Validating AI strategies for climate resilience
 - **Urban Planning**: Testing AI approaches to sustainable city development
 - **Social Justice**: Evaluating AI solutions for equity and inclusion
+- **AI Content Verification**: Detecting structural deception in AI-generated content
+- **Quality Assurance**: Validating AI responses for accuracy and coherence
+- **Research Analysis**: Analyzing AI conversation patterns for academic studies
 
 ---
 
@@ -331,6 +409,16 @@ Session Creation → Configuration → Synthesis → Analysis → Report Generat
 - **Official Results**: Import benchmark data from official repository
 - **Methodology Compliance**: Follows all CGM principles and metrics
 - **Research Alignment**: Contributes to open science initiatives
+
+---
+
+## 📞 Contact & Support
+
+- **Repository**: [github.com/gyrogovernance/apps](https://github.com/gyrogovernance/apps)
+- **GyroDiagnostics Framework**: [github.com/gyrogovernance/diagnostics](https://github.com/gyrogovernance/diagnostics)
+- **Issues**: Report bugs and feature requests via GitHub Issues
+- **Discussions**: Community discussion forum on GitHub Discussions
+- **License**: MIT License (code), local data storage
 
 ---
 

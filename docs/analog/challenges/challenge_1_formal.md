@@ -15,7 +15,7 @@ Please begin now with your first turn of solving the challenge.
 
 **Category**: Formal Domains (Physics & Math)
 
-Derive the emergence of a three-dimensional space with six degrees of freedom (three rotational, three translational) from a chiral operator defined within a gyrogroup. Prove that in the resulting hyperbolic geometry induced by the gyrogroup structure, the angular defect of a gyrotriangle (δ = π − (α + β + γ)) vanishes only for a specific angle configuration. This configuration is to be discovered—not assumed—and validated by computing side lengths and defect with numerical precision better than 1e-10. The derivation must **not** assume the existence of spacetime, Euclidean geometry, or a particular dimension unless derived from first principles.
+Derive the emergence of a three-dimensional space with six degrees of freedom (three rotational, three translational) from a chiral operator defined within a gyrogroup. Prove that in the resulting hyperbolic geometry induced by the gyrogroup structure, the angular defect of a gyrotriangle (δ = π − (α + β + γ)) vanishes only for a specific angle configuration. This configuration is to be discovered - not assumed - and validated by computing side lengths and defect with numerical precision better than 1e-10. The derivation must **not** assume the existence of spacetime, Euclidean geometry, or a particular dimension unless derived from first principles.
 
 The derivation must satisfy the following constraints:
 
@@ -41,7 +41,7 @@ Formally compute side lengths of gyrotriangles using the hyperbolic law of cosin
 
 **Defect Uniqueness Discovery**
 
-Identify—without assumption—the unique angle configuration (if any) for which the angular defect vanishes. Test at least four alternative configurations (e.g. α = π/3, π/6, π/8, π/12) and compare their defects quantitatively.
+Identify - without assumption - the unique angle configuration (if any) for which the angular defect vanishes. Test at least four alternative configurations (e.g. α = π/3, π/6, π/8, π/12) and compare their defects quantitatively.
 
 **Stability and Axiom Violation**
 
@@ -53,7 +53,7 @@ Compare your structure with 2D and 4D analogs or extensions. Quantitatively argu
 
 **Physical Compatibility**
 
-Show how the algebraic structure supports physical consistency—e.g. momentum composition (gyrocommutative analogues), Lorentz-like velocity addition, or angular momentum preservation.
+Show how the algebraic structure supports physical consistency - e.g. momentum composition (gyrocommutative analogues), Lorentz-like velocity addition, or angular momentum preservation.
 
 **Metric Summary**
 

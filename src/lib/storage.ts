@@ -3,7 +3,7 @@
 
 import { NotebookState, INITIAL_STATE, Session, GovernanceInsight } from '../types';
 import { chromeAPI } from './chrome-mock';
-import { handleStorageError } from './error-utils';
+import { handleStorageError, withStorageErrorHandling } from './error-utils';
 
 const STORAGE_KEY = 'notebook_state';
 const INSIGHTS_KEY = 'insights_library';

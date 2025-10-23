@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Notebook from './components/Notebook';
 import { ToastProvider } from './components/shared/Toast';
+import { initializeTheme } from './lib/theme-utils';
 import './styles/main.css';
 
 // Add global error handler for unhandled errors
@@ -22,14 +23,12 @@ window.addEventListener('error', (event) => {
   }
 });
 
-// Debug logging
-console.log('Side panel script loading...');
+// Initialize theme
+initializeTheme();
 
 const root = document.getElementById('root');
-console.log('Root element found:', root);
 
 if (root) {
-  console.log('Rendering Notebook component...');
   try {
     createRoot(root).render(
       <React.StrictMode>
@@ -38,7 +37,6 @@ if (root) {
         </ToastProvider>
       </React.StrictMode>
     );
-    console.log('Notebook component rendered successfully');
   } catch (error) {
     console.error('Error rendering React:', error);
     // Fallback: render a simple div to confirm React is working

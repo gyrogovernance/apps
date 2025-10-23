@@ -134,42 +134,4 @@ export function generateFilename(title: string, extension: string): string {
   return `${cleanTitle}_${timestamp}.${extension}`;
 }
 
-/**
- * Generate GitHub contribution URL
- */
-export function generateGitHubContributionURL(insight: GovernanceInsight): string {
-  const domain = insight.challenge.domain[0]?.toLowerCase().replace(/\s+/g, '-') || 'custom';
-  const timestamp = Date.now();
-  const filename = `insight_${timestamp}.json`;
-  const jsonContent = encodeURIComponent(exportAsJSON(insight));
-  
-  const baseURL = 'https://github.com/gyrogovernance/apps/new/main/insights';
-  return `${baseURL}/${domain}?filename=${filename}&value=${jsonContent}`;
-}
-
-/**
- * Generate GitHub issue URL for contribution
- */
-export function generateGitHubIssueURL(insight: GovernanceInsight): string {
-  const title = encodeURIComponent(`[Contribution] ${insight.challenge.title}`);
-  const body = encodeURIComponent(`# New Governance Insight
-
-**Title**: ${insight.challenge.title}
-**Type**: ${insight.challenge.type}
-**Domain**: ${insight.challenge.domain.join(', ')}
-**Quality Index**: ${insight.quality.quality_index.toFixed(1)}%
-
-## JSON Data
-
-\`\`\`json
-${exportAsJSON(insight)}
-\`\`\`
-
-## Markdown Report
-
-${exportAsMarkdown(insight)}
-`);
-  
-  return `https://github.com/gyrogovernance/apps/issues/new?title=${title}&body=${body}`;
-}
 

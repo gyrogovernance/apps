@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChallengeType, Platform } from '../../../types';
 import { ChallengesView } from '../../../types';
+import GlassCard from '../../shared/GlassCard';
 
 interface CustomBuilderProps {
   onNavigate: (view: ChallengesView) => void;
@@ -103,7 +104,7 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
 
       <div className="space-y-6">
         {/* Challenge Title */}
-        <div>
+        <GlassCard className="p-4" density="dense">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Challenge Title *
           </label>
@@ -114,10 +115,10 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
             placeholder="e.g., AI-Empowered Climate Adaptation Framework"
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-        </div>
+        </GlassCard>
 
         {/* Challenge Description */}
-        <div>
+        <GlassCard className="p-4" density="dense">
           <div className="flex items-center justify-between mb-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Challenge Description *
@@ -140,10 +141,10 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             💡 This prompt will be provided to AI models for synthesis. Use the Prompt Workshop for help crafting an effective challenge.
           </p>
-        </div>
+        </GlassCard>
 
         {/* Challenge Type */}
-        <div>
+        <GlassCard className="p-4" density="dense">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Challenge Type
           </label>
@@ -164,10 +165,10 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </GlassCard>
 
         {/* Domain Selection */}
-        <div>
+        <GlassCard className="p-4" density="dense">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Domain(s) (Optional)
           </label>
@@ -189,10 +190,10 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Select relevant UN SDGs or other domains
           </p>
-        </div>
+        </GlassCard>
 
         {/* Platform Selection */}
-        <div>
+        <GlassCard className="p-4" density="dense">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             AI Platform
           </label>
@@ -210,7 +211,7 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Select the platform where you'll conduct the synthesis
           </p>
-        </div>
+        </GlassCard>
 
         {/* Action Buttons */}
         <div className="flex gap-4 pt-4">

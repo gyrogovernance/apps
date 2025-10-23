@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import GlassCard from '../../shared/GlassCard';
+import { useClipboard } from '../../../hooks/useClipboard';
 
 interface PromptWorkshopProps {
   onBack: () => void;
@@ -18,6 +20,7 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
   initialPrompt = '',
   onApply 
 }) => {
+  const { copy, status } = useClipboard();
   const [prompt, setPrompt] = useState(initialPrompt);
   const [metrics, setMetrics] = useState<QualityMetrics>({
     clarity: 0,
@@ -160,7 +163,7 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Left: Prompt Editor */}
         <div className="space-y-4">
-          <div>
+          <GlassCard className="p-4" density="dense">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Your Challenge Prompt
             </label>
@@ -171,13 +174,26 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
               rows={16}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {prompt.trim().split(/\s+/).length} words
-            </p>
-          </div>
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {prompt.trim().split(/\s+/).length} words
+              </p>
+              
+              {/* Copy Button */}
+              {prompt.trim() && (
+                <button
+                  onClick={() => copy(prompt)}
+                  className="px-3 py-1 text-sm bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded transition-colors flex items-center gap-1"
+                  title="Copy to clipboard"
+                >
+                  {status === 'success' ? '✅ Copied' : status === 'error' ? '❌ Failed' : '📋 Copy'}
+                </button>
+              )}
+            </div>
+          </GlassCard>
 
           {/* Improvement Tools */}
-          <div>
+          <GlassCard className="p-4" density="dense">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
               Quick Improvement Tools
             </h3>
@@ -194,12 +210,12 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
                 </button>
               ))}
             </div>
-          </div>
+          </GlassCard>
         </div>
 
         {/* Right: Quality Analysis */}
         <div className="space-y-4">
-          <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <GlassCard className="p-5" variant="glassBlue" borderGradient="blue">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               📊 Prompt Quality Indicators
             </h3>
@@ -251,11 +267,11 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
                 />
               </div>
             </div>
-          </div>
+          </GlassCard>
 
           {/* Suggestions */}
           {metrics.suggestions.length > 0 && (
-            <div className="p-5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <GlassCard className="p-5" variant="glassPurple" borderGradient="pink">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                 <span>💡</span>
                 <span>Suggestions for Improvement</span>
@@ -268,11 +284,11 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
                   </li>
                 ))}
               </ul>
-            </div>
+            </GlassCard>
           )}
 
           {/* Best Practices */}
-          <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <GlassCard className="p-5" density="dense">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
               ✅ Best Practices
             </h3>
@@ -298,7 +314,7 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
                 <span>Structure your prompt clearly</span>
               </li>
             </ul>
-          </div>
+          </GlassCard>
         </div>
       </div>
 

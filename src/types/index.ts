@@ -1,10 +1,12 @@
 // Core data types for the Governance Apps extension
 
 // App-based navigation types
-export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings';
+export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings' | 'detector' | 'glossary';
 export type ChallengesView = 'select-type' | 'gyro-suite' | 'sdg-gallery' | 'custom-builder' | 'prompt-workshop';
 export type JournalView = 'home' | 'session' | 'active-session' | 'synthesis' | 'analysis';
 export type InsightsView = 'library' | 'detail' | 'comparison' | 'suites' | 'tracker';
+export type DetectorView = 'input' | 'analyst1' | 'analyst2' | 'results';
+export type DetectorMode = 'quick' | 'standard' | 'custom';
 
 export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedural' | 'formal' | 'custom';
 export type Platform = 'lmarena' | 'chatgpt' | 'claude' | 'poe' | 'custom';
@@ -14,6 +16,14 @@ export type Section = 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2
 export type AlignmentCategory = 'VALID' | 'SUPERFICIAL' | 'SLOW';
 export type SessionStatus = 'active' | 'paused' | 'analyzing' | 'complete';
 export type EpochStatus = 'pending' | 'in-progress' | 'complete';
+
+// Lie Detector types
+export interface TranscriptParseResult {
+  turns: Turn[];
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  method: 'turn_markers' | 'alternating' | 'paragraphs' | 'manual';
+  suggestions?: string[];
+}
 
 export interface Turn {
   number: TurnNumber;
@@ -93,16 +103,31 @@ export interface Session {
   completedInsightId?: string; // Link to generated insight when complete
 }
 
+// UI State for detector workflow (ephemeral, not stored)
+export interface DetectorUIState {
+  transcript: string;
+  parsedResult: TranscriptParseResult | null;
+  analyst1?: AnalystResponse;
+  analyst2?: AnalystResponse;
+  model_analyst1?: string; // Store model names
+  model_analyst2?: string;
+  durationMinutes?: number; // User override for AR calculation
+  timestamp?: number; // For draft management
+}
+
 export interface NotebookState {
   // Multi-session support (SINGLE SOURCE OF TRUTH)
   sessions: Session[];
   activeSessionId?: string;
-  
+
   // Gyro Suite tracking
   gyroSuiteSessionIds?: string[]; // IDs of all 5 suite sessions
   gyroSuiteCurrentIndex?: number; // Current challenge index (0-4)
   currentSuiteRunId?: string; // NEW: track current suite run for linking insights
-  
+
+  // Draft storage for temporary data (detector, etc.)
+  drafts?: Record<string, any>; // Temporary storage for detector workflow and other drafts
+
   // UI state
   ui: {
     currentSection: Section;
@@ -111,6 +136,9 @@ export interface NotebookState {
     challengesView?: ChallengesView;
     journalView?: JournalView;
     insightsView?: InsightsView;
+    detectorView?: DetectorView; // Added for Detector app navigation
+    showGlossary?: boolean; // Added for Glossary modal
+    detectorDraftKey?: string; // Track active detector draft per run
   };
 }
 

@@ -18,6 +18,20 @@ export function useClipboard() {
     }
   };
 
-  return { copy, status };
+  const paste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setStatus('success');
+      setTimeout(() => setStatus('idle'), 1500);
+      return text;
+    } catch (error) {
+      console.error('Failed to read from clipboard:', error);
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 1500);
+      return '';
+    }
+  };
+
+  return { copy, paste, status };
 }
 

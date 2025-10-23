@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
 import { GovernanceInsight } from '../../../types';
 import { insights as insightsStorage } from '../../../lib/storage';
+import { getAlignmentBadgeColor, getQIColor } from '../../../lib/ui-utils';
+import { formatDuration, formatDate } from '../../../lib/export-utils';
 import { useToast } from '../../shared/Toast';
+import GlassCard from '../../shared/GlassCard';
 
 interface SuiteAggregate {
   suiteRunId: string;
@@ -24,82 +27,6 @@ interface SuiteReportsProps {
   onExportSuite: (suiteRunId: string, insightIds?: string[]) => void;
 }
 
-// Detect implicit suites from existing GyroDiagnostics insights (robust version)
-const detectImplicitSuites = (insights: GovernanceInsight[]): Record<string, GovernanceInsight[]> => {
-  const implicitSuites: Record<string, GovernanceInsight[]> = {};
-  
-  // Filter to GyroDiagnostics insights without suiteRunId (broader detection)
-  const isGD = (i: GovernanceInsight) =>
-    i.suiteRunId ||
-    i.metadata?.evaluation_method === 'GyroDiagnostics' ||
-    (i.tags && i.tags.includes('gyroDiagnostics')) ||
-    (i.challenge?.domain && i.challenge.domain.map(d => d.toLowerCase()).includes('gyrodiagnostics')) ||
-    (i.challenge?.title && i.challenge.title.toLowerCase().includes('gyrodiagnostics'));
-
-  const gyroInsights = insights
-    .filter(i => !i.suiteRunId && isGD(i))
-    .sort((a, b) => new Date(a.process.created_at).getTime() - new Date(b.process.created_at).getTime());
-
-  // Group by model (normalize name) with time window check
-  const modelGroups: Record<string, GovernanceInsight[]> = {};
-  
-  gyroInsights.forEach(insight => {
-    // Normalize model name (remove common suffixes like -thinking-32k)
-    let model = insight.process.models_used.synthesis_epoch1 || 'Unknown';
-    model = model.replace(/-thinking.*$|-instruct.*$|-flash.*$/i, '').trim();
-    
-    if (!modelGroups[model]) {
-      modelGroups[model] = [];
-    }
-    modelGroups[model].push(insight);
-  });
-
-  // For each model group, find clusters within 24-hour windows
-  Object.entries(modelGroups).forEach(([model, modelInsights]) => {
-    let currentCluster: GovernanceInsight[] = [];
-    let clusterStartTime: number | null = null;
-    
-    modelInsights.forEach(insight => {
-      const time = new Date(insight.process.created_at).getTime();
-      
-      if (clusterStartTime === null || time - clusterStartTime > 24 * 60 * 60 * 1000) {
-        // Start new cluster if >24h from previous
-        if (currentCluster.length >= 5) {
-          processCluster(model, currentCluster, implicitSuites);
-        }
-        currentCluster = [insight];
-        clusterStartTime = time;
-      } else {
-        currentCluster.push(insight);
-      }
-    });
-    
-    // Process final cluster
-    if (currentCluster.length >= 5) {
-      processCluster(model, currentCluster, implicitSuites);
-    }
-  });
-
-  return implicitSuites;
-};
-
-// Helper to process a potential cluster
-const processCluster = (
-  model: string,
-  cluster: GovernanceInsight[],
-  implicitSuites: Record<string, GovernanceInsight[]>
-) => {
-  // Check for exactly 5 unique challenge types (case-insensitive)
-  const uniqueTypes = [...new Set(cluster.map(i => i.challenge.type.toLowerCase()))];
-  const expectedTypes = new Set(['epistemic', 'formal', 'normative', 'procedural', 'strategic']);
-  
-  if (uniqueTypes.length === 5 && uniqueTypes.every(t => expectedTypes.has(t))) {
-    // Generate implicit ID based on model + start time
-    const startDate = new Date(cluster[0].process.created_at).toISOString().slice(0,10);
-    const suiteRunId = `implicit_${model.replace(/[^a-z0-9]/gi, '_')}_${startDate}`;
-    implicitSuites[suiteRunId] = cluster;
-  }
-};
 
 export const SuiteReports: React.FC<SuiteReportsProps> = ({
   insights,
@@ -110,8 +37,7 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
 
   // Group insights by suiteRunId and calculate aggregates
   const suites = useMemo(() => {
-    // First, group by explicit suiteRunId
-    const explicitGrouped = insights.reduce((acc, insight) => {
+    const grouped = insights.reduce((acc, insight) => {
       if (!insight.suiteRunId) return acc;
       
       if (!acc[insight.suiteRunId]) {
@@ -121,14 +47,8 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
       return acc;
     }, {} as Record<string, GovernanceInsight[]>);
 
-    // Then, detect implicit suites (retroactive grouping for existing data)
-    const implicitSuites = detectImplicitSuites(insights);
-
-    // Combine both explicit and implicit suites
-    const allGrouped = { ...explicitGrouped, ...implicitSuites };
-
     // Filter to only complete suites (5 challenges)
-    const completeSuites = Object.entries(allGrouped)
+    const completeSuites = Object.entries(grouped)
       .filter(([_, suiteInsights]) => suiteInsights.length === 5)
       .map(([suiteRunId, suiteInsights]) => {
         // Sort by suiteIndex if available, otherwise by challenge type order
@@ -193,35 +113,6 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
     );
   }, [insights]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
-
-  const getARCategoryColor = (category: string) => {
-    switch (category) {
-      case 'VALID': return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700';
-      case 'SUPERFICIAL': return 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700';
-      case 'SLOW': return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700';
-      default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600';
-    }
-  };
-
-  const getQIColor = (qi: number) => {
-    if (qi >= 70) return 'text-green-600 dark:text-green-400';
-    if (qi >= 50) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-  };
-
   if (suites.length === 0) {
     return (
       <div className="text-center py-12">
@@ -253,9 +144,10 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
 
       <div className="grid gap-4">
         {suites.map((suite) => (
-          <div
+          <GlassCard
             key={suite.suiteRunId}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+            className="p-6 hover:shadow-md transition-shadow"
+            hover
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
@@ -307,7 +199,7 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
 
             {/* AR Category Badge */}
             <div className="flex justify-center mb-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getARCategoryColor(suite.mostCommonARCategory)}`}>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getAlignmentBadgeColor(suite.mostCommonARCategory)}`}>
                 Most Common AR: {suite.mostCommonARCategory}
               </span>
             </div>
@@ -372,7 +264,7 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
                 })}
               </div>
             </div>
-          </div>
+          </GlassCard>
         ))}
       </div>
       </div>

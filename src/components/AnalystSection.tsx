@@ -397,7 +397,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+      <div className="flex justify-between pt-4 pb-6 border-t border-gray-200 dark:border-gray-700 mt-4">
         <button onClick={onBack} className="btn-secondary">
           ← Back
         </button>

@@ -113,6 +113,5 @@ export const chromeAPI = IS_EXTENSION
 // Helper to check if we're in extension context
 export const isExtensionContext = (): boolean => IS_EXTENSION;
 
-// Log mode on startup
-console.log(`[ChromeAPI] Running in ${IS_EXTENSION ? 'EXTENSION' : 'WEB'} mode`);
+// Log mode on startup (removed for production)
 

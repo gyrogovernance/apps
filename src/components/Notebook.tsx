@@ -11,7 +11,8 @@ import ChallengesApp from './apps/ChallengesApp/ChallengesApp';
 import InsightsApp from './apps/InsightsApp/InsightsApp';
 import JournalApp from './apps/JournalApp/JournalApp';
 import { SettingsApp } from './apps/SettingsApp';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import DetectorApp from './apps/DetectorApp/DetectorApp';
+import { GlossaryApp } from './apps/GlossaryApp/GlossaryApp';
 
 const Notebook: React.FC = () => {
   const [state, setState] = useState<NotebookState>(INITIAL_STATE);
@@ -20,14 +21,6 @@ const Notebook: React.FC = () => {
   const toast = useToast();
   const { confirm, ConfirmModal } = useConfirm();
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts({
-    'mod+n': () => navigateToApp('challenges'),
-    'mod+j': () => navigateToApp('journal'),
-    'mod+i': () => navigateToApp('insights'),
-    'mod+h': () => navigateToApp('welcome'),
-    'escape': () => navigateToApp('welcome')
-  });
 
   // Load state on mount and listen for storage changes
   useEffect(() => {
@@ -82,6 +75,17 @@ const Notebook: React.FC = () => {
   };
 
   const navigateToApp = (app: AppScreen) => {
+    if (app === 'glossary') {
+      // For glossary, just show the modal without changing currentApp
+      updateState(prev => ({
+        ui: { 
+          ...prev.ui, 
+          showGlossary: true
+        }
+      }));
+      return;
+    }
+    
     updateState(prev => ({
       ui: { 
         ...prev.ui, 
@@ -89,7 +93,18 @@ const Notebook: React.FC = () => {
         // Reset sub-views when changing apps to prevent stuck states
         insightsView: app === 'insights' ? 'library' : prev.ui.insightsView,
         challengesView: app === 'challenges' ? 'select-type' : prev.ui.challengesView,
-        journalView: app === 'journal' ? 'home' : prev.ui.journalView
+        journalView: app === 'journal' ? 'home' : prev.ui.journalView,
+        detectorView: app === 'detector' ? 'input' : prev.ui.detectorView,
+        showGlossary: false // Close glossary when navigating to other apps
+      }
+    }));
+  };
+
+  const toggleGlossary = () => {
+    updateState(prev => ({
+      ui: { 
+        ...prev.ui, 
+        showGlossary: !prev.ui.showGlossary
       }
     }));
   };
@@ -252,6 +267,15 @@ const Notebook: React.FC = () => {
             onResume={handleResume}
           />
         </div>
+        
+        {/* Glossary Modal */}
+        {state.ui.showGlossary && (
+          <GlossaryApp
+            state={state}
+            onClose={() => toggleGlossary()}
+          />
+        )}
+        
         {ConfirmModal}
       </div>
     );
@@ -298,7 +322,24 @@ const Notebook: React.FC = () => {
         {state.ui.currentApp === 'settings' && (
           <SettingsApp />
         )}
+
+        {state.ui.currentApp === 'detector' && (
+          <DetectorApp
+            state={state}
+            onUpdate={updateState}
+            onNavigateHome={() => navigateToApp('welcome')}
+          />
+        )}
       </div>
+      
+      {/* Glossary Modal */}
+      {state.ui.showGlossary && (
+        <GlossaryApp
+          state={state}
+          onClose={() => toggleGlossary()}
+        />
+      )}
+      
       {ConfirmModal}
     </div>
   );

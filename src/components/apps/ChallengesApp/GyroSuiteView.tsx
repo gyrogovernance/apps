@@ -2,6 +2,7 @@ import React from 'react';
 import { GYRO_SUITE } from '../../../lib/challenges';
 import { ChallengesView } from '../../../types';
 import { challengeColorMap } from '../../../lib/ui-utils';
+import GlassCard from '../../shared/GlassCard';
 
 interface GyroSuiteViewProps {
   onStart: () => void;
@@ -32,10 +33,15 @@ const GyroSuiteView: React.FC<GyroSuiteViewProps> = ({ onStart, onBack }) => {
       <div className="grid gap-4 mb-8">
         {GYRO_SUITE.challenges.map((challenge, index) => {
           const colors = challengeColorMap[challenge.color] || challengeColorMap.blue;
+          // Map challenge colors to valid borderGradient values
+          const borderGradient = challenge.color === 'orange' ? 'pink' : 
+                                 challenge.color === 'red' ? 'pink' : 
+                                 challenge.color as 'blue' | 'purple' | 'green' | 'pink';
           return (
-            <div
+            <GlassCard
               key={challenge.type}
-              className="p-5 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700"
+              className="p-5"
+              borderGradient={borderGradient}
             >
               <div className="flex items-start gap-4">
                 <div className="text-4xl">{challenge.icon}</div>
@@ -53,7 +59,7 @@ const GyroSuiteView: React.FC<GyroSuiteViewProps> = ({ onStart, onBack }) => {
                   </p>
                 </div>
               </div>
-            </div>
+            </GlassCard>
           );
         })}
       </div>

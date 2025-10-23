@@ -46,3 +46,24 @@ export function formatErrorForUser(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
+/**
+ * Higher-order function to wrap storage operations with consistent error handling
+ * @param operation - The async operation to execute
+ * @param context - Description of the operation (for logging)
+ * @param fallback - Optional fallback value if operation fails
+ * @returns Result of operation or fallback value
+ */
+export async function withStorageErrorHandling<T>(
+  operation: () => Promise<T>,
+  context: string,
+  fallback?: T
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    handleStorageError(error, context);
+    if (fallback !== undefined) return fallback;
+    throw error;
+  }
+}
+

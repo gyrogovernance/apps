@@ -5,6 +5,7 @@ import { getSessionProgress, formatSessionDuration } from '../../../lib/session-
 import { isSessionEmpty } from '../../../lib/validation';
 import { useToast } from '../../shared/Toast';
 import { useConfirm } from '../../shared/Modal';
+import GlassCard from '../../shared/GlassCard';
 
 interface JournalHomeProps {
   sessions: Session[];
@@ -142,13 +143,10 @@ const JournalHome: React.FC<JournalHomeProps> = ({
               const isActive = session.id === activeSessionId;
 
               return (
-                <div
+                <GlassCard
                   key={session.id}
-                  className={`relative rounded-lg border transition-all ${
-                    isActive
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-400 hover:shadow-sm'
-                  }`}
+                  className={isActive ? 'border-blue-500' : ''}
+                  borderGradient={isActive ? 'blue' : undefined}
                 >
                   <button
                     onClick={() => onSelectSession(session.id)}
@@ -278,7 +276,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
                       </span>
                     </div>
                   </button>
-                </div>
+                </GlassCard>
               );
             })}
           </div>
@@ -293,10 +291,11 @@ const JournalHome: React.FC<JournalHomeProps> = ({
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {recentSessions.map(session => (
-              <button
+              <GlassCard
                 key={session.id}
                 onClick={() => onSelectSession(session.id)}
-                className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all text-left"
+                hover
+                className="text-left"
               >
                 <div className="flex items-center justify-between mb-2">
                   <h4 
@@ -319,7 +318,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
                     </span>
                   )}
                 </div>
-              </button>
+              </GlassCard>
             ))}
           </div>
         </div>

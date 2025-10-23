@@ -1,7 +1,10 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
+/* stylelint-disable at-rule-no-unknown */
 @layer components {
   .btn-primary {
     @apply bg-primary hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded transition-colors text-sm;
@@ -26,7 +29,11 @@
   .section-header {
     @apply text-base font-semibold mb-2 flex items-center justify-between text-gray-900 dark:text-gray-100;
   }
-  
+
+  .card-title {
+    @apply text-lg font-bold mb-3 text-gray-900 dark:text-gray-100;
+  }
+
   .label-text {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
   }
@@ -35,12 +42,6 @@
     @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200;
   }
   
-  .warning-badge {
-    @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200;
-  }
-  
-  .error-badge {
-    @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200;
-  }
 }
+/* stylelint-enable at-rule-no-unknown */
 

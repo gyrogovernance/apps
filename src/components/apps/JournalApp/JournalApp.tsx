@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { NotebookState } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
 import { getNextSection } from '../../../lib/session-utils';
@@ -24,6 +24,21 @@ const JournalApp: React.FC<JournalAppProps> = ({
   onNavigateToChallenges,
   onNavigateToSection
 }) => {
+  // Scroll to top whenever the current section or active session changes
+  useEffect(() => {
+    const scrollToTop = () => {
+      const scrollableContainer = document.querySelector('.overflow-y-auto');
+      if (scrollableContainer) {
+        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    scrollToTop();
+    const timeoutId = setTimeout(scrollToTop, 50);
+    return () => clearTimeout(timeoutId);
+  }, [state.ui.currentSection, state.activeSessionId]);
   const handleCloseSession = async (sessionId: string) => {
     try {
       const session = getSessionById(state, sessionId);
@@ -252,8 +267,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
   // Track last persisted value to reduce storage writes (gate to 30s increments)
   const lastPersistedRef = useRef<number>(-1);
 
-  // Handler to update duration when timer changes
-  const handleDurationChange = async (minutes: number) => {
+  // Handler to update duration when timer changes (memoized to prevent Timer re-renders)
+  const handleDurationChange = useCallback(async (minutes: number) => {
     if (!state.activeSessionId) return;
     
     try {
@@ -287,7 +302,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
     } catch (error) {
       console.error('Failed to update duration:', error);
     }
-  };
+  }, [state.activeSessionId, timerEpochKey, onUpdate]);
 
   // Handler for ProgressDashboard navigation - converts Section to the specific subset
   const handleProgressNavigation = (section: 'epoch1' | 'epoch2' | 'analyst1_epoch1' | 'analyst1_epoch2' | 'analyst2_epoch1' | 'analyst2_epoch2' | 'report') => {

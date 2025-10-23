@@ -27,6 +27,8 @@ export const PersistentHeader: React.FC<PersistentHeaderProps> = ({
       case 'journal': return 'Journal';
       case 'insights': return 'Insights';
       case 'settings': return 'Settings';
+      case 'detector': return 'Lie Detector';
+      case 'glossary': return 'Glossary';
       default: return 'GyroGovernance';
     }
   };
@@ -55,6 +57,13 @@ export const PersistentHeader: React.FC<PersistentHeaderProps> = ({
         {/* Right: Quick navigation - compact */}
         <div className="flex items-center gap-0.5">
           <button 
+            onClick={() => onNavigateToApp('detector')}
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-lg"
+            title="Lie Detector"
+          >
+            🔍
+          </button>
+          <button 
             onClick={() => onNavigateToApp('challenges')}
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-lg"
             title="Challenges"
@@ -74,6 +83,13 @@ export const PersistentHeader: React.FC<PersistentHeaderProps> = ({
             title="Insights"
           >
             💡
+          </button>
+          <button 
+            onClick={() => onNavigateToApp('glossary')}
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-lg"
+            title="Glossary"
+          >
+            📖
           </button>
         </div>
       </div>

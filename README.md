@@ -26,18 +26,16 @@
 ![AI Inspector Browser Extension](/assets/ai_inspector_app_top.png)
 # 🔍 AI Inspector - Browser Extension
 
+![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
+
 **Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
-> **⚠️ ALPHA RELEASE**  
-> Core features are implemented but may have bugs. See [CHANGELOG](/CHANGELOG.md) for updates.
+> **🔍 BETA RELEASE**  
+> Major new AI Lie Detector app added. See [CHANGELOG](/CHANGELOG.md) for latest updates.
 
 ---
 
-![AiE_app](/assets/gyrogovernance_app_screenshot.png)
-
-![AiE_app](/assets/app_pages_overview_1.png)
-
-![AiE_app](/assets/app_pages_overview_2.png)
+![Ai Inspector Browser Extension](/assets/ai_inspector_browser_extension.jpg)
 
 ---
 
@@ -46,13 +44,25 @@
 **You provide**: A governance challenge  
 **AI provides**: Structured reasoning through synthesis  
 **AI Inspector provides**: Mathematical quality assessment and inspection  
-**Community receives**: Public knowledge repository
+**You receive**: Validated insights stored locally for your analysis
+
+---
+
+## 🎬 Live Demo
+
+<div align="center">
+
+[![AI Inspector Demo](https://img.youtube.com/vi/VO9Be14xKXA/maxresdefault.jpg)](https://youtube.com/shorts/VO9Be14xKXA?feature=share)
+
+*Click to see the AI Inspector in action - from challenge selection to mathematical analysis*
+
+</div>
 
 ---
 
 ## 🚀 Quick Start (30 seconds)
 
-1. **Download**: Get `gyrogovernance-extension-v0.2.1.zip` from [Releases](https://github.com/gyrogovernance/apps/releases)
+1. **Download**: Get the latest release from [Releases](https://github.com/gyrogovernance/apps/releases)
 2. **Extract**: Unzip to any folder
 3. **Install**: Open `chrome://extensions/` → Enable "Developer mode" → "Load unpacked" → Select folder
 4. **Launch**: Click extension icon in toolbar ✅
@@ -68,12 +78,12 @@
    - Climate adaptation
    - Any SDG-aligned topic
 3. **Copy prompts** to your AI chat (ChatGPT, Claude, etc.)
-4. **Capture responses** using the element picker
+4. **Capture responses** using the clipboard
 5. **Get inspected analysis** with three key metrics:
    - Quality Index (overall performance)
    - Alignment Rate (reasoning efficiency)
    - Superintelligence Index (structural coherence)
-6. **Export results** as JSON/Markdown or share to Knowledge Commons
+6. **Export results** as JSON/Markdown for local storage and analysis
 
 **No API keys needed** - works with any AI chat interface through clipboard.
 
@@ -95,15 +105,35 @@ Inspects AI responses across 20 metrics in three dimensions:
 ### 🌐 Works Everywhere
 Compatible with ChatGPT, Claude, Gemini, LMArena, Poe, or any chat interface - no special access required.
 
-### 🤝 Knowledge Commons
-Export inspected findings to contribute to open governance research under CC0 license.
+### 💾 Local-First Storage
+All insights are stored locally in your browser extension. Export findings as needed for your own analysis and research.
+
+### 🔍 AI Lie Detector
+**NEW**: Rapid multi-dimensional quality assessment for AI conversation transcripts. Paste any AI conversation and get a Risk Score (0-100) based on scoring imbalance analysis across 12 evaluation criteria.
+
+**Key Features:**
+- **Risk Score Gauge**: Visual circular indicator showing deception risk level
+- **Multi-criteria Evaluation**: Automated rubric-based assessment across 12 quality dimensions
+- **Scoring Imbalance Detection**: Identifies when surface metrics (fluency) score high while foundational metrics (truthfulness) score low
+- **Pathology Detection**: Identifies specific failure modes through scoring pattern analysis
+- **Dual Analyst Evaluation**: Uses 2 different AI models for robust assessment
+- **Export Options**: Save results as insights or export Markdown/JSON reports
+
+**Perfect for**: Verifying AI responses, detecting sophisticated deception patterns, quality assurance for AI-generated content.
+
+**How It Works:**
+1. **Paste Transcript**: Upload any AI conversation (3-6 turns recommended)
+2. **Dual Analysis**: Two different AI models evaluate using structured rubrics
+3. **Scoring Analysis**: Risk Score based on geometric balance of evaluation criteria
+4. **Visual Results**: Risk Score Gauge shows imbalance level at a glance
+5. **Detailed Report**: Full scoring analysis and technical details
 
 ### 🕵️‍♂️ Lie Detection Mode
-Quickly inspect for deception using aperture analysis from your Hodge decomposition framework—spot scripted lies or chaotic fabrications in just 3-6 turns.
+Quickly inspect for deception using aperture analysis from your Hodge decomposition framework - spot scripted lies or chaotic fabrications in just 3-6 turns.
 
 ---
 
-## 📚 Who This Helps
+## 📖 Who This Helps
 
 **Communities**: Evidence-based policy development  
 **Researchers**: Reproducible governance experiments  
@@ -118,7 +148,6 @@ Quickly inspect for deception using aperture analysis from your Hodge decomposit
 - **[General Specifications](docs/GyroGovernance_Apps_General_Specs.md)** - Comprehensive overview of architecture, features, and user journey
 - **[GyroDiagnostics Specs](docs/GyroDiagnostics_General_Specs.md)** - Core evaluation methodology and metrics
 - **[Import/Export Guide](docs/IMPORT_EXPORT.md)** - Data management and migration
-- **[Developer Guide](DEV_GUIDE.md)** - Technical implementation details
 
 ---
 
@@ -159,12 +188,26 @@ This isn't subjective judgment - it's mathematical inspection of reasoning struc
 
 ---
 
-## 🔧 For Developers
+## 🐛 Issues & Support
 
-### Development Setup
+Found a bug or have a suggestion? Please report it on [GitHub Issues](https://github.com/gyrogovernance/apps/issues) so we can improve the extension.
 
-```bash
-git clone https://github.com/gyrogovernance/apps.git
-cd apps
-npm install
-npm run dev    # Start development mode
+---
+
+## 📄 License
+
+MIT License. See [LICENSE](LICENSE) for details.
+
+© 2025 Basil Korompilias.
+
+---
+
+<div style="border: 1px solid #ccc; padding: 1em; font-size: 0.6em; background-color: #f9f9f9; border-radius: 6px; line-height: 1.5;">
+  <p><strong>🤖 AI Disclosure</strong></p>
+  <p>All software architecture, design, implementation, documentation, and evaluation frameworks in this project were authored and engineered by its Author.</p>
+  <p>Artificial intelligence was employed solely as a technical assistant, limited to code drafting, formatting, verification, and editorial services, always under direct human supervision.</p>
+  <p>All foundational ideas, design decisions, and conceptual frameworks originate from the Author.</p>
+  <p>Responsibility for the validity, coherence, and ethical direction of this project remains fully human.</p>
+  <p><strong>Acknowledgements:</strong><br>
+  This project benefited from AI language model services accessed through LMArena, Cursor IDE, OpenAI (ChatGPT), Anthropic (Claude), XAI (Grok), Deepseek, and Google (Gemini).</p>
+</div>

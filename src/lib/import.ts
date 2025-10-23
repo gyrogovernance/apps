@@ -213,6 +213,15 @@ function aggregateEpochResults(epochResults: GyroDiagnosticsChallenge['epoch_res
 }
 
 /**
+ * Get the suite index for a challenge type (0-4)
+ */
+function getChallengeTypeIndex(challengeType: string): number {
+  const order = ['formal', 'normative', 'procedural', 'strategic', 'epistemic'];
+  const index = order.indexOf(challengeType.toLowerCase());
+  return index >= 0 ? index : 0; // Default to 0 if not found
+}
+
+/**
  * Transform a single GyroDiagnostics challenge into a GovernanceInsight
  */
 function transformChallenge(
@@ -222,7 +231,8 @@ function transformChallenge(
   analystModels: string[] = [],
   epochTimings: Record<string, number> = {},
   sourceFile: string,
-  timestamp: string
+  timestamp: string,
+  suiteRunId: string
 ): GovernanceInsight {
   const aggregated = aggregateEpochResults(challenge.epoch_results);
   
@@ -233,6 +243,7 @@ function transformChallenge(
   
   const insight: GovernanceInsight = {
     id: `insight_${challengeType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    suiteRunId: suiteRunId,
     challenge: {
       title: `${modelName} - ${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)} Challenge`,
       description: `GyroDiagnostics evaluation of ${modelName} on ${challengeType} reasoning challenges using the Common Governance Model.`,
@@ -306,6 +317,13 @@ function transformChallenge(
         mean_duration: challenge.mean_duration_minutes,
         std_duration: challenge.std_duration_minutes
       }
+    },
+    suiteMetadata: {
+      suiteIndex: getChallengeTypeIndex(challengeType),
+      totalChallenges: 5,
+      modelEvaluated: modelName,
+      suiteStartedAt: timestamp,
+      suiteCompletedAt: timestamp
     }
   };
   
@@ -336,6 +354,9 @@ export function transformGyroDiagnosticsToInsights(
   
   const timestamp = new Date().toISOString();
   
+  // Generate a suiteRunId for this complete suite run
+  const suiteRunId = `suite_${modelName.replace(/[^a-z0-9]/gi, '_')}_${new Date(timestamp).toISOString().slice(0,10)}`;
+  
   // Get challenges from new structure or legacy flat structure
   const challenges = data.challenges || data;
   
@@ -352,7 +373,8 @@ export function transformGyroDiagnosticsToInsights(
         analystModels,
         epochTimings,
         filename,
-        timestamp
+        timestamp,
+        suiteRunId
       );
       insights.push(insight);
     } catch (error) {

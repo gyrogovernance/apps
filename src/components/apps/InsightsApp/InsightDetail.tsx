@@ -7,6 +7,7 @@ import { countWords, estimateTokens, formatTokenCount, formatPathologyName } fro
 import { CORE_METRICS, STRUCTURE_METRICS, BEHAVIOR_METRICS, METRIC_CATEGORIES } from '../../../lib/metric-definitions';
 import { MetricCard, MetricSectionHeader } from '../../shared/MetricCard';
 import { useToast } from '../../shared/Toast';
+import GlassCard from '../../shared/GlassCard';
 
 interface InsightDetailProps {
   insight: GovernanceInsight;
@@ -112,7 +113,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
       </div>
 
       {/* THE INSIGHTS - Main Content */}
-      <div className="mb-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border-2 border-green-300 dark:border-green-700 rounded-lg">
+      <GlassCard className="mb-8 p-6" variant="glassGreen" borderGradient="green">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-2xl">💡</span>
@@ -141,12 +142,12 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
             </button>
           </>
         )}
-      </div>
+      </GlassCard>
 
       {/* Quality Metrics Cards */}
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         {/* Quality Index */}
-        <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <GlassCard className="p-5" variant="glassBlue" borderGradient="blue">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Quality Index</div>
@@ -167,10 +168,10 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               </div>
             </div>
           </details>
-        </div>
+        </GlassCard>
 
         {/* Superintelligence Index */}
-        <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
+        <GlassCard className="p-5" variant="glassGreen" borderGradient="green">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Superintelligence Index</div>
@@ -198,9 +199,9 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               </div>
             </div>
           </details>
-        </div>
+        </GlassCard>
 
-        <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+        <GlassCard className="p-5" variant="glassPurple" borderGradient="purple">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-0.5">Alignment Rate</div>
@@ -226,7 +227,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
               </div>
             </div>
           </details>
-        </div>
+        </GlassCard>
       </div>
 
       {/* Tabs */}
@@ -259,7 +260,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {insight.quality?.pathologies?.detected && insight.quality.pathologies.detected.length > 0 && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <GlassCard className="p-4" variant="glassPurple" borderGradient="pink">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                   <span>🔬</span>
                   <span>Detected Pathologies ({insight.quality.pathologies.detected.length})</span>
@@ -272,14 +273,14 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </GlassCard>
             )}
 
             {insight.process?.models_used && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Models Used</h3>
                 <div className="grid md:grid-cols-2 gap-3">
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <GlassCard className="p-3" density="dense">
                     <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Synthesis Epochs</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Epoch 1: {insight.process.models_used.synthesis_epoch1 || 'N/A'}
@@ -287,8 +288,8 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Epoch 2: {insight.process.models_used.synthesis_epoch2 || 'N/A'}
                     </div>
-                  </div>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  </GlassCard>
+                  <GlassCard className="p-3" density="dense">
                     <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Analyst Models</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Analyst 1: {insight.process.models_used.analyst1 || 'N/A'}
@@ -296,7 +297,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Analyst 2: {insight.process.models_used.analyst2 || 'N/A'}
                     </div>
-                  </div>
+                  </GlassCard>
                 </div>
               </div>
             )}
@@ -342,12 +343,12 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                 />
               ))}
             </div>
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
+            <GlassCard className="p-4" variant="glassBlue" borderGradient="blue">
               <p className="text-gray-700 dark:text-gray-300">
                 <strong>ℹ️ N/A Handling:</strong> Behavior metrics must be fully scored (6/6) to compute SI. 
                 If any metric is N/A, SI is not computed. N/A metrics are excluded from QI normalization.
               </p>
-            </div>
+            </GlassCard>
           </div>
         )}
 
@@ -379,11 +380,11 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                 ))}
               </div>
             ) : (
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm">
+              <GlassCard className="p-4" variant="glassPurple" borderGradient="pink">
                 <p className="text-gray-700 dark:text-gray-300">
                   ℹ️ <strong>No specialization scores recorded.</strong> When empty, specialization contributes 0 to Quality Index (per GyroDiagnostics spec).
                 </p>
-              </div>
+              </GlassCard>
             )}
           </div>
         )}
@@ -403,7 +404,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                       const words = countWords(turn);
                       const tokens = estimateTokens(words);
                       return (
-                        <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <GlassCard key={i} className="p-4" density="dense">
                           <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center justify-between">
                             <span>Turn {i + 1}</span>
                             <span className="text-gray-500 dark:text-gray-400 font-normal">
@@ -413,7 +414,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                           <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
                             {turn}
                           </pre>
-                        </div>
+                        </GlassCard>
                       );
                     })}
                   </div>
@@ -429,7 +430,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                       const words = countWords(turn);
                       const tokens = estimateTokens(words);
                       return (
-                        <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <GlassCard key={i} className="p-4" density="dense">
                           <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center justify-between">
                             <span>Turn {i + 1}</span>
                             <span className="text-gray-500 dark:text-gray-400 font-normal">
@@ -439,7 +440,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                           <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
                             {turn}
                           </pre>
-                        </div>
+                        </GlassCard>
                       );
                     })}
                   </div>
@@ -450,16 +451,16 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
                     🔬 Analyst Evaluations
                   </h3>
-                  <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <GlassCard className="p-6" density="dense">
                     <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-mono">
                       {insight.insights.combined_markdown}
                     </pre>
-                  </div>
+                  </GlassCard>
                 </div>
               </>
             ) : (
               /* Fallback for old insights without transcripts */
-              <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <GlassCard className="p-6" density="dense">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   ℹ️ This insight was generated before transcript persistence was enabled.
                   Only analyst evaluations are available.
@@ -467,14 +468,14 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
                 <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-mono">
                   {insight.insights.combined_markdown}
                 </pre>
-              </div>
+              </GlassCard>
             )}
           </div>
         )}
       </div>
 
       {/* Export Actions */}
-      <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      <GlassCard className="flex flex-wrap gap-3 p-4" density="dense">
         <button
           onClick={handleExportMarkdown}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
@@ -493,7 +494,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
         >
           📋 Copy JSON
         </button>
-      </div>
+      </GlassCard>
     </div>
   );
 };

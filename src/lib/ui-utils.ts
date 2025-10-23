@@ -45,6 +45,21 @@ export const getAlignmentColor = (category: AlignmentCategory | string): string 
 };
 
 /**
+ * Get status badge color (for session status indicators)
+ */
+export const getStatusBadgeColor = (status: string): string => {
+  const colors: Record<string, string> = {
+    analyzing: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
+    empty: 'bg-gray-100 dark:bg-gray-700 text-gray-500',
+    'in-progress': 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+    complete: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+    active: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+    paused: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
+  };
+  return colors[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-500';
+};
+
+/**
  * Tailwind-safe color mapping for challenge types
  */
 export const challengeColorMap: Record<string, { bg: string; text: string; border: string }> = {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Session } from '../../../types';
 import { getSessionProgress } from '../../../lib/session-utils';
+import { getStatusBadgeColor } from '../../../lib/ui-utils';
 
 interface JournalTabsProps {
   sessions: Session[];
@@ -67,15 +68,6 @@ const JournalTabs: React.FC<JournalTabsProps> = ({
     return 'in-progress';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'analyzing': return 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300';
-      case 'empty': return 'bg-gray-100 dark:bg-gray-700 text-gray-500';
-      case 'in-progress': return 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300';
-      case 'complete': return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300';
-      default: return 'bg-gray-100 dark:bg-gray-700 text-gray-500';
-    }
-  };
 
   return (
     <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 relative">
@@ -117,7 +109,7 @@ const JournalTabs: React.FC<JournalTabsProps> = ({
               onClick={() => onSelectSession(session.id)}
             >
               {/* Status indicator */}
-              <div className={`w-2 h-2 rounded-full ${getStatusColor(status)}`} />
+              <div className={`w-2 h-2 rounded-full ${getStatusBadgeColor(status)}`} />
               
               {/* Session title */}
               <span 

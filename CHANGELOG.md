@@ -7,6 +7,152 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.5-Beta] - 2025-10-23
+
+### Added
+
+**🔍 AI Lie Detector - New App**
+- Complete structural deception analysis tool for AI conversation transcripts
+- **Truth Spectrum Gauge**: Visual half-circle SVG showing deception risk level (0-100)
+- **Dual Analyst Evaluation**: Uses 2 different AI models for robust assessment
+- **Risk Score (DRS)**: Mathematical topology-based scoring system
+- **Pathology Detection**: Identifies specific failure modes (sycophantic_agreement, deceptive_coherence, etc.)
+- **Transcript Parsing**: Multiple strategies for real-world AI conversation formats
+- **Export Options**: Markdown reports and JSON data export
+- **Insight-First Architecture**: Saves completed analyses as GovernanceInsights
+
+**Core Components**
+- `DetectorApp.tsx` - Main router component with view management
+- `DetectorInput.tsx` - Transcript collection with parsing and validation
+- `DetectorAnalyst.tsx` - Wrapper around AnalystEvaluationForm for dual evaluation
+- `DetectorResults.tsx` - Results display with Truth Spectrum and detailed metrics
+- `TruthSpectrumGauge.tsx` - Half-circle SVG gauge visualization
+- `DetectorGuide.tsx` - Educational component explaining methodology
+
+**Supporting Components**
+- `QuickSummaryCard.tsx` - Executive summary with key metrics
+- `PathologyReport.tsx` - Detected pathologies with explanations
+- `TechnicalDetails.tsx` - Collapsible technical information
+- `ExportActions.tsx` - Save as insight and export options
+
+**Utilities & Infrastructure**
+- `detector-export.ts` - Markdown and JSON export utilities
+- `transcript-parser.ts` - Multi-strategy transcript parsing with confidence scoring
+- `score-aggregator.ts` - Centralized analyst score aggregation and quality metrics
+- `calculateDeceptionRiskScore()` - Core DRS calculation in `calculations.ts`
+- `generateDetectorAnalystPrompt()` - Specialized prompt for deception analysis
+
+**Navigation Integration**
+- Added Detector card to WelcomeApp with 🔍 icon
+- Added Detector navigation button to PersistentHeader
+- Integrated DetectorApp into main Notebook router
+- Updated type definitions for DetectorView and DetectorMode
+
+**📖 Glossary App - New Modal**
+- Complete quick reference for all GyroDiagnostics measures and metrics
+- **Modal Interface**: Opens as glass card with heavy backdrop blur (`backdrop-blur-md`), closes in same page
+- **Comprehensive Coverage**: Core metrics, structure/behavior/specialization metrics, pathologies, challenge types
+- **Educational Content**: Methodology explanation and technical details
+- **Dual Mode Support**: Full light/dark mode compatibility
+- **Quick Access**: Available from WelcomeApp card and PersistentHeader button
+- **Keyboard Shortcut**: `Cmd/Ctrl+G` to toggle glossary modal
+- **Fixed Layout**: Proper vertical scaling (85vh height) with scrollable content and fixed header/footer
+- **UX Improvements**: Compact design with reduced padding, smaller title, close button properly positioned, removed unnecessary footer
+- **Layout Refinements**: Fixed outer margins (removed GlassCard default padding with `p-0` override), reduced inner padding, added compact promotional card at end of list with smaller text and buttons
+- **Bug Fix**: Fixed Glossary modal not opening from Welcome screen by adding modal rendering to both Welcome and other app sections
+- **Contrast Improvements**: Updated all entry blocks to use high-contrast backgrounds (white/90 in light mode, black/90 in dark mode) for better readability
+
+### Technical Details
+
+**Risk Score Calculation**
+- Based on Superintelligence Index deviation from optimal (100)
+- Pathology count penalty (+10 per detected pathology)
+- Aperture severity assessment (non-associative residual > 0.02070)
+- Deceptive coherence pattern detection (Literacy >> Groundedness gap)
+- Hysteresis applied to prevent borderline flapping
+
+**Transcript Parsing Strategies**
+- Turn markers: `{Turn N}` or `Turn N:` patterns
+- Speaker labels: `User:` and `Assistant:` alternating
+- Paragraph-based: Intelligent chunking for 3-6 turns
+- Confidence scoring: HIGH/MEDIUM/LOW based on parsing success
+
+**Draft-Based Persistence**
+- Uses `state.drafts` for temporary storage during workflow
+- Crash recovery with automatic draft loading
+- Clean separation from Journal sessions (Insight-first approach)
+- Atomic state updates to prevent UI/storage desynchronization
+
+### User Experience
+
+**Workflow**
+1. Paste AI conversation transcript (3-6 turns recommended)
+2. Select challenge type and detection mode
+3. Evaluate with 2 different AI models using specialized prompts
+4. View Truth Spectrum Gauge and detailed analysis
+5. Save as insight or export Markdown/JSON reports
+
+**Educational Features**
+- Clear disclaimers about what the tool measures
+- Methodology explanation using GyroDiagnostics framework
+- Visual guidance through the analysis process
+- Comprehensive export options for sharing results
+
+---
+
+## [0.2.4-Alpha] - 2025-10-22
+
+### Added
+
+**Code Optimization & Refactoring**
+- Consolidated duplicate badge styling logic into `ui-utils.ts` with `getStatusBadgeColor()`
+- Extracted suite detection logic to `lib/suite-detection.ts` (removed 225 lines of duplication)
+- Added `React.memo` and `useCallback` optimizations to Timer component
+- Enhanced storage error handling with `withStorageErrorHandling()` helper
+- Removed debug console.log statements from production code
+
+### Added
+
+**Visual Design System - Glassmorphism**
+- Implemented unified glassmorphism design language across entire application
+- Created reusable `GlassCard` component with variants (`neutral`, `glassBlue`, `glassPurple`, `glassGreen`)
+- Border gradient system (`blue`, `purple`, `green`, `pink`) for visual hierarchy
+- Density options (`default`, `dense`) for different content types
+- Automatic dark mode adaptation with optimized contrast and accessibility
+
+**Component Updates**
+- Welcome screen with glass effects on app icons, Quick Start Guide, and footer
+- All Challenges screens (TypeSelector, GyroSuite, SDG Gallery, Custom Builder, Prompt Workshop)
+- All Journal screens (JournalHome with session cards)
+- All Insights screens (Library, Detail, Model Tracker, Suite Reports)
+- Settings panels with consistent glass styling
+
+### Changed
+
+**Insights Library UX Refinement**
+- Restructured with single outer glass container wrapping filters and list
+- Fixed scroll behavior: title and filters stay fixed, only list scrolls
+- Inner insight cards use solid backgrounds (`bg-white/60`, `bg-gray-800/90`) like Quick Start Guide blocks
+- Proper contrast in both light and dark modes for better accessibility
+- Eliminated z-index conflicts and shadow clipping issues
+
+**Visual Consistency**
+- Unified design language across all screens
+- Consistent hover effects and transitions
+- Strategic use of border gradients for content type indication
+- Smooth glass morphism aesthetic with proper shadow layering
+- Mobile-responsive glass effects
+
+### Technical Details
+
+- `GlassCard` component with TypeScript interfaces and prop validation
+- Proper `overflow-hidden` containers to prevent scroll issues
+- Fixed z-index layering using constants
+- Build optimization with no compilation errors
+- Bundle size: 856 KiB (stable)
+
+---
+
 ## [0.2.3-Alpha] - 2025-10-21
 
 ### Added
@@ -376,7 +522,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **UI Polish**
 - Fixed responsive layout issues (progress dashboard wrapping, spacing)
-- Improved Element Picker button sizing and states
+- Improved clipboard button sizing and states
 - Resolved three-dot menu overlap in Insights Library
 - Added comprehensive null safety to prevent crashes
 
@@ -404,7 +550,7 @@ End-to-end validation completed with demo challenge "AI Healthcare Ethics Test":
 - Chrome extension with Manifest V3 and side panel interface
 - Three-step protocol: Participation → Preparation → Provision
 - Challenge setup with type selection and UN SDGs domain integration
-- AI synthesis with two-epoch process (6 turns each) and Element Picker
+- AI synthesis with two-epoch process (6 turns each) and clipboard
 - Dual analyst evaluation with JSON validation and GyroDiagnostics scoring
 - Quality calculations (Quality Index, Alignment Rate, Superintelligence Index)
 - Export functionality (JSON, Markdown, GitHub contribution URLs)

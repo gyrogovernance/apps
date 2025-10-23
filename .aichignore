@@ -1,0 +1,144 @@
+# Git and version control
+.git/
+.gitignore
+
+# Node.js dependencies and caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Build outputs and distributions
+dist/
+build/
+release-*/
+*.zip
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary folders
+tmp/
+temp/
+
+# Documentation and research files
+docs/
+insights/
+*.md
+LICENSE
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+DEMO_CONTENT.md
+DEV_GUIDE.md
+DEV_Server.md
+TEST_RESULTS.md
+
+# Assets and media files
+assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.webp
+
+# Repomix output files
+repomix-output.xml
+repomix-parts/
+repomix-exlusions.md
+split-repomix.js
+
+# Package lock files
+package-lock.json
+yarn.lock
+
+# Configuration files
+postcss.config.js
+tailwind.config.js
+tsconfig.json
+webpack.config.js
+webpack.dev.config.js
+
+# Root level files
+index.html
+
+# Schema files
+schema/
+
+# Scripts
+scripts/
+
+# Public directory
+public/
+
+# Styles (if you want to exclude them)
+src/styles/
+
+# Build artifacts
+*.tsbuildinfo
+*.map
+*.min.js
+*.min.css
+
+# Temporary files
+*.tmp

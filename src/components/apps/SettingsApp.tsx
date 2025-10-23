@@ -4,19 +4,19 @@ import { useConfirm } from '../shared/Modal';
 import { chromeAPI } from '../../lib/chrome-mock';
 import { importGyroDiagnostics } from '../../lib/import';
 import { insights as insightsStorage } from '../../lib/storage';
+import { applyTheme, type ThemeMode } from '../../lib/theme-utils';
+import GlassCard from '../shared/GlassCard';
 
 interface Settings {
   autoSaveDrafts: boolean;
-  darkMode: 'auto' | 'light' | 'dark';
+  darkMode: ThemeMode;
   defaultPlatform: string;
-  showKeyboardShortcuts: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   autoSaveDrafts: true,
   darkMode: 'auto',
-  defaultPlatform: 'custom',
-  showKeyboardShortcuts: true
+  defaultPlatform: 'custom'
 };
 
 export const SettingsApp: React.FC = () => {
@@ -24,11 +24,30 @@ export const SettingsApp: React.FC = () => {
   const toast = useToast();
   const { confirm, ConfirmModal } = useConfirm();
 
+  // Scroll to top when settings app loads
+  useEffect(() => {
+    const scrollToTop = () => {
+      const scrollableContainer = document.querySelector('.overflow-y-auto');
+      if (scrollableContainer) {
+        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    scrollToTop();
+    const timeoutId = setTimeout(scrollToTop, 50);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
   useEffect(() => {
     // Load settings from storage
     chromeAPI.storage.local.get('app_settings').then((result) => {
       if (result.app_settings) {
-        setSettings({ ...DEFAULT_SETTINGS, ...result.app_settings });
+        const loadedSettings = { ...DEFAULT_SETTINGS, ...result.app_settings };
+        setSettings(loadedSettings);
+        // Apply the loaded theme immediately
+        applyTheme(loadedSettings.darkMode);
       }
     });
   }, []);
@@ -37,6 +56,12 @@ export const SettingsApp: React.FC = () => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     await chromeAPI.storage.local.set({ app_settings: newSettings });
+    
+    // Apply theme changes immediately
+    if (key === 'darkMode') {
+      applyTheme(value as ThemeMode);
+    }
+    
     toast.show('Settings saved', 'success');
   };
 
@@ -212,7 +237,7 @@ export const SettingsApp: React.FC = () => {
 
       <div className="space-y-6">
         {/* Auto-save Drafts */}
-        <div className="p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <GlassCard className="p-5" borderGradient="blue">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
@@ -232,49 +257,81 @@ export const SettingsApp: React.FC = () => {
               <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
-        </div>
+        </GlassCard>
 
-        {/* Keyboard Shortcuts */}
-        <div className="p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            ⌨️ Keyboard Shortcuts
-          </h3>
-          <div className="space-y-2.5 text-sm">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Go to Challenges</span>
-              <kbd className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">
-                Cmd/Ctrl + N
-              </kbd>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Go to Journal</span>
-              <kbd className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">
-                Cmd/Ctrl + J
-              </kbd>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Go to Insights</span>
-              <kbd className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">
-                Cmd/Ctrl + I
-              </kbd>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Go to Home</span>
-              <kbd className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">
-                Cmd/Ctrl + H
-              </kbd>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Show Help</span>
-              <kbd className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">
-                Cmd/Ctrl + /
-              </kbd>
+        {/* Theme Selection */}
+        <GlassCard className="p-5" borderGradient="purple">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                🎨 Theme
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Choose your preferred color scheme
+              </p>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="auto"
+                    checked={settings.darkMode === 'auto'}
+                    onChange={(e) => updateSetting('darkMode', e.target.value)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      System Defined
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Follow your system's dark/light mode setting
+                    </div>
+                  </div>
+                </label>
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="light"
+                    checked={settings.darkMode === 'light'}
+                    onChange={(e) => updateSetting('darkMode', e.target.value)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Light Mode
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Always use light theme
+                    </div>
+                  </div>
+                </label>
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="dark"
+                    checked={settings.darkMode === 'dark'}
+                    onChange={(e) => updateSetting('darkMode', e.target.value)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Dark Mode
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Always use dark theme
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
+
 
         {/* Data Management */}
-        <div className="p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <GlassCard className="p-5">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
             💾 Data Management
           </h3>
@@ -311,21 +368,38 @@ export const SettingsApp: React.FC = () => {
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
             💡 Tip: Import JSON files (e.g., model_analysis_data.json) or ZIP archives containing multiple *data.json files
           </p>
-        </div>
+        </GlassCard>
 
         {/* About */}
-        <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <GlassCard className="p-5" variant="glassBlue" borderGradient="blue">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            📖 About GyroDiagnostics
+            📖 About
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            AI Inspector v0.2.3
+            AI-Empowered Governance Apps
           </p>
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Open-source framework for evaluating AI models through structured governance challenges.
+            Open-source Apps for generating qualitative governance insights through AI-empowered processes.
+
             All insights are contributed to the public domain under CC0 license.
+
+            Made by <a 
+              href="https://gyrogovernance.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Gyro Governance
+            </a> - Powered by <a 
+              href="https://github.com/gyrogovernance/diagnostics" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              GyroDiagnostics
+            </a>.
           </p>
-        </div>
+        </GlassCard>
       </div>
 
       {ConfirmModal}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SDG_CHALLENGES } from '../../../lib/challenges';
 import { ChallengeType } from '../../../types';
+import GlassCard from '../../shared/GlassCard';
 
 interface SDGGalleryProps {
   onSelect: (challengeId: string) => void;
@@ -29,7 +30,7 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
           ← Back to SDG Gallery
         </button>
 
-        <div className="mb-6">
+        <GlassCard className="mb-6 p-6" variant="glassGreen" borderGradient="green">
           <div className="flex items-center gap-4 mb-4">
             <div className="text-5xl">{selectedChallengeData.icon}</div>
             <div>
@@ -51,16 +52,16 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
               </span>
             ))}
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+        <GlassCard className="mb-6 p-6" density="dense">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
             📋 Challenge Prompt
           </h3>
           <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-sans">
             {selectedChallengeData.prompt}
           </pre>
-        </div>
+        </GlassCard>
 
         <div className="flex gap-4">
           <button
@@ -132,10 +133,12 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
       {/* SDG Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredChallenges.map((challenge) => (
-          <button
+          <GlassCard
             key={challenge.id}
             onClick={() => setSelectedChallenge(challenge.id)}
-            className="p-5 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all text-left group"
+            hover
+            className="p-5 text-left group"
+            borderGradient="green"
           >
             <div className="text-4xl mb-3">{challenge.icon}</div>
             <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
@@ -149,7 +152,7 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
                 {challenge.type}
               </span>
             </div>
-          </button>
+          </GlassCard>
         ))}
       </div>
 

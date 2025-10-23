@@ -9,8 +9,7 @@ import {
   exportAsJSON,
   exportAsMarkdown,
   downloadFile,
-  generateFilename,
-  generateGitHubContributionURL
+  generateFilename
 } from '../lib/export';
 
 interface ReportSectionProps {
@@ -218,11 +217,6 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
     downloadFile(filename, markdown, 'text/markdown');
   };
 
-  const handleShareToGitHub = () => {
-    if (!insight) return;
-    const url = generateGitHubContributionURL(insight);
-    window.open(url, '_blank');
-  };
 
   if (loading) {
     return (
@@ -497,17 +491,14 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
           <button onClick={handleDownloadMarkdown} className="btn-primary">
             Download Markdown
           </button>
-          <button onClick={handleShareToGitHub} className="btn-primary bg-green-600 hover:bg-green-700">
-            Share to GitHub
-          </button>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Contributions are published under CC0 license to the public knowledge base
+          Insights are stored locally and can be exported as needed
         </p>
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex justify-between pt-4 pb-6 border-t border-gray-200 dark:border-gray-700 mt-4 mx-3">
         <button onClick={onBack} className="btn-secondary">
           ← Back
         </button>
