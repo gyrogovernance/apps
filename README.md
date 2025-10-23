@@ -23,7 +23,7 @@
 
 ---
 
-![AI Inspector Browser Extension](/assets/ai_inspector_app_top.png)
+![AI Inspector Browser Extension](/assets/ai_inspector_promo_transp.png)
 # 🔍 AI Inspector - Browser Extension
 
 ![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
