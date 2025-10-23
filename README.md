@@ -52,7 +52,7 @@
 
 <div align="center">
 
-[![AI Inspector Demo](https://img.youtube.com/vi/VO9Be14xKXA/maxresdefault.jpg)](https://youtube.com/shorts/VO9Be14xKXA?feature=share)
+[![AI Inspector Demo](https://img.youtube.com/vi/VO9Be14xKXA/maxresdefault.jpg)](https://youtube.com/watch?v=VO9Be14xKXA)
 
 *Click to see the AI Inspector in action - from challenge selection to mathematical analysis*
 
