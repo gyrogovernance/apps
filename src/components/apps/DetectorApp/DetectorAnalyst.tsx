@@ -71,7 +71,7 @@ const DetectorAnalyst: React.FC<DetectorAnalystProps> = ({
         <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
           <li>You paste an AI conversation (3-6 turns)</li>
           <li>You evaluate it using 2 different AI models</li>
-          <li>We compute 20 metrics + structural coherence (SI)</li>
+          <li>We compute 12 metrics + structural coherence (SI)</li>
           <li>Risk Score shows structural integrity</li>
         </ol>
       </GlassCard>

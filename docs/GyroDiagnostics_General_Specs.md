@@ -56,7 +56,7 @@ Systems maintaining proper structural relationships across these states exhibit 
 - **4 Structure metrics** = Gyroscopic integrity (CGM states: CS, UNA, ONA, BU)
 - **6 Behavior metrics** = Tensegrity edges (K₄ polyhedral topology)
 - **2 Specialization metrics per challenge** = Domain-specific expertise (10 total across 5 challenges)
-- **Total: 20 distinct metrics** (12 scored per individual challenge evaluation)
+- **Total: 12 metrics** (scored per individual challenge evaluation)
 
 The 6 Behavior metrics form a basis for the 6D Hilbert space H_edge, enabling orthogonal projection via Riesz representation.
 

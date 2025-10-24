@@ -1,14 +1,12 @@
 {
   "manifest_version": 3,
   "name": "AI Inspector",
-  "version": "0.2.3",
+  "version": "1.0",
   "description": "Inspect AI outputs for truth, alignment, and governance quality using mathematical assessment",
   "permissions": [
     "storage",
     "clipboardWrite",
     "clipboardRead",
-    "activeTab",
-    "scripting",
     "sidePanel"
   ],
   "action": {

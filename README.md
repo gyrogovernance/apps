@@ -30,8 +30,8 @@
 
 **Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
-> **🔍 BETA RELEASE**  
-> Major new AI Lie Detector app added. See [CHANGELOG](/CHANGELOG.md) for latest updates.
+> **🎉 PUBLIC RELEASE v1.0**  
+> Complete AI governance analysis platform with AI Lie Detector. See [CHANGELOG](/CHANGELOG.md) for full feature list.
 
 ---
 
@@ -92,7 +92,7 @@
 ## ✨ Core Capabilities
 
 ### 🔬 Mathematical Inspection
-Inspects AI responses across 20 metrics in three dimensions:
+Inspects AI responses across 12 metrics in three dimensions:
 - **Structure**: Reasoning coherence and integrity
 - **Behavior**: Accuracy and reliability patterns
 - **Specialization**: Domain-specific expertise

@@ -98,17 +98,17 @@ export const BEHAVIOR_METRICS: Record<string, MetricDefinition> = {
 export const METRIC_CATEGORIES: Record<string, MetricDefinition> = {
   structure: {
     shortDesc: "Foundation for coherent reasoning (4 metrics, 40% of QI)",
-    fullDesc: "Structure metrics evaluate the foundational qualities that enable coherent governance reasoning. These metrics assess whether the response maintains logical continuity, incorporates diverse perspectives, acknowledges limitations, and synthesizes complexity effectively.\n\nStructure forms the backbone of quality - without strong structure, behavior and specialization capabilities cannot manifest effectively. The four structure metrics (Traceability, Variety, Accountability, Integrity) each score 1-10 and contribute 40% to the final Quality Index."
+    fullDesc: "Structure metrics evaluate the foundational qualities that enable coherent governance reasoning. These metrics assess whether the response maintains logical continuity, incorporates diverse perspectives, acknowledges limitations, and synthesizes complexity effectively.\n\nStructure forms the backbone of quality - without strong structure, behavior and specialization capabilities cannot manifest effectively. The four structure metrics (Traceability, Variety, Accountability, Integrity) each score 1-10 and contribute 40% to the final Quality Index.\n\nPer individual challenge, we measure 12 total metrics: 4 Structure + 6 Behavior + 2 Specialization."
   },
   
   behavior: {
     shortDesc: "Core reasoning capabilities (6 metrics, 40% of QI)",
-    fullDesc: "Behavior metrics assess fundamental reasoning and communication capabilities that apply across all governance domains. These metrics map to edges of the K₄ complete graph topology:\n\n• Edges 0-1, 0-2, 0-3: Truthfulness, Completeness, Groundedness (epistemic foundation)\n• Edges 1-2, 1-3, 2-3: Literacy, Comparison, Preference (reasoning sophistication)\n\nN/A scores for Comparison and Preference are excluded from QI calculation. SI requires all 6 behavior metrics; if any are N/A, SI is not computed in the Apps. Behavior metrics contribute 40% to Quality Index."
+    fullDesc: "Behavior metrics assess fundamental reasoning and communication capabilities that apply across all governance domains. These metrics map to edges of the K₄ complete graph topology:\n\n• Edges 0-1, 0-2, 0-3: Truthfulness, Completeness, Groundedness (epistemic foundation)\n• Edges 1-2, 1-3, 2-3: Literacy, Comparison, Preference (reasoning sophistication)\n\nN/A scores for Comparison and Preference are excluded from QI calculation. SI requires all 6 behavior metrics; if any are N/A, SI is not computed in the Apps. Behavior metrics contribute 40% to Quality Index.\n\nPer individual challenge, we measure 12 total metrics: 4 Structure + 6 Behavior + 2 Specialization."
   },
   
   specialization: {
     shortDesc: "Domain-specific expertise (2 metrics, 20% of QI)",
-    fullDesc: "Specialization metrics evaluate performance on criteria specific to the challenge domain. Each challenge type has tailored specialization dimensions:\n\n• Formal: Physics, Math\n• Normative: Policy, Ethics\n• Procedural: Code, Debugging\n• Strategic: Finance, Strategy\n• Epistemic: Knowledge, Communication\n• Custom: Domain-specific metrics\n\nWhen empty, specialization contributes 0 to Quality Index (per GyroDiagnostics specification). Specialization contributes 20% to Quality Index."
+    fullDesc: "Specialization metrics evaluate performance on criteria specific to the challenge domain. Each challenge type has tailored specialization dimensions:\n\n• Formal: Physics, Math\n• Normative: Policy, Ethics\n• Procedural: Code, Debugging\n• Strategic: Finance, Strategy\n• Epistemic: Knowledge, Communication\n• Custom: Domain-specific metrics\n\nWhen empty, specialization contributes 0 to Quality Index (per GyroDiagnostics specification). Specialization contributes 20% to Quality Index.\n\nPer individual challenge, we measure 12 total metrics: 4 Structure + 6 Behavior + 2 Specialization."
   }
 };
 
