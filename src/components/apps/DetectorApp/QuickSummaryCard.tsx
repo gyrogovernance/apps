@@ -1,5 +1,5 @@
 // Quick Summary Card - Shows DRS interpretation in plain language
-// Includes confidence rating and AR estimation with user override
+// Includes AR estimation with user override
 
 import React, { useState } from 'react';
 import GlassCard from '../../shared/GlassCard';
@@ -8,14 +8,18 @@ interface QuickSummaryCardProps {
   drs: {
     score: number;
     category: 'LOW' | 'MODERATE' | 'HIGH';
-    factors: Record<string, number>;
+    factors: {
+      foundationPenalty?: number;
+      siRisk?: number;
+      pathologyRisk?: number;
+      gapRisk?: number;
+    };
   };
   metrics: {
     quality_index: number;
     alignment_rate: number;
     alignment_rate_category: string;
     superintelligence_index: number;
-    confidence: 'HIGH' | 'MEDIUM' | 'LOW';
   };
   arOverride: number | null;
   onArOverride: (value: number | null) => void;
@@ -30,10 +34,10 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
 
   const getKeyFinding = () => {
     if (drs.category === 'HIGH') {
-      if (drs.factors.deceptive_coherence > 0) {
+      if ((drs.factors.gapRisk || 0) > 15) {
         return "Scoring imbalance detected: high fluency scores mask low truthfulness/groundedness - classic deceptive coherence pattern";
       }
-      if (drs.factors.pathology_count > 20) {
+      if ((drs.factors.pathologyRisk || 0) > 15) {
         return "Multiple scoring pathologies detected through pattern analysis - significant integrity issues";
       }
       return "Significant scoring imbalances detected - high risk of deceptive coherence";
@@ -44,15 +48,6 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
     return "Balanced scoring across evaluation criteria - structurally sound responses";
   };
 
-  const getConfidenceColor = (confidence: string) => {
-    switch (confidence) {
-      case 'HIGH': return 'text-green-600 dark:text-green-400';
-      case 'MEDIUM': return 'text-yellow-600 dark:text-yellow-400';
-      case 'LOW': return 'text-red-600 dark:text-red-400';
-      default: return 'text-gray-600 dark:text-gray-400';
-    }
-  };
-
   return (
     <GlassCard className="p-6" variant="glassGreen" borderGradient="green">
       <div className="flex items-start justify-between mb-4">
@@ -61,8 +56,7 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
             Summary
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            This transcript shows <strong>{drs.category}</strong> risk of deceptive coherence patterns 
-            based on scoring imbalance analysis across 12 evaluation criteria.
+            <strong>{drs.category}</strong> risk from imbalances
           </p>
         </div>
         <div className="text-right">
@@ -143,9 +137,9 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="3"
-                strokeDasharray={`${Math.min((metrics.superintelligence_index / 15) * 113.1, 113.1)} 113.1`}
+                strokeDasharray={`${Math.min((metrics.superintelligence_index / 100) * 113.1, 113.1)} 113.1`}
                 strokeLinecap="round"
-                className={metrics.superintelligence_index >= 12 ? 'text-purple-500' : metrics.superintelligence_index >= 8 ? 'text-blue-500' : metrics.superintelligence_index >= 4 ? 'text-yellow-500' : 'text-red-500'}
+                className={metrics.superintelligence_index >= 80 ? 'text-purple-500' : metrics.superintelligence_index >= 50 ? 'text-blue-500' : metrics.superintelligence_index >= 25 ? 'text-yellow-500' : 'text-red-500'}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
@@ -181,6 +175,9 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
                 strokeLinecap="round"
                 className={metrics.alignment_rate >= 0.3 ? 'text-emerald-500' : metrics.alignment_rate >= 0.2 ? 'text-green-500' : metrics.alignment_rate >= 0.1 ? 'text-yellow-500' : 'text-red-500'}
               />
+              {metrics.alignment_rate > 0.5 && (
+                <title>AR capped at 0.5 for display</title>
+              )}
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-sm font-bold text-gray-700 dark:text-gray-300">

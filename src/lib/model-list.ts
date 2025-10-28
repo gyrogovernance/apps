@@ -7,6 +7,12 @@ export interface ModelInfo {
   company: string;
 }
 
+export const UNSPECIFIED_MODEL: ModelInfo = {
+  value: 'Unspecified',
+  label: 'Unspecified',
+  company: 'System'
+};
+
 export const AI_MODELS: ModelInfo[] = [
   // Google
   { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', company: 'Google' },

@@ -23,14 +23,23 @@ window.addEventListener('error', (event) => {
   }
 });
 
-// Initialize theme
-initializeTheme();
+let reactRoot: ReturnType<typeof createRoot> | null = null;
 
-const root = document.getElementById('root');
+function renderApp() {
+  const root = document.getElementById('root');
+  if (!root) {
+    console.error('Root element not found');
+    return;
+  }
 
-if (root) {
   try {
-    createRoot(root).render(
+    if (reactRoot) {
+      reactRoot.unmount();
+      reactRoot = null;
+    }
+    
+    reactRoot = createRoot(root);
+    reactRoot.render(
       <React.StrictMode>
         <ToastProvider>
           <Notebook />
@@ -39,11 +48,40 @@ if (root) {
     );
   } catch (error) {
     console.error('Error rendering React:', error);
-    // Fallback: render a simple div to confirm React is working
-    root.innerHTML = '<div style="padding: 20px; font-family: system-ui; background: #ffebee; color: #c62828;">Error: React failed to load - ' + (error as Error).message + '</div>';
+    root.innerHTML = `
+      <div style="padding: 20px; font-family: system-ui; background: #ffebee; color: #c62828;">
+        <h2>Error: React failed to load</h2>
+        <p>${(error as Error).message || 'Unknown error'}</p>
+        <pre style="font-size: 12px; overflow: auto; background: white; padding: 10px; border-radius: 4px; margin-top: 10px;">${(error as Error).stack || 'No stack trace'}</pre>
+      </div>
+    `;
   }
+}
+
+// Initialize app
+function initializeApp() {
+  try {
+    initializeTheme();
+  } catch (error) {
+    console.error('Error initializing theme:', error);
+  }
+  renderApp();
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
-  console.error('Root element not found!');
-  // Try to create a fallback message
-  document.body.innerHTML = '<div style="padding: 20px; font-family: system-ui;">Error: Root element not found</div>';
+  setTimeout(initializeApp, 0);
+}
+
+// Hot Module Replacement (HMR)
+if (typeof module !== 'undefined' && (module as any).hot) {
+  const hot = (module as any).hot;
+  hot.accept('./components/Notebook', () => {
+    renderApp();
+  });
+  hot.accept('./styles/main.css', () => {
+    // CSS updates handled automatically
+  });
 }

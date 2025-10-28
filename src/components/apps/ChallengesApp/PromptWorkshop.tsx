@@ -195,7 +195,7 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
           {/* Improvement Tools */}
           <GlassCard className="p-4" density="dense">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              Quick Improvement Tools
+              Tools
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {improvementTools.map(tool => (
@@ -274,7 +274,7 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
             <GlassCard className="p-5" variant="glassPurple" borderGradient="pink">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                 <span>💡</span>
-                <span>Suggestions for Improvement</span>
+                <span>Suggestions</span>
               </h3>
               <ul className="space-y-2">
                 {metrics.suggestions.map((suggestion, idx) => (
@@ -290,28 +290,28 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
           {/* Best Practices */}
           <GlassCard className="p-5" density="dense">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              ✅ Best Practices
+              Best Practices
             </h3>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Be specific about objectives and expected outcomes</span>
+                <span>Specific objectives</span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Include stakeholder perspectives</span>
+                <span>Stakeholder perspectives</span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Add quantifiable success criteria</span>
+                <span>Quantifiable criteria</span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Define constraints and boundaries</span>
+                <span>Clear constraints</span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Structure your prompt clearly</span>
+                <span>Structured format</span>
               </li>
             </ul>
           </GlassCard>
@@ -326,7 +326,7 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
             className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             disabled={!prompt.trim()}
           >
-            Apply to Challenge
+            Apply →
           </button>
         )}
         <button

@@ -1,12 +1,14 @@
 // Core data types for the Governance Apps extension
 
 // App-based navigation types
-export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings' | 'detector' | 'glossary';
+export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'settings' | 'gadgets' | 'glossary';
 export type ChallengesView = 'select-type' | 'gyro-suite' | 'sdg-gallery' | 'custom-builder' | 'prompt-workshop';
 export type JournalView = 'home' | 'session' | 'active-session' | 'synthesis' | 'analysis';
 export type InsightsView = 'library' | 'detail' | 'comparison' | 'suites' | 'tracker';
 export type DetectorView = 'input' | 'analyst1' | 'analyst2' | 'results';
 export type DetectorMode = 'quick' | 'standard' | 'custom';
+export type GadgetView = 'selector' | 'treatment-selector' | 'accordion';
+export type GadgetType = 'detector' | 'policy-audit' | 'policy-report' | 'sanitize' | 'immunity-boost';
 
 export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedural' | 'formal' | 'custom';
 export type Platform = 'lmarena' | 'chatgpt' | 'claude' | 'poe' | 'custom';
@@ -137,6 +139,10 @@ export interface NotebookState {
     journalView?: JournalView;
     insightsView?: InsightsView;
     detectorView?: DetectorView; // Added for Detector app navigation
+    gadgetView?: GadgetView; // Added for Gadgets app navigation
+    gadgetType?: GadgetType; // Track which gadget is active
+    gadgetDraftKey?: string; // Track active gadget draft
+    gadgetsQuickMode?: boolean; // Quick/Guided mode preference for gadgets
     showGlossary?: boolean; // Added for Glossary modal
     detectorDraftKey?: string; // Track active detector draft per run
   };
@@ -171,6 +177,7 @@ export interface GovernanceInsight {
     alignment_rate_category: AlignmentCategory;
     superintelligence_index: number;
     si_deviation: number;
+    aperture?: number; // Aperture value from SI calculation
     
     structure_scores: StructureScores;
     behavior_scores: {

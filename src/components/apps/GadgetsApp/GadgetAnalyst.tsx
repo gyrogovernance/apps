@@ -1,22 +1,22 @@
-// Detector Analyst View - Wrapper around AnalystEvaluationForm
-// Uses Insight-first approach with drafts for persistence
+// Gadget Analyst View - Evaluate AI output using standard rubric
+// Reuses AnalystEvaluationForm for consistency
 
 import React from 'react';
-import { NotebookState, ChallengeType, DetectorUIState, AnalystResponse } from '../../../types';
+import { NotebookState, AnalystResponse } from '../../../types';
 import { useToast } from '../../shared/Toast';
 import AnalystEvaluationForm from '../../shared/AnalystEvaluationForm';
 import GlassCard from '../../shared/GlassCard';
 
-interface DetectorAnalystProps {
+interface GadgetAnalystProps {
   state: NotebookState;
   onUpdate: (updates: Partial<NotebookState>) => void;
   analystNumber: 1 | 2;
   onNext: () => void;
   onBack: () => void;
-  draftKey: string | undefined; // Key to retrieve the current detector draft
+  draftKey: string | undefined;
 }
 
-const DetectorAnalyst: React.FC<DetectorAnalystProps> = ({
+const GadgetAnalyst: React.FC<GadgetAnalystProps> = ({
   state,
   onUpdate,
   analystNumber,
@@ -29,28 +29,28 @@ const DetectorAnalyst: React.FC<DetectorAnalystProps> = ({
   if (!draftKey || !state.drafts || !state.drafts[draftKey]) {
     return (
       <div className="max-w-4xl mx-auto p-6 text-red-500 dark:text-red-400">
-        Error: No detector data found. Please start a new analysis.
+        Error: No gadget data found. Please start over.
         <button onClick={onBack} className="btn-secondary mt-4">← Back</button>
       </div>
     );
   }
 
-  const draftData: DetectorUIState = state.drafts[draftKey] as DetectorUIState;
+  const draftData = state.drafts[draftKey];
 
-  // Namespace the analyst JSON drafts by the active detector draftKey
-  const evaluationDraftKey = draftKey ? `${draftKey}::analyst_${analystNumber}` : `detector::analyst_${analystNumber}`;
-  const sessionId = draftKey ? `detector::${draftKey}` : 'detector';
+  // Namespace the analyst JSON drafts by the active gadget draftKey
+  const evaluationDraftKey = draftKey ? `${draftKey}::analyst_${analystNumber}` : `gadget::analyst_${analystNumber}`;
+  const sessionId = draftKey ? `gadget::${draftKey}` : 'gadget';
 
-  // Get transcript from parsed result
-  const transcript = draftData.transcript;
+  // Get transcript from draft (aiOutput serves as transcript)
+  const transcript = draftData.transcript || draftData.aiOutput || '';
 
   const existingEvaluation = analystNumber === 1 ? draftData.analyst1 : draftData.analyst2;
 
   const handleComplete = async (evaluation: AnalystResponse, modelName: string) => {
-    const updatedDraft: DetectorUIState = {
+    const updatedDraft = {
       ...draftData,
       [`analyst${analystNumber}`]: evaluation,
-      [`model_analyst${analystNumber}`]: modelName // Store model name in draft
+      [`model_analyst${analystNumber}`]: modelName
     };
 
     onUpdate({
@@ -65,14 +65,14 @@ const DetectorAnalyst: React.FC<DetectorAnalystProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* How It Works - Show during evaluation */}
+      {/* Workflow Reminder */}
       <GlassCard className="p-4" variant="glassBlue">
-        <h3 className="card-title text-sm">How It Works</h3>
+        <h3 className="card-title text-sm">Evaluation Process</h3>
         <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
-          <li>You paste an AI conversation (3-6 turns)</li>
-          <li>You evaluate it using 2 different AI models</li>
-          <li>We compute 12 metrics + structural coherence (SI)</li>
-          <li>Risk Score shows structural integrity</li>
+          <li>Copy the analyst prompt below (includes the AI output)</li>
+          <li>Paste into a different AI model for evaluation</li>
+          <li>Copy the JSON response and paste it here</li>
+          <li>We compute 12 metrics + Superintelligence Index</li>
         </ol>
       </GlassCard>
 
@@ -83,7 +83,7 @@ const DetectorAnalyst: React.FC<DetectorAnalystProps> = ({
         onComplete={handleComplete}
         onBack={onBack}
         existingEvaluation={existingEvaluation}
-        mode="detector" // Indicate detector mode for prompt generation
+        mode="detector" // Use detector mode for gadget evaluation
         sessionId={sessionId}
         draftKey={evaluationDraftKey}
       />
@@ -91,4 +91,5 @@ const DetectorAnalyst: React.FC<DetectorAnalystProps> = ({
   );
 };
 
-export default DetectorAnalyst;
+export default GadgetAnalyst;
+

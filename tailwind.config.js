@@ -7,6 +7,9 @@ module.exports = {
   darkMode: 'class', // Manual dark mode control via class
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Nunito', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       colors: {
         primary: '#4A90E2',
         secondary: '#50E3C2',

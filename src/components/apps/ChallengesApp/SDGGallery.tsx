@@ -96,7 +96,7 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
           <span>UN Sustainable Development Goals</span>
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Select a real-world governance challenge to evaluate your AI model (17 goals available)
+          17 governance challenges
         </p>
       </div>
 
@@ -131,26 +131,32 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
       </div>
 
       {/* SDG Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredChallenges.map((challenge) => (
           <GlassCard
             key={challenge.id}
             onClick={() => setSelectedChallenge(challenge.id)}
             hover
-            className="p-5 text-left group"
+            className="cursor-pointer group"
             borderGradient="green"
           >
-            <div className="text-4xl mb-3">{challenge.icon}</div>
-            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-              {challenge.title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-              {challenge.description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                {challenge.type}
-              </span>
+            <div className="p-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl flex-shrink-0">{challenge.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    {challenge.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-tight mb-1.5">
+                    {challenge.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                      {challenge.type}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </GlassCard>
         ))}
@@ -158,7 +164,7 @@ const SDGGallery: React.FC<SDGGalleryProps> = ({ onSelect, onBack }) => {
 
       {filteredChallenges.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          No challenges found for this filter
+          No matches
         </div>
       )}
     </div>

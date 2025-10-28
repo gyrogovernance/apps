@@ -284,7 +284,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
                 rows={8}
                 className="textarea-field pb-8"
               />
-              <div className="absolute bottom-2 right-2 flex gap-1">
+              <div className="absolute bottom-4 right-2 flex gap-1">
                 <button
                   onClick={async () => {
                     try {

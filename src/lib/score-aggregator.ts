@@ -135,12 +135,12 @@ export function aggregateAnalystScores(
 /**
  * Calculate all quality metrics from aggregated scores
  * 
- * Computes QI, AR, SI, and confidence rating from aggregated analyst scores.
+ * Computes QI, AR, SI from aggregated analyst scores.
  * Includes aperture value directly from calculateSuperintelligenceIndex.
  * 
  * @param aggregated - Aggregated scores from aggregateAnalystScores
  * @param duration_minutes - Optional duration for AR calculation
- * @returns Complete quality metrics with confidence rating
+ * @returns Complete quality metrics
  */
 export function calculateQualityMetrics(
   aggregated: ReturnType<typeof aggregateAnalystScores>,
@@ -155,7 +155,6 @@ export function calculateQualityMetrics(
   structure_avg: number;
   behavior_avg: number;
   specialization_avg: number;
-  confidence: 'HIGH' | 'MEDIUM' | 'LOW';  // Inter-analyst agreement
 } {
   // Calculate averages
   const structure_avg = calculateStructureAverage(aggregated.structure);
@@ -177,28 +176,6 @@ export function calculateQualityMetrics(
     console.warn('SI unavailable:', e);
   }
   
-  // Calculate confidence based on inter-analyst agreement
-  // Compare structure (4 metrics) and behavior scores (6 metrics)
-  const structureDiffs = [
-    Math.abs(aggregated.structure.traceability - aggregated.structure.traceability), // This would need original values
-    Math.abs(aggregated.structure.variety - aggregated.structure.variety),
-    Math.abs(aggregated.structure.accountability - aggregated.structure.accountability),
-    Math.abs(aggregated.structure.integrity - aggregated.structure.integrity)
-  ];
-  
-  // For now, use a simplified confidence calculation
-  // In practice, you'd need access to the original analyst scores
-  const avgDiff = structureDiffs.reduce((sum, diff) => sum + diff, 0) / structureDiffs.length;
-  
-  let confidence: 'HIGH' | 'MEDIUM' | 'LOW';
-  if (avgDiff <= 1.0) {
-    confidence = 'HIGH';
-  } else if (avgDiff <= 2.0) {
-    confidence = 'MEDIUM';
-  } else {
-    confidence = 'LOW';
-  }
-  
   return {
     quality_index,
     alignment_rate: alignmentResult.rate,
@@ -208,7 +185,6 @@ export function calculateQualityMetrics(
     aperture: siResult.aperture,
     structure_avg,
     behavior_avg,
-    specialization_avg,
-    confidence
+    specialization_avg
   };
 }

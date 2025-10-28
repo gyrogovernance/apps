@@ -10,9 +10,15 @@ interface TruthSpectrumGaugeProps {
     category: 'LOW' | 'MODERATE' | 'HIGH';
     factors: Record<string, number>;
   };
+  size?: 'lg' | 'sm';
 }
 
-const TruthSpectrumGauge: React.FC<TruthSpectrumGaugeProps> = ({ drs }) => {
+const TruthSpectrumGauge: React.FC<TruthSpectrumGaugeProps> = ({ drs, size = 'lg' }) => {
+  const isSmall = size === 'sm';
+  const wrapperClass = isSmall ? 'w-32 h-32' : 'w-64 h-64';
+  const innerClass = isSmall ? 'w-28 h-28' : 'w-48 h-48';
+  const textClass = isSmall ? 'text-base' : 'text-lg';
+  const subTextClass = isSmall ? 'text-xs' : 'text-xs';
   // Get colors and fill percentage based on risk category
   const getGaugeConfig = (category: string) => {
     switch (category) {
@@ -49,8 +55,8 @@ const TruthSpectrumGauge: React.FC<TruthSpectrumGaugeProps> = ({ drs }) => {
   
   return (
     <div className="flex justify-center">
-      <GlassCard className="w-64 h-64 rounded-full p-0 flex items-center justify-center" variant="glassBlue" borderGradient="blue">
-        <div className="w-48 h-48 relative">
+      <GlassCard className={`${wrapperClass} rounded-full p-0 flex items-center justify-center`} variant="glassBlue" borderGradient="blue">
+        <div className={`${innerClass} relative`}>
           <svg viewBox="0 0 100 100" className="w-full h-full">
             {/* Define gradient - dramatic transition from very light to very dark */}
             <defs>
@@ -94,7 +100,7 @@ const TruthSpectrumGauge: React.FC<TruthSpectrumGaugeProps> = ({ drs }) => {
               x="50"
               y="50"
               textAnchor="middle"
-              className="text-lg font-bold fill-gray-900 dark:fill-white"
+              className={`${textClass} font-bold fill-gray-900 dark:fill-white`}
             >
               {drs.category}
             </text>
@@ -102,7 +108,7 @@ const TruthSpectrumGauge: React.FC<TruthSpectrumGaugeProps> = ({ drs }) => {
               x="50"
               y="65"
               textAnchor="middle"
-              className="text-xs font-medium fill-gray-500 dark:fill-gray-400"
+              className={`${subTextClass} font-medium fill-gray-500 dark:fill-gray-400`}
             >
               RISK
             </text>

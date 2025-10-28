@@ -155,7 +155,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
                     {/* Header Row */}
                     <div className="flex items-center justify-between mb-2">
                       <h3 
-                        className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1 mr-2"
+                        className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex-1 mr-2"
                         title={session.challenge.title}
                       >
                         {session.challenge.title}
@@ -299,7 +299,7 @@ const JournalHome: React.FC<JournalHomeProps> = ({
               >
                 <div className="flex items-center justify-between mb-2">
                   <h4 
-                    className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate flex-1 mr-2"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100 flex-1 mr-2"
                     title={session.challenge.title}
                   >
                     {session.challenge.title}

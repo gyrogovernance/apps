@@ -10,7 +10,6 @@ interface TechnicalDetailsProps {
     superintelligence_index: number;
     si_deviation: number;
     aperture: number;
-    confidence: 'HIGH' | 'MEDIUM' | 'LOW';
   };
   draftData: any;
   arOverride: number | null;
@@ -21,20 +20,12 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
   draftData,
   arOverride
 }) => {
-  const getConfidenceExplanation = (confidence: string) => {
-    switch (confidence) {
-      case 'HIGH': return 'Analysts agreed closely on most metrics (avg diff ≤ 1.0)';
-      case 'MEDIUM': return 'Moderate agreement between analysts (avg diff ≤ 2.0)';
-      case 'LOW': return 'Significant disagreement between analysts (avg diff > 2.0)';
-      default: return 'Confidence could not be calculated';
-    }
-  };
-
   return (
     <GlassCard className="p-6" variant="glassBlue" borderGradient="blue">
-      <details>
-        <summary className="cursor-pointer text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 hover:text-blue-600 dark:hover:text-blue-400">
-          Technical Details
+      <details className="group">
+        <summary className="cursor-pointer text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 hover:text-blue-600 dark:hover:text-blue-400 list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden flex items-center gap-2">
+          <span className="text-gray-500 dark:text-gray-400 group-open:rotate-90 transition-transform">▶</span>
+          <span>Technical Details</span>
         </summary>
         
         <div className="space-y-4 mt-4">
@@ -45,20 +36,16 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
                   </h4>
                   <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
                     <div>
-                      <strong>Superintelligence Index (SI):</strong> Measures structural coherence using K₄ graph topology.
-                      Higher values suggest more sophisticated reasoning patterns.
+                      <strong>SI:</strong> Structural coherence measure
                     </div>
                     <div>
-                      <strong>Pathologies:</strong> Specific failure modes detected through scoring pattern analysis, 
-                      such as "deceptive_coherence" or "semantic_drift" that indicate problematic response patterns.
+                      <strong>Pathologies:</strong> Failure modes detected
                     </div>
                     <div>
-                      <strong>Aperture:</strong> Non-associative residual in behavior vector (target: 0.02070).
-                      Measures how well the AI balances different aspects of reasoning.
+                      <strong>Aperture:</strong> Balance metric (target 0.02070)
                     </div>
                     <div>
-                      <strong>Literacy vs Groundedness Gap:</strong> Scoring imbalance where surface metrics (fluency, presentation) 
-                      score high while foundational metrics (truthfulness, groundedness) score low - revealing deceptive coherence.
+                      <strong>Gap:</strong> Surface quality vs. foundations
                     </div>
                   </div>
                 </div>
@@ -78,6 +65,9 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">
                   Target: 0.02070 (K=4)
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Deviation: {isNaN(metrics.si_deviation) ? 'N/A' : `${metrics.si_deviation.toFixed(2)}×`} from target
                 </div>
               </div>
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
@@ -101,21 +91,6 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
                 </p>
               </div>
             )}
-          </div>
-
-          {/* Inter-analyst Agreement */}
-          <div>
-            <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Inter-analyst Agreement
-            </h4>
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Confidence Level: {metrics.confidence}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {getConfidenceExplanation(metrics.confidence)}
-              </div>
-            </div>
           </div>
 
           {/* AR Calculation Details */}
@@ -144,7 +119,6 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
                 superintelligence_index: metrics.superintelligence_index,
                 si_deviation: metrics.si_deviation,
                 aperture: metrics.aperture,
-                confidence: metrics.confidence,
                 transcript_turns: draftData?.parsedResult?.turns?.length || 0,
                 parsing_method: draftData?.parsedResult?.method || 'unknown',
                 analyst_models: {

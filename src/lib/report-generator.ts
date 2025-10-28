@@ -9,7 +9,8 @@ import {
   calculateSpecializationAverage,
   calculateQualityIndex,
   calculateAlignmentRate,
-  calculateSuperintelligenceIndex
+  calculateSuperintelligenceIndex,
+  A_STAR
 } from './calculations';
 import { behaviorScoresToArray } from './parsing';
 
@@ -71,29 +72,34 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
   const medianDuration = median([d1, d2]);
   const alignmentResult = calculateAlignmentRate(medianQI, medianDuration);
 
-  // Compute SI per epoch and use median
-  let si1Result = { si: NaN, aperture: NaN, deviation: NaN };
-  let si2Result = { si: NaN, aperture: NaN, deviation: NaN };
+  // Compute SI per epoch and use medians across all SI metrics
+  const siEpochs: Array<{ si: number; aperture: number; deviation: number }> = [];
   try {
     const behaviorArray1 = behaviorScoresToArray(agg1.behavior);
-    si1Result = calculateSuperintelligenceIndex(behaviorArray1);
+    siEpochs.push(calculateSuperintelligenceIndex(behaviorArray1));
   } catch (e) {
     console.warn('SI unavailable for epoch 1:', e);
   }
   try {
     const behaviorArray2 = behaviorScoresToArray(agg2.behavior);
-    si2Result = calculateSuperintelligenceIndex(behaviorArray2);
+    siEpochs.push(calculateSuperintelligenceIndex(behaviorArray2));
   } catch (e) {
     console.warn('SI unavailable for epoch 2:', e);
   }
 
-  // Use median SI if both are valid
-  const validSIs = [si1Result.si, si2Result.si].filter(v => Number.isFinite(v));
-  const siResult = validSIs.length > 0 
-    ? { 
-        si: validSIs.length === 2 ? median(validSIs) : validSIs[0],
-        aperture: si1Result.aperture,
-        deviation: si1Result.deviation
+  // Helper to compute median of numeric values
+  const pickMedian = (arr: number[]) => {
+    const a = arr.filter(Number.isFinite).sort((x, y) => x - y);
+    if (a.length === 0) return NaN;
+    return a.length % 2 ? a[(a.length - 1) / 2] : a[Math.floor(a.length / 2)];
+  };
+
+  // Compute medians for si, aperture, and deviation independently
+  const siResult = siEpochs.length
+    ? {
+        si: pickMedian(siEpochs.map(r => r.si)),
+        aperture: pickMedian(siEpochs.map(r => r.aperture)),
+        deviation: pickMedian(siEpochs.map(r => r.deviation))
       }
     : { si: NaN, aperture: NaN, deviation: NaN };
 
@@ -101,11 +107,13 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
   const aggregated = agg1; // Using epoch 1 for structure display
   const qualityIndex = medianQI;
 
-  // Calculate pathology frequency across all analysts
-  // Note: There are 4 evaluations (2 analysts × 2 epochs), not 12 turns
-  const totalPathologies = a1e1.pathologies.length + a2e1.pathologies.length + 
+  // Union pathologies across all 4 analyst evaluations
+  const allDetected = Array.from(new Set([
+    ...a1e1.pathologies, ...a2e1.pathologies, ...a1e2.pathologies, ...a2e2.pathologies
+  ]));
+  const totalPathologies = a1e1.pathologies.length + a2e1.pathologies.length +
                            a1e2.pathologies.length + a2e2.pathologies.length;
-  const pathologyFrequency = totalPathologies / 4;
+  const pathologyFrequency = totalPathologies / 4; // per-evaluation average
 
   // Combine insights from all analyst evaluations
   const combinedInsights = `# Epoch 1 - Analyst 1\n\n${a1e1.insights}\n\n# Epoch 1 - Analyst 2\n\n${a2e1.insights}\n\n# Epoch 2 - Analyst 1\n\n${a1e2.insights}\n\n# Epoch 2 - Analyst 2\n\n${a2e2.insights}`;
@@ -138,6 +146,7 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
       alignment_rate_category: alignmentResult.category,
       superintelligence_index: siResult.si,
       si_deviation: siResult.deviation,
+      aperture: siResult.aperture, // Directly from SI calculation
       structure_scores: aggregated.structure,
       behavior_scores: {
         truthfulness: aggregated.behavior.truthfulness,
@@ -149,7 +158,7 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
       },
       specialization_scores: aggregated.specialization,
       pathologies: {
-        detected: aggregated.pathologies,
+        detected: allDetected,
         frequency: pathologyFrequency
       }
     },
@@ -174,6 +183,157 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
       contributor: 'Anonymous'
     },
     tags: session.challenge.domain,
+    starred: false,
+    notes: ''
+  };
+
+  return insight;
+}
+
+/**
+ * Generate a GovernanceInsight from gadget evaluation data.
+ * Simplified version for single-transcript evaluations (Detector, Gadgets).
+ * 
+ * @param draftData - The gadget draft containing transcript and analyst evaluations
+ * @param gadgetType - Type of gadget used
+ * @param title - Title for the insight
+ * @returns Complete GovernanceInsight
+ */
+export function generateInsightFromGadget(
+  draftData: any,
+  gadgetType: string,
+  title: string
+): GovernanceInsight {
+  const analyst1 = draftData.analyst1;
+  const analyst2 = draftData.analyst2;
+
+  if (!analyst1) {
+    throw new Error('Analyst must complete evaluation');
+  }
+
+  // Use single analyst or aggregate if both exist (backward compatibility)
+  let aggregated;
+  if (analyst2) {
+    aggregated = aggregateAnalysts(analyst1, analyst2);
+  } else {
+    // Single analyst: use directly (normalize structure)
+    aggregated = {
+      structure: analyst1.structure_scores || {},
+      behavior: analyst1.behavior_scores || {},
+      specialization: analyst1.specialization_scores || {},
+      pathologies: analyst1.pathologies || [],
+      strengths: analyst1.strengths || '',
+      weaknesses: analyst1.weaknesses || '',
+      insights: analyst1.insights || ''
+    };
+  }
+
+  // Calculate component scores from aggregated (note: structure/behavior/specialization keys)
+  const structureAvg = calculateStructureAverage(aggregated.structure);
+  const behaviorAvg = calculateBehaviorAverage(aggregated.behavior);
+  const specializationAvg = calculateSpecializationAverage(aggregated.specialization);
+
+  // Calculate QI
+  const qualityIndex = calculateQualityIndex(structureAvg, behaviorAvg, specializationAvg);
+
+  // Calculate AR (if duration provided)
+  // For gadgets, default to 1 minute to enable SI calculation
+  const durationMinutes = draftData.durationMinutes || 1;
+  const { rate: alignmentRate, category: alignmentCategory } = calculateAlignmentRate(
+    qualityIndex,
+    durationMinutes
+  );
+
+  // Calculate SI (handle N/A gracefully)
+  let si = 0;
+  let deviation = 0;
+  let aperture = A_STAR; // Default to target aperture
+  try {
+    const behaviorArray = behaviorScoresToArray(aggregated.behavior);
+    const result = calculateSuperintelligenceIndex(behaviorArray);
+    si = result.si;
+    deviation = result.deviation;
+    aperture = result.aperture;
+  } catch (error) {
+    // If SI calculation fails (e.g., due to N/A values), set to 0
+    console.warn('SI calculation skipped:', error);
+    si = 0;
+    deviation = 0;
+    aperture = A_STAR; // Default to target
+  }
+
+  // Get pathologies
+  const pathologies1 = analyst1.pathologies || [];
+  const pathologies2 = analyst2?.pathologies || [];
+  const allPathologies = [...pathologies1, ...pathologies2];
+  const uniquePathologies = Array.from(new Set(allPathologies));
+
+  // Combine insights (if both analysts, otherwise just one)
+  const combinedInsights = analyst2 
+    ? `${analyst1.insights}\n\n---\n\n${analyst2.insights}`
+    : (analyst1.insights || '');
+
+  const insight: GovernanceInsight = {
+    id: `gadget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    challenge: {
+      title,
+      description: `Evaluated using ${gadgetType} gadget`,
+      type: gadgetType,
+      domain: ['Analysis']
+    },
+    insights: {
+      summary: analyst1.strengths || 'Analysis completed',
+      participation: 'Gadget-based evaluation',
+      preparation: combinedInsights,
+      provision: analyst1.weaknesses || 'See detailed analysis',
+      combined_markdown: combinedInsights
+    },
+    transcripts: {
+      epoch1: [draftData.transcript || draftData.aiOutput || ''],
+      epoch2: []
+    },
+    quality: {
+      quality_index: qualityIndex,
+      alignment_rate: alignmentRate,
+      alignment_rate_category: alignmentCategory,
+      superintelligence_index: si,
+      si_deviation: deviation,
+      aperture: aperture, // Directly from SI calculation
+      structure_scores: aggregated.structure,
+      behavior_scores: aggregated.behavior,
+      specialization_scores: aggregated.specialization,
+      pathologies: {
+        detected: uniquePathologies,
+        frequency: uniquePathologies.length
+      }
+    },
+    metadata: {
+      created_at: new Date().toISOString(),
+      model_name: draftData.model_analyst1 || 'Unknown',
+      duration_minutes: durationMinutes,
+      version: '1.0'
+    },
+    process: {
+      platform: 'custom',
+      models_used: {
+        synthesis_epoch1: draftData.model_analyst1 || 'Unknown',
+        synthesis_epoch2: draftData.model_analyst2 || draftData.model_analyst1 || 'Unknown',
+        analyst1: draftData.model_analyst1 || 'Unknown',
+        analyst2: draftData.model_analyst2 || draftData.model_analyst1 || 'Unknown'
+      },
+      durations: {
+        epoch1_minutes: durationMinutes,
+        epoch2_minutes: 0
+      },
+      created_at: new Date().toISOString(),
+      schema_version: '1.0'
+    },
+    contribution: {
+      public: true,
+      license: 'CC0' as const,
+      contributor: 'Anonymous'
+    },
+    tags: [gadgetType, 'gadget'],
     starred: false,
     notes: ''
   };

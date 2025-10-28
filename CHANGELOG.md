@@ -7,6 +7,123 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2] - 2025-10-28
+
+### Spec Compliance & Calculation Fixes
+- **SI Implementation**: Added optional weights parameter for spec-compliant weighted Hodge projection; fixed division-by-zero with epsilon protection
+- **SI Aggregation**: Fixed report generation to compute medians for SI, aperture, and deviation across epochs (was using epoch 1 only)
+- **Pathology Aggregation**: Unified pathology detection across all 4 analyst evaluations (was using epoch 1 only)
+- **DRS Formula**: Rewrote with normalized components (0-100 scale) to properly reach all categories (LOW/MODERATE/HIGH)
+- **Constants**: Centralized `A_STAR = 0.02070` constant to prevent drift between code and UI
+- **Confidence Metric**: Removed non-spec metric from calculations and UI (was always HIGH due to logic bug)
+
+### Testing
+- Added Jest test suite with 19 tests covering SI, DRS, QI, AR, and aggregation logic
+- Tests validate edge cases: balanced/unbalanced inputs, NaN handling, weighted calculations, factor breakdowns
+- Created `docs/TESTING.md` documentation for test framework
+
+### UI Polish
+- **QuickSummaryCard**: SI ring now scales to /100 (full range), updated color thresholds
+- **TechnicalDetails**: Added deviation interpretation to aperture display
+- **GadgetResults**: Fixed to use proper `calculateDeceptionRiskScore()` instead of QI proxy
+- **Export**: Added note for single analyst evaluations in markdown export
+- **GadgetAccordion**: Fixed aperture display to show calculated value from SI instead of hardcoded target; removed hardcoded messages and intermediate calculation displays
+
+---
+
+## [1.2] - 2025-10-27
+
+### Changed
+
+**🎨 Gadgets App - Single-Page Accordion Flow**
+- **Major UX Improvement**: Replaced 4-page wizard with single-page accordion interface
+- **Eliminated Unnecessary Step**: Removed transcript collection bottleneck - users paste AI output directly into analyst prompts
+- **Progressive Disclosure**: Steps unlock as user completes each phase
+- **Improved Efficiency**: 
+  - ~40% fewer clicks (15 → 9 clicks total)
+  - All context visible on one page
+  - Can jump back to any completed step for editing
+- **Updated Components**:
+  - `GadgetAccordion.tsx` - New accordion-based workflow
+  - Simplified `GadgetsApp.tsx` routing (selector → accordion)
+  - Updated analyst prompts to include `[PASTE THE AI OUTPUT FROM STEP 1 HERE]` placeholder
+- **Benefits**:
+  - No page transitions = faster workflow
+  - Clear progress indication with expandable steps
+  - Better user control - can edit any completed step
+  - Reduced cognitive load with visible context
+
+---
+
+## [1.1] - 2025-10-27
+
+### Added
+
+**🛠️ Gadgets App - Unified AI Assessment Tools**
+- Consolidated quick AI assessment tools into single workspace
+- Replaces standalone Detector App with integrated Gadgets workflow
+- Added 5 specialized gadgets for policy professionals:
+  - **🔍 Detector** - Rapid deception analysis (existing functionality)
+  - **📊 Policy Auditing** - Extract claims & evidence from documents
+  - **📋 Policy Reporting** - Generate executive synthesis with attribution
+  - **🦠 AI Infections Sanitization** - Normalize Unicode and remove hidden patterns
+  - **💊 Pathologies Immunity Boost** - Enhance content across 12 metrics
+- Unified workflow for all gadgets: Task → Analyst 1 → Analyst 2 → Results
+- All gadgets use same 12-metric GyroDiagnostics evaluation framework
+
+**New Components**
+- `GadgetsApp.tsx` - Main router for gadget workflows
+- `GadgetSelector.tsx` - Visual selector with category organization (Analysis/Treatment)
+- `GadgetTaskView.tsx` - Task prompt display and AI output collection
+- `GadgetAnalyst.tsx` - Reuses existing AnalystEvaluationForm for evaluation
+- `GadgetResults.tsx` - Results display using Detector result components
+- `generateInsightFromGadget()` - Insight generation helper in report-generator.ts
+
+**Task Prompt Templates**
+- Added 4 battle-tested task prompts to `prompts.ts`:
+  - `POLICY_AUDIT_TASK` - Claims & Evidence Graph template
+  - `POLICY_REPORT_TASK` - Executive synthesis with attribution
+  - `SANITIZE_TASK` - Unicode/whitespace normalization instructions
+  - `IMMUNITY_BOOST_TASK` - 12-metric quality enhancement guidance
+
+**Type Definitions**
+- Added `GadgetType` - 5 gadget identifiers
+- Added `GadgetView` - Navigation states (selector → task → analyst1/2 → results)
+- Updated `AppScreen` to include `'gadgets'`
+- Added gadget UI state fields to `NotebookState`
+
+### Changed
+
+**Navigation Updates**
+- WelcomeApp: "Detector" card replaced with "Gadgets" card (🛠️ icon)
+- PersistentHeader: Updated to navigate to `'gadgets'` instead of `'detector'`
+- Notebook routing: Now routes `'gadgets'` app instead of `'detector'`
+- Quick Start Guide: Updated references from Detector to Gadgets
+
+**Integration**
+- Detector now accessible as one gadget type within Gadgets App
+- All Detector components reused for new gadgets
+- Maintains backward compatibility with existing functionality
+
+### Technical Details
+
+- Reused existing infrastructure (90% code reuse)
+- Modular architecture following established patterns
+- Draft persistence with namespaced keys
+- All gadgets generate GovernanceInsights compatible with Insights library
+- Export functionality works for all gadget types
+- Platform-agnostic design (no API keys required)
+
+### Fixed
+
+- Build errors related to AppScreen type changes
+- Detector component prop mismatches in GadgetResults
+- aggregateAnalysts function call signature
+- GovernanceInsight schema compatibility for gadgets
+- Navigation state management for gadget workflows
+
+---
+
 ## [1.0] - 2025-10-23
 
 ### Added

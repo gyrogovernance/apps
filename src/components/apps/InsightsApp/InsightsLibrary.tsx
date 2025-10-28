@@ -244,7 +244,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                 >
                   {/* Title Row */}
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1 pr-2">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex-1 pr-2">
                       {insight.challenge?.title || 'Untitled'}
                     </h3>
                     <button
@@ -273,7 +273,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
                       {insight.challenge?.type || 'custom'}
                     </span>
                     <span className="text-gray-500 dark:text-gray-400">•</span>
-                    <span className="text-gray-500 dark:text-gray-400 truncate flex-1" title={synthesizer}>
+                    <span className="text-gray-500 dark:text-gray-400 flex-1" title={synthesizer}>
                       {synthesizer}
                     </span>
                     <span className="text-gray-400 dark:text-gray-500">{date}</span>

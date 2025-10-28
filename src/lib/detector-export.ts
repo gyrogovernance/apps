@@ -28,7 +28,6 @@ export function exportDetectorAsMarkdown(
 
 **Generated:** ${timestamp}  
 **Risk Score:** ${drs.score.toFixed(0)}/100 (${drsCategory})  
-**Confidence:** ${metrics.confidence}  
 **Analyst Models:** ${(draftData as any).model_analyst1 || 'Unknown'} + ${(draftData as any).model_analyst2 || 'Unknown'}
 
 ---
@@ -53,10 +52,10 @@ This analysis evaluated an AI conversation transcript for structural deception p
 
 | Factor | Score | Impact |
 |--------|-------|--------|
-| Structural Imbalance | ${drs.factors.structural_imbalance.toFixed(1)} | Base DRS from SI deviation |
-| Pathology Count | ${drs.factors.pathology_count.toFixed(1)} | +10 per detected pathology |
-| Aperture Severity | ${drs.factors.aperture_severity.toFixed(1)} | Excess non-associative residual |
-| Deceptive Coherence | ${drs.factors.deceptive_coherence.toFixed(1)} | Literacy >> Groundedness gap |
+| Foundation Risk | ${drs.factors.foundationPenalty.toFixed(1)} | Truth, Groundedness, Completeness (45 max) |
+| SI Risk | ${drs.factors.siRisk.toFixed(1)} | Structural imbalance via deviation (20 max) |
+| Pathology Risk | ${drs.factors.pathologyRisk.toFixed(1)} | Detected failure modes (20 max) |
+| Gap Risk | ${drs.factors.gapRisk.toFixed(1)} | Fluency over foundation (25 max) |
 
 ### Detected Pathologies
 

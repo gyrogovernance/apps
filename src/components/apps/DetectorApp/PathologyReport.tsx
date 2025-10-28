@@ -18,7 +18,7 @@ const PathologyReport: React.FC<PathologyReportProps> = ({ pathologies }) => {
           <span>No Pathologies Detected</span>
         </h3>
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          No structural pathologies were identified in this analysis. The responses show good structural integrity.
+          No issues detected
         </p>
       </GlassCard>
     );

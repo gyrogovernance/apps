@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["chrome"]
+    "types": ["chrome", "jest", "node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

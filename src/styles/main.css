@@ -1,8 +1,38 @@
 /* stylelint-disable at-rule-no-unknown */
+/* Font loading */
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url('fonts/Nunito-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: italic;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url('fonts/Nunito-Italic-VariableFont_wght.ttf') format('truetype');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 /* stylelint-enable at-rule-no-unknown */
+
+/* Hide browser default details/summary markers and text */
+details summary {
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::marker {
+  display: none;
+}
 
 /* stylelint-disable at-rule-no-unknown */
 @layer components {
@@ -44,4 +74,64 @@
   
 }
 /* stylelint-enable at-rule-no-unknown */
+
+/* Custom animations for GadgetAccordion */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-bounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounce-once {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-scale-bounce {
+  animation: scale-bounce 0.5s ease-out;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-bounce-once {
+  animation: bounce-once 0.5s ease-out;
+}
 

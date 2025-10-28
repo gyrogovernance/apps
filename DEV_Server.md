@@ -11,18 +11,24 @@ Load the extension in Chrome for full functionality:
 3. Click "Load unpacked" and select the `dist/` folder
 4. The extension will appear in your extensions toolbar
 
-### 2. Local Web Server (For file:// testing)
-Use the built-in development server to avoid CORS issues:
+### 2. Local Web Server with Hot Reload (Recommended for Development)
+Use webpack-dev-server for instant hot reload during development:
 
 ```bash
-# Build and serve
+# Start dev server with hot reload
 npm run dev-server
+```
+
+The server will automatically open http://localhost:3000/sidepanel.html with hot module replacement enabled.
+
+For static file serving (without hot reload):
+```bash
+# Build and serve static files
+npm run serve-static
 
 # Or just serve (if already built)
 npm run serve
 ```
-
-Then open: http://localhost:3000/sidepanel.html
 
 ### 3. Direct File Loading (Limited)
 You can open `dist/sidepanel.html` directly in your browser, but:
@@ -54,9 +60,29 @@ The "Import Official Results" feature works in:
 
 ## Development Workflow
 
+### Hot Reload Development (Recommended)
+
+For the fastest development experience with automatic hot reload:
+
+```bash
+npm run dev-server
+```
+
+This will:
+- ✅ Start webpack-dev-server with Hot Module Replacement (HMR)
+- ✅ Automatically rebuild and refresh when you save files
+- ✅ Open your browser to http://localhost:3000/sidepanel.html
+- ✅ Preserve React component state during updates when possible
+
+**No manual rebuilds needed!** Just save your files and see changes instantly.
+
+### Manual Build Workflow
+
+If you prefer manual control or need to test the production build:
+
 1. Make changes to source code
 2. Run `npm run build` to compile
 3. Test with either:
    - Chrome extension (reload the extension)
-   - Local server (`npm run serve`)
+   - Local server (`npm run serve-static`)
 4. Repeat as needed

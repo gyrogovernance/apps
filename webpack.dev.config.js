@@ -4,10 +4,14 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './src/sidepanel.tsx',
+  entry: {
+    sidepanel: './src/sidepanel.tsx',
+  },
   output: {
     path: path.resolve(__dirname, 'dev-dist'),
-    filename: 'app.js',
+    filename: '[name].js',
+    publicPath: '/',
+    clean: true,
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -16,31 +20,56 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true, // Faster compilation for HMR
+          },
+        },
+        exclude: [/node_modules/, /\.test\.tsx?$/],
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader', 'postcss-loader'],
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              url: {
+                filter: (url) => {
+                  // Don't process font URLs - they're handled by CopyPlugin
+                  return !url.includes('fonts/');
+                }
+              }
+            }
+          },
+          'postcss-loader'
+        ],
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/sidepanel.html',
-      inject: true,
+      inject: 'body',
+      scriptLoading: 'blocking',
+      filename: 'sidepanel.html',
     }),
     new CopyPlugin({
       patterns: [
+        { from: 'public/fonts', to: 'fonts', noErrorOnMissing: true },
         { from: 'assets', to: 'icons', noErrorOnMissing: true },
-        { from: 'public/icons', to: 'icons', noErrorOnMissing: true }
+        { from: 'public/icons', to: 'icons', noErrorOnMissing: true },
+        { from: 'public/manifest.json', to: 'manifest.json', noErrorOnMissing: true },
+        { from: 'public/results.zip', to: 'results.zip', noErrorOnMissing: true },
       ]
     })
   ],
   devServer: {
     static: [
       {
-        directory: path.join(__dirname, 'dev-dist'),
+        directory: path.join(__dirname, 'public/fonts'),
+        publicPath: '/fonts',
       },
       {
         directory: path.join(__dirname, 'assets'),
@@ -53,8 +82,22 @@ module.exports = {
     ],
     port: 3000,
     hot: true,
-    open: true,
+    liveReload: false, // Use HMR instead
+    open: ['sidepanel.html'],
+    compress: true,
+    historyApiFallback: {
+      index: '/sidepanel.html',
+    },
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    },
   },
-  devtool: 'source-map',
+  devtool: 'eval-source-map', // Better for HMR
+  optimization: {
+    runtimeChunk: 'single', // Better HMR performance
+  },
 };
 

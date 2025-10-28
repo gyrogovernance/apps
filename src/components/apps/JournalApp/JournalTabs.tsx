@@ -113,7 +113,7 @@ const JournalTabs: React.FC<JournalTabsProps> = ({
               
               {/* Session title */}
               <span 
-                className="truncate max-w-[120px]" 
+                className="max-w-[120px]" 
                 title={session.challenge.title}
               >
                 {getSessionTitle(session)}

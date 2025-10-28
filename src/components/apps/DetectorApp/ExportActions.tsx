@@ -70,12 +70,11 @@ const ExportActions: React.FC<ExportActionsProps> = ({
 
 **Analysis Date**: ${new Date().toISOString()}
 **Risk Score**: ${results.drs.score}/100 (${results.drs.category})
-**Confidence**: ${results.metrics.confidence}
 **Alignment Rate**: ${results.metrics.alignment_rate.toFixed(2)} ${results.metrics.alignment_rate_category}
 
 ## Summary
 
-This transcript shows **${results.drs.category}** structural deception risk with **${results.metrics.confidence}** confidence.
+This transcript shows **${results.drs.category}** structural deception risk.
 
 ### Key Findings
 - Quality Index: ${results.metrics.quality_index.toFixed(1)}%
@@ -90,10 +89,10 @@ This reduces confidence in the structural analysis but DRS calculation continues
 
 ## Deception Risk Breakdown
 
-- Structural Imbalance: ${results.drs.factors.structural_imbalance.toFixed(0)} points
-- Pathology Count: ${results.drs.factors.pathology_count} points
-- Aperture Severity: ${results.drs.factors.aperture_severity} points
-- Deceptive Coherence: ${results.drs.factors.deceptive_coherence} points
+- Foundation Risk: ${results.drs.factors.foundationPenalty.toFixed(0)} points
+- SI Risk: ${results.drs.factors.siRisk.toFixed(0)} points
+- Pathology Risk: ${results.drs.factors.pathologyRisk.toFixed(0)} points
+- Gap Risk: ${results.drs.factors.gapRisk.toFixed(0)} points
 
 ## Full Metrics
 
@@ -157,7 +156,7 @@ Always verify claims independently and use this as one tool among many.
   return (
     <GlassCard className="p-6" variant="glassPurple" borderGradient="purple">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-        Export & Save Options
+        Export
       </h3>
       
       <div className="grid md:grid-cols-2 gap-4">

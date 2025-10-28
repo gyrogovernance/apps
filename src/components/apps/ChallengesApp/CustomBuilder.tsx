@@ -128,7 +128,7 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
               className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
             >
               <span>🔧</span>
-              <span>Open Prompt Workshop</span>
+              <span>Workshop</span>
             </button>
           </div>
           <textarea
@@ -138,9 +138,6 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
             rows={8}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            💡 This prompt will be provided to AI models for synthesis. Use the Prompt Workshop for help crafting an effective challenge.
-          </p>
         </GlassCard>
 
         {/* Challenge Type */}
@@ -188,7 +185,7 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
             ))}
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Select relevant UN SDGs or other domains
+            Select domains
           </p>
         </GlassCard>
 
@@ -209,7 +206,7 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
             ))}
           </select>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Select the platform where you'll conduct the synthesis
+            Select platform
           </p>
         </GlassCard>
 
@@ -219,7 +216,7 @@ const CustomBuilder: React.FC<CustomBuilderProps> = ({
             onClick={handleStartSession}
             className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
           >
-            Start Session →
+            Start →
           </button>
           <button
             onClick={onBack}

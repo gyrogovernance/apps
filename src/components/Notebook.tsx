@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { NotebookState, Section, AppScreen, ChallengeType, Platform, INITIAL_STATE } from '../types';
 import { storage, sessions } from '../lib/storage';
 import { chromeAPI } from '../lib/chrome-mock';
@@ -7,12 +7,23 @@ import { useToast } from './shared/Toast';
 import { useConfirm } from './shared/Modal';
 import { PersistentHeader } from './shared/PersistentHeader';
 import WelcomeApp from './apps/WelcomeApp';
-import ChallengesApp from './apps/ChallengesApp/ChallengesApp';
-import InsightsApp from './apps/InsightsApp/InsightsApp';
-import JournalApp from './apps/JournalApp/JournalApp';
-import { SettingsApp } from './apps/SettingsApp';
-import DetectorApp from './apps/DetectorApp/DetectorApp';
-import { GlossaryApp } from './apps/GlossaryApp/GlossaryApp';
+
+// Lazy load app components for code splitting
+const ChallengesApp = lazy(() => import('./apps/ChallengesApp/ChallengesApp'));
+const InsightsApp = lazy(() => import('./apps/InsightsApp/InsightsApp'));
+const JournalApp = lazy(() => import('./apps/JournalApp/JournalApp'));
+const SettingsApp = lazy(() => import('./apps/SettingsApp').then(m => ({ default: m.SettingsApp })));
+const GadgetsApp = lazy(() => import('./apps/GadgetsApp/GadgetsApp'));
+const GlossaryApp = lazy(() => import('./apps/GlossaryApp/GlossaryApp').then(m => ({ default: m.GlossaryApp })));
+
+// Loading component for lazy-loaded apps
+const AppLoader: React.FC = () => (
+  <div className="h-full w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+    <div className="text-gray-600 dark:text-gray-400 text-sm">
+      Loading...
+    </div>
+  </div>
+);
 
 const Notebook: React.FC = () => {
   const [state, setState] = useState<NotebookState>(INITIAL_STATE);
@@ -94,7 +105,7 @@ const Notebook: React.FC = () => {
         insightsView: app === 'insights' ? 'library' : prev.ui.insightsView,
         challengesView: app === 'challenges' ? 'select-type' : prev.ui.challengesView,
         journalView: app === 'journal' ? 'home' : prev.ui.journalView,
-        detectorView: app === 'detector' ? 'input' : prev.ui.detectorView,
+        gadgetView: app === 'gadgets' ? 'selector' : prev.ui.gadgetView,
         showGlossary: false // Close glossary when navigating to other apps
       }
     }));
@@ -270,10 +281,12 @@ const Notebook: React.FC = () => {
         
         {/* Glossary Modal */}
         {state.ui.showGlossary && (
-          <GlossaryApp
-            state={state}
-            onClose={() => toggleGlossary()}
-          />
+          <Suspense fallback={<AppLoader />}>
+            <GlossaryApp
+              state={state}
+              onClose={() => toggleGlossary()}
+            />
+          </Suspense>
         )}
         
         {ConfirmModal}
@@ -295,49 +308,61 @@ const Notebook: React.FC = () => {
       {/* Main Content - Scrollable */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {state.ui.currentApp === 'challenges' && (
-          <ChallengesApp 
-            state={state}
-            onUpdate={updateState}
-            onStartSession={handleStartSession}
-            onStartGyroSuite={handleStartGyroSuite}
-          />
+          <Suspense fallback={<AppLoader />}>
+            <ChallengesApp 
+              state={state}
+              onUpdate={updateState}
+              onStartSession={handleStartSession}
+              onStartGyroSuite={handleStartGyroSuite}
+            />
+          </Suspense>
         )}
 
         {state.ui.currentApp === 'journal' && (
-          <JournalApp
-            state={state}
-            onUpdate={updateState}
-            onNavigateToChallenges={() => navigateToApp('challenges')}
-            onNavigateToSection={navigateToSection}
-          />
+          <Suspense fallback={<AppLoader />}>
+            <JournalApp
+              state={state}
+              onUpdate={updateState}
+              onNavigateToChallenges={() => navigateToApp('challenges')}
+              onNavigateToSection={navigateToSection}
+            />
+          </Suspense>
         )}
 
         {state.ui.currentApp === 'insights' && (
-          <InsightsApp 
-            state={state}
-            onUpdate={updateState}
-          />
+          <Suspense fallback={<AppLoader />}>
+            <InsightsApp 
+              state={state}
+              onUpdate={updateState}
+            />
+          </Suspense>
         )}
 
         {state.ui.currentApp === 'settings' && (
-          <SettingsApp />
+          <Suspense fallback={<AppLoader />}>
+            <SettingsApp />
+          </Suspense>
         )}
 
-        {state.ui.currentApp === 'detector' && (
-          <DetectorApp
-            state={state}
-            onUpdate={updateState}
-            onNavigateHome={() => navigateToApp('welcome')}
-          />
+        {state.ui.currentApp === 'gadgets' && (
+          <Suspense fallback={<AppLoader />}>
+            <GadgetsApp
+              state={state}
+              onUpdate={updateState}
+              onNavigateHome={() => navigateToApp('welcome')}
+            />
+          </Suspense>
         )}
       </div>
       
       {/* Glossary Modal */}
       {state.ui.showGlossary && (
-        <GlossaryApp
-          state={state}
-          onClose={() => toggleGlossary()}
-        />
+        <Suspense fallback={<AppLoader />}>
+          <GlossaryApp
+            state={state}
+            onClose={() => toggleGlossary()}
+          />
+        </Suspense>
       )}
       
       {ConfirmModal}
