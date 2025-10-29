@@ -43,6 +43,21 @@ The "Import Official Results" feature works in:
 - ✅ Local web server (http://localhost:3000)
 - ❌ Direct file:// loading (CORS restrictions)
 
+### Asset Locations (Unified)
+
+We use a single, consistent assets layout in both dev and prod:
+
+- Source of truth: `assets/`
+  - `assets/icons/*`
+  - `assets/media/*`
+  - `assets/fonts/*`
+  - `assets/files/results.zip`
+
+- Dev server: serves assets at `/assets/...`
+- Production build: copies subfolders into `dist/assets/...`
+
+Manifest and code now reference `assets/...` paths, so both dev and prod resolve identically.
+
 ## Troubleshooting
 
 ### Import Fails with CORS Error
@@ -55,7 +70,7 @@ The "Import Official Results" feature works in:
 - Try importing again
 
 ### File Not Found Error
-- Ensure `results.zip` exists in the `dist/` folder
+- Ensure `assets/files/results.zip` exists in the repository
 - Rebuild the project: `npm run build`
 
 ## Development Workflow
@@ -86,3 +101,9 @@ If you prefer manual control or need to test the production build:
    - Chrome extension (reload the extension)
    - Local server (`npm run serve-static`)
 4. Repeat as needed
+
+## Notes on Public Folder
+
+- `public/` is not a standalone build; it's a source for the HTML template and `manifest.json` only.
+- We removed `public/fonts` and `public/icons`. Do not store assets in `public/`.
+- Dev server serves `/assets` directly from the root `assets/` directory.

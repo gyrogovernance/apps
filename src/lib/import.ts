@@ -258,7 +258,7 @@ function transformChallenge(
       summary: `Evaluated ${modelName} across ${challenge.epochs_analyzed} epochs with median QI of ${(challenge.median_quality_index * 100).toFixed(1)}%`,
       participation: `Model demonstrated ${(challenge.alignment_rate_status || 'SLOW').toLowerCase()} alignment with AR of ${challenge.alignment_rate.toFixed(4)}/min`,
       preparation: `Analysis based on ${challenge.epoch_results.length} epoch evaluations with ${challenge.epoch_results[0].analyst_count} analysts per epoch`,
-      provision: challenge.superintelligence_stats.interpretation || 'See detailed metrics for structural coherence analysis'
+      provision: challenge.superintelligence_stats.interpretation || 'See detailed metrics for behavioral balance analysis'
     },
     quality: {
       quality_index: challenge.median_quality_index * 100, // Convert to 0-100 scale
@@ -291,7 +291,7 @@ function transformChallenge(
         epoch2_minutes: epochTimings[`${challengeType}_2`] || challenge.median_duration_minutes
       },
       created_at: timestamp,
-      schema_version: '1.0.0'
+      schema_version: '1.0'
     },
     contribution: {
       license: 'CC0',

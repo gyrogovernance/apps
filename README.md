@@ -7,11 +7,12 @@
 
 ### G Y R O G O V E R N A N C E
 
-[![Home](./assets/menu/home_badge.svg)](https://gyrogovernance.com)
-[![Diagnostics](./assets/menu/diagnostics_badge.svg)](https://github.com/gyrogovernance/diagnostics)
-[![Tools](./assets/menu/tools_badge.svg)](https://github.com/gyrogovernance/tools)
-[![Science](./assets/menu/science_badge.svg)](https://github.com/gyrogovernance/science)
-[![Superintelligence](./assets/menu/superintelligence_badge.svg)](https://github.com/gyrogovernance/superintelligence)
+[![Home](/assets/menu/gyro_icon_home.svg)](https://gyrogovernance.com)
+[![Apps](/assets/menu/gyro_icon_apps.svg)](https://github.com/gyrogovernance/apps)
+[![Diagnostics](/assets/menu/gyro_icon_diagnostics.svg)](https://github.com/gyrogovernance/diagnostics)
+[![Tools](/assets/menu/gyro_icon_tools.svg)](https://github.com/gyrogovernance/tools)
+[![Science](/assets/menu/gyro_icon_science.svg)](https://github.com/gyrogovernance/science)
+[![Superintelligence](/assets/menu/gyro_icon_si.svg)](https://github.com/gyrogovernance/superintelligence)
 
 </div>
 
@@ -31,7 +32,7 @@
 **Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
 > **🎉 PUBLIC RELEASE v1.0**  
-> Complete AI governance analysis platform with AI Lie Detector. See [CHANGELOG](/CHANGELOG.md) for full feature list.
+> Complete AI governance analysis platform with Rapid Test. See [CHANGELOG](/CHANGELOG.md) for full feature list.
 
 ---
 
@@ -39,11 +40,17 @@
 
 ---
 
+## 🎯 The Challenge
+
+Communities and organizations require validation for AI-generated policy recommendations across domains like climate action, healthcare equity, and resource allocation. Current barriers include restricted access to advanced AI systems, general capability testing that doesn't address governance-specific quality, and high expertise requirements for rigorous evaluation. AI Inspector addresses this by providing platform-agnostic mathematical assessment through a clipboard-based workflow, making sophisticated AI evaluation accessible to any community with access to AI chat interfaces.
+
+---
+
 ## What You Get
 
 **You provide**: A governance challenge  
 **AI provides**: Structured reasoning through synthesis  
-**AI Inspector provides**: Mathematical quality assessment and inspection  
+**AI Inspector provides**: Content quality assessment and AI model behavior inspection  
 **You receive**: Validated insights stored locally for your analysis
 
 ---
@@ -82,18 +89,45 @@
 5. **Get inspected analysis** with three key metrics:
    - Quality Index (overall performance)
    - Alignment Rate (reasoning efficiency)
-   - Superintelligence Index (structural coherence)
+   - Superintelligence Index (behavioral balance)
 6. **Export results** as JSON/Markdown for local storage and analysis
 
 **No API keys needed** - works with any AI chat interface through clipboard.
 
 ---
 
+## 📚 Key Concepts
+
+<details>
+<summary><strong>GyroDiagnostics Framework</strong></summary>
+
+Mathematical framework for AI alignment measurement through rubric-based scoring across 12 metrics in three levels (Structure, Behavior, Specialization), followed by geometric decomposition yielding Quality Index (QI: 0-100% aggregate performance), Alignment Rate (AR: quality points per minute), and Superintelligence Index (SI: behavioral balance, theoretical optimum = 100).
+
+</details>
+
+<details>
+<summary><strong>Superintelligence Index (SI)</strong></summary>
+
+Measures behavioral balance as the optimum measure of alignment. Derived from aperture ratio against target A* ≈ 0.02070 via Hodge decomposition on K₄ graph topology. Higher SI correlates with balanced reasoning and lower pathology rates.
+
+</details>
+
+<details>
+<summary><strong>Behavioral Balance</strong></summary>
+
+Equilibrium among measurable reasoning qualities (coherence, accuracy, adaptability). Assessed via K₄ tetrahedral topology and Hodge decomposition, separating gradient components (coherence) from cycle components (differentiation).
+
+</details>
+
+---
+
 ## ✨ Core Capabilities
+
+**Theoretical Grounding**: Powered by GyroDiagnostics, which measures how geometric necessities from the Common Governance Model (CGM) manifest as behavioral qualities in AI reasoning. We capture these through rubric-based assessment, then derive quantitative metrics via geometric decomposition.
 
 ### 🔬 Mathematical Inspection
 Inspects AI responses across 12 metrics in three dimensions:
-- **Structure**: Reasoning coherence and integrity
+- **Reasoning Coherence**: Foundational behaviors like traceability and integrity
 - **Behavior**: Accuracy and reliability patterns
 - **Specialization**: Domain-specific expertise
 
@@ -108,28 +142,27 @@ Compatible with ChatGPT, Claude, Gemini, LMArena, Poe, or any chat interface - n
 ### 💾 Local-First Storage
 All insights are stored locally in your browser extension. Export findings as needed for your own analysis and research.
 
-### 🔍 AI Lie Detector
-**NEW**: Rapid multi-dimensional quality assessment for AI conversation transcripts. Paste any AI conversation and get a Risk Score (0-100) based on scoring imbalance analysis across 12 evaluation criteria.
+### 🔬 Rapid Test
+**NEW**: Rapid multi-dimensional quality assessment via JSON workflow. Provide an evaluation prompt to your AI and receive structured JSON scoring to compute behavioral quality metrics (QI, AR, SI) through rubric-based assessment across 12 evaluation criteria.
 
 **Key Features:**
-- **Risk Score Gauge**: Visual circular indicator showing deception risk level
-- **Multi-criteria Evaluation**: Automated rubric-based assessment across 12 quality dimensions
-- **Scoring Imbalance Detection**: Identifies when surface metrics (fluency) score high while foundational metrics (truthfulness) score low
-- **Pathology Detection**: Identifies specific failure modes through scoring pattern analysis
-- **Dual Analyst Evaluation**: Uses 2 different AI models for robust assessment
+- **Behavioral Balance Gauge**: Visual indicator showing Superintelligence Index (SI) and behavioral balance status
+- **Multi-criteria Evaluation**: Rubric-based assessment across 12 quality dimensions
+- **Behavioral Quality Assessment**: Measures behavioral qualities through multi-dimensional assessment rubrics
+- **Pathology Detection**: Identifies specific behavioral failure modes through pattern analysis
+- **Single Analyst Evaluation**: One AI model provides structured JSON evaluation response
 - **Export Options**: Save results as insights or export Markdown/JSON reports
 
-**Perfect for**: Verifying AI responses, detecting sophisticated deception patterns, quality assurance for AI-generated content.
+**Perfect for**: Verifying AI responses, assessing behavioral quality, quality assurance for AI-generated content.
 
 **How It Works:**
-1. **Paste Transcript**: Upload any AI conversation (3-6 turns recommended)
-2. **Dual Analysis**: Two different AI models evaluate using structured rubrics
-3. **Scoring Analysis**: Risk Score based on geometric balance of evaluation criteria
-4. **Visual Results**: Risk Score Gauge shows imbalance level at a glance
+1. **Provide Prompt**: Copy the evaluation prompt to your AI interface (references your conversation/topic)
+2. **Receive JSON**: AI returns structured JSON with scoring data following the rubric
+3. **Automated Processing**: System calculates Quality Index (QI), Alignment Rate (AR), and Superintelligence Index (SI) from the JSON evaluation
+4. **Visual Results**: Behavioral Balance Gauge shows SI and balance status at a glance
 5. **Detailed Report**: Full scoring analysis and technical details
 
-### 🕵️‍♂️ Lie Detection Mode
-Quickly inspect for deception using aperture analysis from your Hodge decomposition framework - spot scripted lies or chaotic fabrications in just 3-6 turns.
+**Note**: JSON-only workflow; no transcript storage or handling. Single analyst evaluation pattern.
 
 ---
 
@@ -148,6 +181,24 @@ Quickly inspect for deception using aperture analysis from your Hodge decomposit
 - **[General Specifications](docs/GyroGovernance_Apps_General_Specs.md)** - Comprehensive overview of architecture, features, and user journey
 - **[GyroDiagnostics Specs](docs/GyroDiagnostics_General_Specs.md)** - Core evaluation methodology and metrics
 - **[Import/Export Guide](docs/IMPORT_EXPORT.md)** - Data management and migration
+ - **[Development Testing Guide](DEV_Server.md)** - Dev server, builds, and unified assets layout
+
+### Scripts
+
+- `npm run dev-server`: Hot reload dev server at `http://localhost:3000/sidepanel.html`
+- `npm run build`: Production build to `dist/`
+- `npm run serve-static`: Build then serve static `dist/` files
+
+### Assets Layout (Dev and Prod)
+
+- Source of truth: `assets/`
+  - `assets/icons/*`
+  - `assets/media/*`
+  - `assets/fonts/*`
+  - `assets/files/results.zip`
+
+- Dev server serves assets at `/assets/...`
+- Production build copies the same structure to `dist/assets/...`
 
 ---
 
@@ -184,7 +235,27 @@ The framework uses tetrahedral (K₄) topology to eliminate bias:
 - Decomposes into coherence vs. adaptation components
 - Measures against theoretical optimum (A* ≈ 0.02070)
 
-This isn't subjective judgment - it's mathematical inspection of reasoning structure.
+---
+
+## ❓ Frequently Asked Questions
+
+**Do I need to know math to use this?**  
+No. The extension handles all calculations automatically. You just provide the governance challenge and AI responses.
+
+**Which AI platforms work with AI Inspector?**  
+Any AI chat interface. Tested with ChatGPT, Claude, Gemini, Poe, LMArena. No API keys needed.
+
+**How long does it take?**  
+Quick Test: 10 minutes. Full evaluation: 30-60 minutes including AI response time.
+
+**Is my data private?**  
+Yes. Everything stays in your browser's local storage. No data is sent externally unless you choose to export.
+
+**Can I trust the scores?**  
+Metrics are grounded in formal mathematics (Common Governance Model) and validated through open research. Results are reproducible and auditable.
+
+**What's the license?**  
+MIT License. Free to use, modify, and share.
 
 ---
 

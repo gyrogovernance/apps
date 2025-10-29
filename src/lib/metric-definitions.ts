@@ -17,7 +17,7 @@ export const CORE_METRICS: Record<string, MetricDefinition> = {
   },
   
   si: {
-    shortDesc: "Structural coherence derived from K₄ graph topology",
+    shortDesc: "Behavioral balance measure (mathematical foundation from K₄ graph topology)",
     fullDesc: "The Superintelligence Index (SI) measures how well behavior scores maintain balanced, non-degenerate structure using K₄ spherical geometry. It quantifies the 'aperture' (non-associative residual) of the 6D behavior vector projected onto a hypersphere.\n\nTarget aperture A* ≈ 0.020701 represents optimal balance. Deviation from this target indicates either:\n• Over-optimization (too narrow, deceptive coherence)\n• Under-optimization (too broad, scattered reasoning)\n\nSI requires all 6 Behavior metrics to be numeric (1-10). If any metric is N/A, SI is not computed in the Apps. Higher SI suggests more coherent, balanced reasoning.",
     formula: "SI = 100 / max(A/A*, A*/A) where A = ||residual||²/||y||²",
     range: "0-100"

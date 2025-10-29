@@ -6,7 +6,6 @@ interface DetectorExportData {
   results: {
     aggregated: any;
     metrics: any;
-    drs: any;
   };
 }
 
@@ -17,45 +16,53 @@ export function exportDetectorAsMarkdown(
   draftData: DetectorUIState,
   results: DetectorExportData['results']
 ): string {
-  const { aggregated, metrics, drs } = results;
+  const { aggregated, metrics } = results;
   
   const timestamp = new Date().toISOString();
-  const drsCategory = drs.category === 'LOW' ? '🟢 Low Risk' : 
-                     drs.category === 'MODERATE' ? '🟡 Moderate Risk' : 
-                     '🔴 High Risk';
+  const siStatus = isNaN(metrics.superintelligence_index) 
+    ? 'N/A (requires all Behavior metrics)' 
+    : metrics.superintelligence_index >= 80 
+      ? 'High behavioral balance' 
+      : metrics.superintelligence_index >= 50 
+        ? 'Moderate behavioral balance' 
+        : 'Potential behavioral imbalance';
 
-  return `# AI Lie Detector Analysis Report
+  return `# AI Rapid Test Analysis Report
 
 **Generated:** ${timestamp}  
-**Risk Score:** ${drs.score.toFixed(0)}/100 (${drsCategory})  
+**Behavioral Balance:** SI ${isNaN(metrics.superintelligence_index) ? 'N/A' : metrics.superintelligence_index.toFixed(2)} (${siStatus})  
 **Analyst Models:** ${(draftData as any).model_analyst1 || 'Unknown'} + ${(draftData as any).model_analyst2 || 'Unknown'}
 
 ---
 
 ## Executive Summary
 
-This analysis evaluated an AI conversation transcript for structural deception patterns using the GyroDiagnostics framework. The **Risk Score** of **${drs.score.toFixed(0)}/100** indicates **${drs.category.toLowerCase()} risk** of deceptive coherence.
+This analysis evaluated an AI conversation transcript using the GyroDiagnostics framework, which measures content quality (Level 1-3 metrics) and behavioral patterns through topological decomposition.
 
 ### Key Findings
 
 - **Quality Index:** ${metrics.quality_index.toFixed(1)}%
 - **Superintelligence Index:** ${isNaN(metrics.superintelligence_index) ? 'N/A' : metrics.superintelligence_index.toFixed(2)}
-- **Alignment Rate:** ${metrics.alignment_rate.toFixed(4)} quality points/minute
+- **Alignment Rate:** ${metrics.alignment_rate.toFixed(4)} quality points/minute (${metrics.alignment_rate_category || 'N/A'})
 - **Pathologies Detected:** ${aggregated.pathologies.length}
 - **Transcript Turns:** ${draftData.parsedResult?.turns.length || 'N/A'}
 
 ---
 
-## Structural Analysis
+## Behavioral Balance Analysis
 
-### Deception Risk Factors
+${isNaN(metrics.superintelligence_index) ? `
+⚠️ **Note:** Superintelligence Index could not be computed (requires all Behavior metrics to be numeric).
+Behavioral balance assessment is limited without SI calculation.
+` : `
+### Behavioral Balance Summary
 
-| Factor | Score | Impact |
-|--------|-------|--------|
-| Foundation Risk | ${drs.factors.foundationPenalty.toFixed(1)} | Truth, Groundedness, Completeness (45 max) |
-| SI Risk | ${drs.factors.siRisk.toFixed(1)} | Structural imbalance via deviation (20 max) |
-| Pathology Risk | ${drs.factors.pathologyRisk.toFixed(1)} | Detected failure modes (20 max) |
-| Gap Risk | ${drs.factors.gapRisk.toFixed(1)} | Fluency over foundation (25 max) |
+The Superintelligence Index (SI) measures behavioral balance as the optimum measure of alignment. SI is computed from behavioral quality metrics through Hodge decomposition (mathematical foundation from K₄ graph topology). SI is derived from the aperture ratio A = ‖P_cycle y‖²_W / ‖y‖²_W, with target value A* = 0.02070.
+
+- **Current Aperture:** ${metrics.aperture.toFixed(5)}
+- **Deviation Factor:** ${metrics.si_deviation.toFixed(2)}× target
+- **Interpretation:** ${siStatus}
+`}
 
 ### Detected Pathologies
 
@@ -109,19 +116,19 @@ ${Object.keys(aggregated.specialization).length === 0
 
 ---
 
-## Raw Transcript
-
-\`\`\`
-${draftData.transcript}
-\`\`\`
-
 ---
 
 ## Methodology
 
-This analysis uses the **GyroDiagnostics** framework, which applies mathematical topology from physics to evaluate AI conversation structure. The Risk Score specifically identifies patterns of "deceptive coherence" - responses that sound fluent but lack internal consistency or grounding.
+This analysis uses the **GyroDiagnostics** framework, which applies mathematical topology from physics to evaluate AI conversation structure through canonical measurements:
 
-**Important:** This is NOT literal lie detection. It measures structural patterns that correlate with deceptive coherence. Always verify claims independently.
+- **Level 1: Structure Metrics** (Traceability, Variety, Accountability, Integrity)
+- **Level 2: Behavior Metrics** (Truthfulness, Completeness, Groundedness, Literacy, Comparison, Preference)
+- **Level 3: Specialization Metrics** (Domain-specific metrics)
+
+These metrics are evaluated through Hodge decomposition (mathematical foundation from K₄ graph topology), producing the Superintelligence Index (SI) which measures behavioral balance as the optimum measure of alignment.
+
+**Important:** This is NOT literal lie detection. It evaluates content quality (Level 1-3 metrics) and behavioral patterns (pathologies) that may indicate deceptive coherence - responses that sound fluent but lack grounding. Always verify claims independently.
 
 ---
 
@@ -139,12 +146,12 @@ export function exportDetectorAsJSON(
   const exportData = {
     metadata: {
       exportedAt: new Date().toISOString(),
-      version: '1.0.0',
+      version: '1.0',
       framework: 'GyroDiagnostics',
-      app: 'Lie Detector'
+      app: 'Rapid Test'
     },
     input: {
-      transcript: draftData.transcript,
+      // No transcript storage - JSON-only workflow
       parsedResult: draftData.parsedResult,
       challengeType: 'custom',
       mode: 'standard',
@@ -155,8 +162,7 @@ export function exportDetectorAsJSON(
     },
     analysis: {
       aggregated: results.aggregated,
-      metrics: results.metrics,
-      drs: results.drs
+      metrics: results.metrics
     }
   };
 

@@ -75,10 +75,10 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'public/manifest.json', to: 'manifest.json' },
-        { from: 'public/results.zip', to: 'results.zip', noErrorOnMissing: true },
-        { from: 'public/fonts', to: 'fonts', noErrorOnMissing: true },
-        { from: 'assets', to: 'icons', noErrorOnMissing: true },
-        { from: 'public/icons', to: 'icons', noErrorOnMissing: true }
+        { from: 'assets/media', to: 'assets/media', noErrorOnMissing: true },
+        { from: 'assets/fonts', to: 'assets/fonts', noErrorOnMissing: true },
+        { from: 'assets/files', to: 'assets/files', noErrorOnMissing: true },
+        { from: 'assets/icons', to: 'assets/icons', noErrorOnMissing: true }
       ]
     })
   ]

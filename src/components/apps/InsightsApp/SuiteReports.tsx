@@ -133,14 +133,6 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
   return (
     <div className="h-full flex flex-col p-4">
       <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          🎯 Suite Reports
-        </h2>
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          {suites.length} complete suite{suites.length !== 1 ? 's' : ''}
-        </div>
-      </div>
 
       <div className="grid gap-4">
         {suites.map((suite) => (

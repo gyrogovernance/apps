@@ -6,29 +6,83 @@
 
 ## 📋 Table of Contents
 
-1. [Overview](#overview)
-2. [Product Suite](#product-suite)
-3. [Architecture](#architecture)
-4. [Core Applications](#core-applications)
-5. [User Journey](#user-journey)
-6. [Data Flow](#data-flow)
-7. [Technical Specifications](#technical-specifications)
-8. [Integration Points](#integration-points)
-9. [Future Roadmap](#future-roadmap)
+1. [The Challenge](#the-challenge)
+2. [Overview](#overview)
+3. [Key Concepts](#key-concepts)
+4. [Product Suite](#product-suite)
+5. [Architecture](#architecture)
+6. [Core Applications](#core-applications)
+7. [User Journey](#user-journey)
+8. [Data Flow](#data-flow)
+9. [Technical Specifications](#technical-specifications)
+10. [Integration Points](#integration-points)
+11. [Frequently Asked Questions](#frequently-asked-questions)
+12. [Contact & Support](#contact--support)
+
+---
+
+## 🎯 The Challenge
+
+AI-Empowered governance requires accessible validation for policy recommendations in areas like climate strategies, healthcare reform, and resource allocation. Current limitations include restricted corporate access to advanced AI systems, general capability focus over governance-specific quality assessment, and high expertise barriers for rigorous evaluation. GyroGovernance Apps addresses this through platform-agnostic mathematical assessment via clipboard workflow, enabling any community or organization to validate AI-generated governance solutions using the GyroDiagnostics framework.
 
 ---
 
 ## 🎯 Overview
 
-**GyroGovernance Apps** is a comprehensive platform for **AI-Empowered Participatory Governance**, built on the foundation of the **GyroDiagnostics** framework. The platform provides tools that transform everyday AI conversations into rigorous governance analysis, enabling communities, researchers, and policy makers to validate AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
+**GyroGovernance Apps** transforms AI conversations into validated governance insights through mathematical assessment. The platform enables communities, researchers, and policy makers to evaluate AI-generated solutions for UN Sustainable Development Goals and local challenges.
 
-### Platform Scope
+### Platform Capabilities
 
-GyroGovernance Apps serves as the **general domain** for a suite of governance evaluation tools. Currently, it includes:
+- Clipboard-based workflow for any AI interface
+- 12-metric quality assessment with geometric decomposition
+- Three canonical indices: QI (performance), AR (efficiency), SI (alignment)
+- Local-first architecture with export capabilities
 
-1. **AI Inspector** (Browser Extension) - The flagship tool for AI model evaluation and governance analysis
+### Current Products
 
-Future applications may include web apps, desktop tools, mobile applications, and specialized platforms for specific governance domains.
+1. **AI Inspector** (Browser Extension) - Flagship evaluation tool
+
+Future expansions may include web apps, desktop tools, and specialized governance platforms.
+
+---
+
+## 📚 Key Concepts
+
+<details>
+<summary><strong>GyroDiagnostics Framework</strong></summary>
+
+Mathematical framework for AI alignment measurement through rubric-based scoring across 12 metrics in three levels:
+- **Level 1 (Structure)**: Traceability, Variety, Accountability, Integrity
+- **Level 2 (Behavior)**: Truthfulness, Completeness, Groundedness, Literacy, Comparison, Preference
+- **Level 3 (Specialization)**: Domain-specific metrics
+
+Scoring is followed by geometric decomposition to yield three canonical indices:
+- **Quality Index (QI)**: Weighted aggregate performance score (0-100%)
+- **Alignment Rate (AR)**: Temporal efficiency metric in quality points per minute
+- **Superintelligence Index (SI)**: Behavioral balance indicator quantifying structural alignment
+
+</details>
+
+<details>
+<summary><strong>Superintelligence Index (SI)</strong></summary>
+
+Quantifies structural alignment through behavioral balance measurement. Derived from aperture ratio A relative to theoretical target A* ≈ 0.02070. Computation uses Level 2 behavioral metrics with K₄ topology and Hodge decomposition to assess balance between coherent reasoning and adaptive differentiation. Higher SI correlates with reduced pathology rates.
+
+</details>
+
+<details>
+<summary><strong>Behavioral Balance</strong></summary>
+
+The equilibrium among measurable reasoning qualities including coherence, accuracy, and adaptability. Assessed through K₄ tetrahedral topology and Hodge decomposition, which separates gradient components (coherence) from cycle components (differentiation). This geometric approach provides objective measurement grounded in the Common Governance Model (CGM).
+
+</details>
+
+<details>
+<summary><strong>Common Governance Model (CGM)</strong></summary>
+
+The theoretical foundation underlying GyroDiagnostics. A Hilbert-style formal deductive system providing the mathematical-physics theory that grounds the evaluation methodology. The CGM defines geometric necessities that manifest as behavioral qualities in AI reasoning, which are then captured through rubric-based assessment and quantified via geometric decomposition.
+
+</details>
 
 ---
 
@@ -40,7 +94,7 @@ Future applications may include web apps, desktop tools, mobile applications, an
 **Platform**: Chrome Browser Extension (Manifest V3)  
 **Purpose**: Real-time AI model evaluation using clipboard-based workflow
 
-The AI Inspector browser extension is a comprehensive platform for evaluating AI model responses against governance challenges. It transforms everyday AI conversations into rigorous governance analysis through quantitative metrics and structured evaluation protocols.
+The AI Inspector browser extension is a comprehensive platform for evaluating AI model responses against governance challenges. It transforms everyday AI conversations into rigorous governance analysis through multi-dimensional quality assessment rubrics and structured evaluation protocols.
 
 #### Key Features
 
@@ -50,10 +104,6 @@ The AI Inspector browser extension is a comprehensive platform for evaluating AI
 - **Glassmorphism UI**: Modern, unified design system with dark mode support
 - **Platform Agnostic**: Clipboard-based workflow compatible with any AI service
 - **Export Capabilities**: JSON and Markdown export for sharing and archiving
-
-#### Mission Statement
-
-> **Transform everyday AI conversations into rigorous governance analysis by democratizing access to sophisticated AI evaluation tools, enabling communities to validate AI-generated solutions for sustainable development and policy challenges through quantitative metrics.**
 
 #### Key Principles
 
@@ -90,11 +140,10 @@ The AI Inspector extension uses a modular, app-based architecture with the follo
   - Insight Detail
   - Model Tracker
   - Suite Reports
-- **Detector App** - Rapid multi-dimensional quality assessment for AI conversation transcripts
-  - Detector Input
-  - Detector Analyst (Dual Evaluation)
-  - Detector Results
-  - Truth Spectrum Gauge
+- **Rapid Test** - Accelerated quality assessment via JSON workflow
+  - Analysis Prompt (copy to AI)
+  - Single JSON Evaluation Response
+  - Results with Behavioral Balance Gauge
 - **Settings App** - Configuration and preferences
 - **Shared Components** - Reusable UI elements
 
@@ -140,11 +189,11 @@ Notebook (Root Router)
 │   ├── SuiteReports
 │   ├── ModelTracker
 │   └── InsightDetail
-├── DetectorApp
-│   ├── DetectorInput
-│   ├── DetectorAnalyst (Dual Evaluation)
-│   ├── DetectorResults
-│   └── TruthSpectrumGauge
+├── RapidTestApp (via Gadgets)
+│   ├── Analysis Prompt
+│   ├── Single JSON Evaluation
+│   ├── Results Display
+│   └── BehavioralBalanceGauge
 └── SettingsApp
     ├── Data Management
     ├── Import/Export
@@ -197,7 +246,7 @@ Notebook (Root Router)
 - **Session Management**: Create, pause, resume, clone, delete sessions
 - **Progress Tracking**: Real-time evaluation progress with visual indicators
 - **Synthesis Interface**: 6-turn reasoning cycles with timer and model selection
-- **Analyst Interface**: Dual-analyst evaluation with scoring forms
+- **Analyst Interface**: Dual-analyst evaluation with scoring forms (Analyst 1 and Analyst 2 for each epoch)
 - **Report Generation**: Insight Overview with metrics calculation
 
 **Session States**:
@@ -232,32 +281,25 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 - **Progress Rings**: Visual completion indicators
 - **Status Badges**: Evaluation state and quality indicators
 
-### 5. Detector App
+### 5. Rapid Test
 
-**Purpose**: Rapid multi-dimensional quality assessment for AI conversation transcripts
+**Purpose**: Accelerated quality assessment via JSON workflow
 
 **Key Features**:
-- **Transcript Input**: Paste any AI conversation (3-6 turns recommended)
-- **Multi-criteria Evaluation**: Seamless rubric-based assessment across 12 evaluation criteria
-- **Dual Analyst Evaluation**: Two different AI models assess using structured rubrics
-- **Risk Score (DRS)**: Mathematical 0-100 scoring based on scoring imbalance analysis
-- **Risk Score Gauge**: Visual circular indicator showing deception risk level
-- **Scoring Imbalance Detection**: Identifies when surface metrics (fluency) score high while foundational metrics (truthfulness) score low
-- **Pathology Detection**: Identifies specific failure modes through scoring pattern analysis
-- **Export Options**: Save as insight or export Markdown/JSON reports
+- **JSON Input**: Provide evaluation prompt and receive structured JSON response from AI
+- **Single Analyst Evaluation**: One AI model scores using 12-metric rubric (structured JSON response)
+- **Behavioral Balance Gauge**: Visual SI indicator with color-coded thresholds
+- **Pathology Detection**: Identifies hallucinations, contradictions, goal drift, and other behavioral failure modes
+- **Export Options**: Save as insight or export Markdown/JSON
 
 **Workflow**:
-1. **Input**: Paste AI conversation transcript
-2. **Analysis**: Two AI models evaluate using structured evaluation rubrics
-3. **Scoring**: Calculate Risk Score using geometric balance of evaluation criteria
-4. **Visualization**: Display Risk Score Gauge and detailed metrics
-5. **Export**: Save results as insight or export reports
+1. **Provide Prompt**: Copy the evaluation prompt to your AI interface (references your conversation/topic)
+2. **Receive JSON**: AI returns structured JSON with scoring data following the rubric
+3. **Automated Processing**: System calculates QI, AR, SI from the JSON evaluation
+4. **Visualization**: Display Behavioral Balance Gauge and detailed metrics breakdown
+5. **Export or Save**: Export reports or save as insight
 
-**Technical Implementation**:
-- **Multi-dimensional Assessment**: 12 predefined quality criteria with detailed scoring guidelines
-- **Scoring Pattern Analysis**: Detects imbalances between surface and foundational metrics
-- **Draft Persistence**: Temporary storage during analysis workflow
-- **Insight Integration**: Saves completed analyses as GovernanceInsights
+**Technical Details**: See Key Concepts for metric definitions and geometric decomposition methodology. JSON-only workflow; no transcript storage or handling. Single analyst evaluation pattern.
 
 ### 6. Settings App
 
@@ -296,10 +338,10 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
    - Compare AI solutions across different approaches
    - Export results for policy development or research
 
-5. **AI Lie Detection** (Alternative Workflow)
-   - Paste any AI conversation transcript
-   - Get rapid structural deception analysis
-   - View Truth Spectrum Gauge and Risk Score
+5. **Rapid Test** (Alternative Workflow)
+   - Provide evaluation prompt and receive JSON response from AI
+   - Get rapid quality assessment through automated metric calculation
+   - View Behavioral Balance Gauge and Superintelligence Index
    - Save results as insights or export detailed reports
 
 ### Power User Workflow
@@ -338,9 +380,9 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 - **Climate Adaptation**: Validating AI strategies for climate resilience
 - **Urban Planning**: Testing AI approaches to sustainable city development
 - **Social Justice**: Evaluating AI solutions for equity and inclusion
-- **AI Content Verification**: Detecting structural deception in AI-generated content
-- **Quality Assurance**: Validating AI responses for accuracy and coherence
-- **Research Analysis**: Analyzing AI conversation patterns for academic studies
+- **AI Content Verification**: Assessing behavioral qualities in AI-generated content through rubric-based evaluation
+- **Quality Assurance**: Validating AI responses for accuracy and coherence through multi-dimensional assessment
+- **Research Analysis**: Analyzing AI conversation patterns for academic studies through quantitative metrics
 
 ---
 
@@ -405,10 +447,33 @@ Session Creation → Configuration → Synthesis → Analysis → Report Generat
 
 ### GyroDiagnostics Framework
 
-- **Direct Integration**: Built on GyroDiagnostics methodology
-- **Official Results**: Import benchmark data from official repository
-- **Methodology Compliance**: Follows all CGM principles and metrics
-- **Research Alignment**: Contributes to open science initiatives
+Provides the mathematical foundation for evaluation. See Key Concepts for methodology details.
+
+- **Official Benchmarks**: Import validated results from [github.com/gyrogovernance/diagnostics](https://github.com/gyrogovernance/diagnostics)
+- **Methodology Compliance**: Adheres to CGM principles
+- **Research Contribution**: Supports open science initiatives
+
+---
+
+## ❓ Frequently Asked Questions
+
+**Do I need technical expertise to use AI Inspector?**  
+No. The extension provides a graphical interface with clipboard-based protocol. No coding or mathematical knowledge required.
+
+**Which AI models are compatible?**  
+Any AI chat interface that allows copy-paste. Tested with ChatGPT, Claude, Gemini, Poe, LMArena, and others.
+
+**How long does an evaluation take?**  
+Rapid Test: 5-10 minutes for a quick assessment. Full Challenge evaluation: 30-60 minutes depending on AI response time and complexity.
+
+**Where is my data stored?**  
+All data is stored locally in your browser using Chrome's extension storage API. No external transmission occurs unless you explicitly export data.
+
+**Can I use this for academic research?**  
+Yes. The extension is MIT licensed and designed for reproducible research. JSON exports include all metadata needed for research documentation.
+
+**How accurate are the metrics?**  
+The metrics are grounded in the Common Governance Model (CGM) formal system and validated through the GyroDiagnostics framework. They provide objective, reproducible measurements of behavioral qualities.
 
 ---
 

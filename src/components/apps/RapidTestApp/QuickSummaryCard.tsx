@@ -1,52 +1,71 @@
-// Quick Summary Card - Shows DRS interpretation in plain language
+// Quick Summary Card - Shows behavioral balance summary based on SI and pathologies
 // Includes AR estimation with user override
 
 import React, { useState } from 'react';
 import GlassCard from '../../shared/GlassCard';
 
 interface QuickSummaryCardProps {
-  drs: {
-    score: number;
-    category: 'LOW' | 'MODERATE' | 'HIGH';
-    factors: {
-      foundationPenalty?: number;
-      siRisk?: number;
-      pathologyRisk?: number;
-      gapRisk?: number;
-    };
-  };
   metrics: {
     quality_index: number;
     alignment_rate: number;
     alignment_rate_category: string;
     superintelligence_index: number;
   };
+  pathologies: string[];
   arOverride: number | null;
   onArOverride: (value: number | null) => void;
 }
 
 const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
-  drs,
   metrics,
+  pathologies,
   arOverride,
   onArOverride
 }) => {
 
-  const getKeyFinding = () => {
-    if (drs.category === 'HIGH') {
-      if ((drs.factors.gapRisk || 0) > 15) {
-        return "Scoring imbalance detected: high fluency scores mask low truthfulness/groundedness - classic deceptive coherence pattern";
-      }
-      if ((drs.factors.pathologyRisk || 0) > 15) {
-        return "Multiple scoring pathologies detected through pattern analysis - significant integrity issues";
-      }
-      return "Significant scoring imbalances detected - high risk of deceptive coherence";
+  const getIntegritySummary = () => {
+    const si = metrics.superintelligence_index;
+    const hasDeceptiveCoherence = pathologies.includes('deceptive_coherence');
+    
+    if (isNaN(si)) {
+      return "Behavioral balance assessment unavailable - SI requires all Behavior metrics";
     }
-    if (drs.category === 'MODERATE') {
-      return "Some scoring imbalances detected - monitor for consistency across evaluation criteria";
+    
+    if (si >= 80 && pathologies.length === 0) {
+      return "High behavioral balance - balanced quality responses with no pathologies detected";
     }
-    return "Balanced scoring across evaluation criteria - structurally sound responses";
+    
+    if (si < 50 || hasDeceptiveCoherence) {
+      return "Potential behavioral imbalance - low SI indicates deviation from optimal balance, or deceptive_coherence pathology detected";
+    }
+    
+    if (si >= 50 && si < 80) {
+      return "Moderate behavioral balance - review detailed metrics and pathologies for specific concerns";
+    }
+    
+    return "Behavioral balance requires review - check SI and pathology details";
   };
+
+  const getIntegrityStatus = () => {
+    const si = metrics.superintelligence_index;
+    const hasDeceptiveCoherence = pathologies.includes('deceptive_coherence');
+    
+    if (isNaN(si)) {
+      return { status: 'N/A', color: 'text-gray-600 dark:text-gray-400' };
+    }
+    
+    if (si >= 80 && pathologies.length === 0) {
+      return { status: 'High', color: 'text-green-600 dark:text-green-400' };
+    }
+    
+    if (si < 50 || hasDeceptiveCoherence) {
+      return { status: 'Review', color: 'text-red-600 dark:text-red-400' };
+    }
+    
+    return { status: 'Moderate', color: 'text-yellow-600 dark:text-yellow-400' };
+  };
+
+  const integrity = getIntegrityStatus();
 
   return (
     <GlassCard className="p-6" variant="glassGreen" borderGradient="green">
@@ -56,28 +75,24 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
             Summary
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            <strong>{drs.category}</strong> risk from imbalances
+            Behavioral Balance Status
           </p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-600 dark:text-gray-400">Risk Level</div>
-          <div className={`text-lg font-bold ${
-            drs.category === 'HIGH' ? 'text-red-600 dark:text-red-400' :
-            drs.category === 'MODERATE' ? 'text-yellow-600 dark:text-yellow-400' :
-            'text-green-600 dark:text-green-400'
-          }`}>
-            {drs.category}
+          <div className="text-sm text-gray-600 dark:text-gray-400">Status</div>
+          <div className={`text-lg font-bold ${integrity.color}`}>
+            {integrity.status}
           </div>
         </div>
       </div>
 
-      {/* Key Finding */}
+      {/* Behavioral Balance Summary */}
       <div className="mb-4 p-3 bg-white/50 dark:bg-gray-900/30 rounded border border-gray-200 dark:border-gray-700">
         <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-          Key Finding
+          Behavioral Balance
         </div>
         <div className="text-sm text-gray-700 dark:text-gray-300">
-          {getKeyFinding()}
+          {getIntegritySummary()}
         </div>
       </div>
 
@@ -199,6 +214,13 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
           {metrics.alignment_rate_category} AR
         </span>
       </div>
+
+      {/* Pathologies count if present */}
+      {pathologies.length > 0 && (
+        <div className="text-center text-sm text-red-600 dark:text-red-400">
+          {pathologies.length} patholog{pathologies.length === 1 ? 'y' : 'ies'} detected
+        </div>
+      )}
     </GlassCard>
   );
 };

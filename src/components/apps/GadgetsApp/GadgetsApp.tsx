@@ -19,7 +19,7 @@ const GadgetsApp: React.FC<GadgetsAppProps> = ({
   onNavigateHome
 }) => {
   const gadgetView = state.ui.gadgetView || 'selector';
-  const gadgetType = state.ui.gadgetType || 'detector';
+  const gadgetType = state.ui.gadgetType || 'rapid-test';
 
   // Render appropriate view
   if (gadgetView === 'selector') {

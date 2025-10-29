@@ -6,13 +6,13 @@ import { NotebookState, GadgetType } from '../../../types';
 import { useToast } from '../../shared/Toast';
 import { insights as insightsStorage } from '../../../lib/storage';
 import { generateInsightFromGadget } from '../../../lib/report-generator';
-import { calculateDeceptionRiskScore, A_STAR } from '../../../lib/calculations';
+import { A_STAR } from '../../../lib/calculations';
 import GlassCard from '../../shared/GlassCard';
-import QuickSummaryCard from '../DetectorApp/QuickSummaryCard';
-import TruthSpectrumGauge from '../DetectorApp/TruthSpectrumGauge';
-import PathologyReport from '../DetectorApp/PathologyReport';
-import TechnicalDetails from '../DetectorApp/TechnicalDetails';
-import ExportActions from '../DetectorApp/ExportActions';
+import QuickSummaryCard from '../RapidTestApp/QuickSummaryCard';
+import StructuralIntegrityGauge from '../RapidTestApp/TruthSpectrumGauge';
+import PathologyReport from '../RapidTestApp/PathologyReport';
+import TechnicalDetails from '../RapidTestApp/TechnicalDetails';
+import ExportActions from '../RapidTestApp/ExportActions';
 
 interface GadgetResultsProps {
   state: NotebookState;
@@ -22,7 +22,7 @@ interface GadgetResultsProps {
 }
 
 const GADGET_INFO: Record<GadgetType, { title: string; icon: string }> = {
-  'detector': { title: 'Detector', icon: '🔍' },
+  'rapid-test': { title: 'Rapid Test', icon: '🔬' },
   'policy-audit': { title: 'Policy Auditing', icon: '📊' },
   'policy-report': { title: 'Policy Reporting', icon: '📋' },
   'sanitize': { title: 'AI Infections Sanitization', icon: '🦠' },
@@ -47,7 +47,7 @@ const GadgetResults: React.FC<GadgetResultsProps> = ({
   }
 
   const draftData = state.drafts[draftKey];
-  const gadgetType = state.ui.gadgetType || 'detector';
+  const gadgetType = state.ui.gadgetType || 'rapid-test';
   const gadgetInfo = GADGET_INFO[gadgetType];
 
   // Generate insight from gadget data
@@ -78,28 +78,6 @@ const GadgetResults: React.FC<GadgetResultsProps> = ({
     );
   }
 
-  // Calculate DRS properly from insight quality metrics
-  const drs = useMemo(() => {
-    if (!insight.quality.behavior_scores) {
-      return {
-        score: 0,
-        category: 'LOW' as const,
-        factors: { foundationPenalty: 0, siRisk: 0, pathologyRisk: 0, gapRisk: 0 }
-      };
-    }
-    
-    return calculateDeceptionRiskScore(
-      {
-        superintelligence_index: insight.quality.superintelligence_index || 0,
-        si_deviation: insight.quality.si_deviation || 1,
-        aperture: insight.quality.aperture || A_STAR
-      },
-      {
-        behavior: insight.quality.behavior_scores,
-        pathologies: insight.quality.pathologies.detected || []
-      }
-    );
-  }, [insight]);
 
   const metrics = {
     quality_index: insight.quality.quality_index,
@@ -136,18 +114,23 @@ const GadgetResults: React.FC<GadgetResultsProps> = ({
       <div className="text-center">
         <div className="text-5xl mb-3">{gadgetInfo.icon}</div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {gadgetInfo.title} — Diagnosis
+          {gadgetInfo.title} - Results
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
           Quality assessment complete
         </p>
       </div>
 
-      {/* Truth Spectrum Gauge */}
-      <TruthSpectrumGauge drs={drs} />
+      {/* Behavioral Balance Gauge */}
+      <StructuralIntegrityGauge si={insight.quality.superintelligence_index} />
 
       {/* Quick Summary */}
-      <QuickSummaryCard drs={drs} metrics={metrics} arOverride={null} onArOverride={() => {}} />
+      <QuickSummaryCard 
+        metrics={metrics} 
+        pathologies={insight.quality.pathologies.detected || []}
+        arOverride={null} 
+        onArOverride={() => {}} 
+      />
 
       {/* Pathology Report */}
       {insight.quality.pathologies.detected.length > 0 && (
@@ -169,9 +152,15 @@ const GadgetResults: React.FC<GadgetResultsProps> = ({
       <ExportActions
         draftData={draftData}
         results={{
-          aggregated: { strengths: insight.insights.summary, weaknesses: insight.insights.provision },
-          metrics,
-          drs
+          aggregated: { 
+            structure: insight.quality.structure_scores || {},
+            behavior: insight.quality.behavior_scores || {},
+            specialization: insight.quality.specialization_scores || {},
+            pathologies: insight.quality.pathologies.detected || [],
+            strengths: insight.insights.summary, 
+            weaknesses: insight.insights.provision
+          },
+          metrics
         }}
         onSaveInsight={handleSaveAsInsight}
       />

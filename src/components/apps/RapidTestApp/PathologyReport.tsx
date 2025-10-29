@@ -49,7 +49,7 @@ const PathologyReport: React.FC<PathologyReportProps> = ({ pathologies }) => {
                   {formatPathologyName(pathology)}
                 </div>
                 <div className="text-sm text-red-700 dark:text-red-300">
-                  {pathologyDescriptions[pathology] || 'Structural integrity issue detected'}
+                  {pathologyDescriptions[pathology] || 'Behavioral quality issue detected'}
                 </div>
               </div>
             </div>
@@ -59,7 +59,7 @@ const PathologyReport: React.FC<PathologyReportProps> = ({ pathologies }) => {
       
       <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded">
         <p className="text-xs text-yellow-800 dark:text-yellow-200">
-          <strong>Note:</strong> Pathologies indicate structural patterns that correlate with deceptive coherence. 
+          <strong>Note:</strong> Pathologies indicate behavioral/conversational patterns that correlate with deceptive coherence. 
           They do not prove literal deception but suggest responses that sound fluent while lacking grounding.
         </p>
       </div>

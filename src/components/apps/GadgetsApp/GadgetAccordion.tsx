@@ -12,10 +12,9 @@ import { generateDetectorAnalystPrompt, generateAnalystPrompt } from '../../../l
 import { generateInsightFromGadget } from '../../../lib/report-generator';
 import { insights as insightsStorage } from '../../../lib/storage';
 import { formatPathologyName } from '../../../lib/text-utils';
-import TruthSpectrumGauge from '../DetectorApp/TruthSpectrumGauge';
 import { UNSPECIFIED_MODEL } from '../../../lib/model-list';
 import { ModelSelect } from '../../shared/ModelSelect';
-import { calculateDeceptionRiskScore, A_STAR } from '../../../lib/calculations';
+import { A_STAR } from '../../../lib/calculations';
 
 interface GadgetAccordionProps {
   state: NotebookState;
@@ -25,11 +24,11 @@ interface GadgetAccordionProps {
 }
 
 const GADGET_INFO: Record<GadgetType, { title: string; description: string; taskPrompt: string; icon: string; isAnalysis: boolean }> = {
-  'detector': {
-    title: 'Detector',
-    icon: '🔍',
-    description: 'Rapid deception analysis of AI conversations',
-    taskPrompt: 'Paste your AI conversation transcript below for analysis.',
+  'rapid-test': {
+    title: 'Rapid Test',
+    icon: '🔬',
+    description: 'Quick GyroDiagnostics metric computation',
+    taskPrompt: '',
     isAnalysis: true
   },
   'policy-audit': {
@@ -82,8 +81,8 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
   const { confirm, ConfirmModal } = useConfirm();
   const gadgetInfo = GADGET_INFO[gadgetType];
   const isAnalysisGadget = gadgetInfo.isAnalysis;
-  const taskPrompt = gadgetType === 'detector' ? generateDetectorAnalystPrompt('custom') : gadgetInfo.taskPrompt;
-  const analystPrompt = gadgetType === 'detector' 
+  const taskPrompt = gadgetInfo.taskPrompt;
+  const analystPrompt = gadgetType === 'rapid-test' 
     ? generateDetectorAnalystPrompt('custom')
     : generateAnalystPrompt([''], 'custom');
   const totalSteps = isAnalysisGadget ? 2 : 1;
@@ -227,17 +226,6 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
     }
   };
 
-  const drs = insight ? calculateDeceptionRiskScore(
-    {
-      superintelligence_index: insight.quality.superintelligence_index,
-      si_deviation: insight.quality.si_deviation,
-      aperture: insight.quality.aperture ?? A_STAR  // Use stored value from calculation
-    },
-    {
-      behavior: insight.quality.behavior_scores,
-      pathologies: insight.quality.pathologies.detected
-    }
-  ) : null;
 
   const handleBackToSelector = () => {
     onUpdate({
@@ -355,24 +343,72 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                     
                     {/* Guided Mode: Step-by-step instructions */}
                     {!quickMode && (
-                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-4 space-y-2 mb-3">
-                        <p className="text-xs font-semibold text-gray-900 dark:text-white mb-2">Quick Guide:</p>
-                        <ol className="list-decimal list-inside space-y-1 text-xs text-gray-700 dark:text-gray-300">
-                          <li>Copy Task prompt → Run in your AI</li>
-                          <li>Copy Analysis prompt → Run with AI's output</li>
-                          <li>Paste JSON response in Evaluation below</li>
-                        </ol>
+                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-4 space-y-3 mb-3">
+                        <p className="text-xs font-semibold text-gray-900 dark:text-white mb-2">
+                          {gadgetType === 'rapid-test' ? 'Rapid Test Analysis' : 'Gadget Workflow'}
+                        </p>
+                        {gadgetType === 'rapid-test' ? (
+                          <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">1.</span>
+                              <span>
+                                <strong>Prepare your conversation:</strong> Have a 3-6 turn dialogue with your AI assistant on any topic or challenge
+                              </span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">2.</span>
+                              <span>
+                                <strong>Run analysis:</strong> Copy the Analysis prompt below and submit it to your AI assistant, referencing your conversation
+                              </span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">3.</span>
+                              <span>
+                                <strong>Import results:</strong> Paste the JSON response to compute quality metrics (QI, AR, SI) and behavioral balance assessment
+                              </span>
+                            </div>
+                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 p-2 rounded">
+                              🔬 <strong>Note:</strong> This computes GyroDiagnostics behavioral quality metrics through multi-dimensional assessment rubrics. No content is stored - only JSON results are processed.
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">1.</span>
+                              <span>
+                                <strong>Generate output:</strong> Copy the Task prompt and submit it to your AI assistant for the specific analysis you need
+                              </span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">2.</span>
+                              <span>
+                                <strong>Evaluate quality:</strong> Copy the Analysis prompt and run it on your AI's output to assess behavioral quality
+                              </span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">3.</span>
+                              <span>
+                                <strong>Review results:</strong> Paste the JSON evaluation to receive quality metrics, risk assessment, and improvement insights
+                              </span>
+                            </div>
+                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 p-2 rounded">
+                              📊 <strong>Tip:</strong> Use different AI models for task generation vs. analysis to reduce bias
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     
                     <div className="space-y-3">
-                      <div className="border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg overflow-hidden">
-                        <CopyableDetails
-                          title="Task"
-                          content={taskPrompt}
-                          defaultOpen={!quickMode}
-                        />
-                      </div>
+                      {gadgetType !== 'rapid-test' && (
+                        <div className="border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg overflow-hidden">
+                          <CopyableDetails
+                            title="Task"
+                            content={taskPrompt}
+                            defaultOpen={!quickMode}
+                          />
+                        </div>
+                      )}
                       
                       <div className="border-2 border-purple-500 bg-purple-50/50 dark:bg-purple-900/20 rounded-lg overflow-hidden">
                         <CopyableDetails
@@ -509,32 +545,30 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                 </div>
               </div>
 
-              {steps[2].expanded && insight && drs && (
+              {steps[2].expanded && insight && (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
 
                   <div className="text-center mb-4">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Risk: <span className="font-semibold text-red-600 dark:text-red-400">{drs.category}</span> •
                       QI <span className="font-semibold text-gray-900 dark:text-white">{insight.quality.quality_index.toFixed(1)}%</span> •
                       SI <span className="font-semibold text-gray-900 dark:text-white">{insight.quality.superintelligence_index.toFixed(3)}</span>
+                      {insight.quality.pathologies.detected.includes('deceptive_coherence') || (!isNaN(insight.quality.superintelligence_index) && insight.quality.superintelligence_index < 50) ? (
+                        <span className="text-red-600 dark:text-red-400"> • Review</span>
+                      ) : null}
                     </div>
                   </div>
 
-                  <div className="flex justify-center mb-2">
-                    <TruthSpectrumGauge drs={drs} size="sm" />
-                  </div>
-
                   <div className="p-3 rounded border border-blue-500 bg-blue-50 dark:bg-blue-900/20">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          {insight.insights.summary}
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        {insight.insights.summary}
+                      </p>
+                      {!isNaN(insight.quality.superintelligence_index) && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          Behavioral Balance: {insight.quality.superintelligence_index >= 80 && insight.quality.pathologies.detected.length === 0 ? 'High' : 
+                            insight.quality.superintelligence_index >= 50 ? 'Moderate' : 'Potential Issues'}
                         </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Risk</p>
-                        <p className="text-lg font-bold text-red-600 dark:text-red-400">{drs.category}</p>
-                      </div>
+                      )}
                     </div>
                   </div>
                   

@@ -25,7 +25,7 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'SI': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Superintelligence Index</span> - Structural coherence</div>
+        <div><span className="font-bold text-blue-300">Superintelligence Index</span> - Behavioral balance</div>
         <div className="text-gray-400 text-xs">
           Measures balance via K₄ graph topology
         </div>

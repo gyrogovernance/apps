@@ -77,7 +77,7 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                     <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
                       <h3 className="font-medium text-gray-900 dark:text-white mb-1">Superintelligence Index (SI)</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                        Structural coherence measure (theoretical optimum = 100)
+                        Behavioral balance measure (theoretical optimum = 100)
                       </p>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         <strong>Based on:</strong> K₄ complete graph topology and aperture A* ≈ 0.02070
@@ -85,12 +85,12 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                     </div>
                     
                     <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-1">Risk Score (DRS)</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-1">Superintelligence Index (SI)</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                        Structural deception risk (0-100)
+                        Behavioral balance measure (mathematical foundation from K₄ graph topology)
                       </p>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        <strong>Based on:</strong> SI deviation, pathology count, aperture magnitude
+                        <strong>Based on:</strong> Hodge decomposition on K₄ graph, aperture ratio A = ‖P_cycle y‖²_W / ‖y‖²_W
                       </div>
                     </div>
                   </div>

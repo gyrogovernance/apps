@@ -61,7 +61,7 @@ export const PersistentHeader: React.FC<PersistentHeaderProps> = ({
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-lg"
             title="Gadgets"
           >
-            🛠️
+            🤖
           </button>
           <button 
             onClick={() => onNavigateToApp('challenges')}

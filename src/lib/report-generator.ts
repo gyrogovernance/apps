@@ -175,7 +175,7 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
         epoch2_minutes: session.epochs.epoch2.duration_minutes
       },
       created_at: new Date().toISOString(),
-      schema_version: '1.0.0'
+      schema_version: '1.0'
     },
     contribution: {
       public: true,
@@ -288,8 +288,9 @@ export function generateInsightFromGadget(
       provision: analyst1.weaknesses || 'See detailed analysis',
       combined_markdown: combinedInsights
     },
+    // No transcript storage - JSON-only workflow
     transcripts: {
-      epoch1: [draftData.transcript || draftData.aiOutput || ''],
+      epoch1: [],
       epoch2: []
     },
     quality: {

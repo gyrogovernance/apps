@@ -15,7 +15,7 @@ const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
         borderGradient="purple"
         hover
         onClick={() => onNavigate('custom-builder')}
-        className="cursor-pointer"
+        className="cursor-pointer transition-transform hover:scale-[1.01] hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-md"
       >
         <div className="p-2.5">
           <div className="flex items-center gap-2.5">
@@ -46,7 +46,7 @@ const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
         borderGradient="green"
         hover
         onClick={() => onNavigate('sdg-gallery')}
-        className="cursor-pointer"
+        className="cursor-pointer transition-transform hover:scale-[1.01] hover:border-green-400 dark:hover:border-green-500 hover:shadow-md"
       >
         <div className="p-2.5">
           <div className="flex items-center gap-2.5">
@@ -77,7 +77,7 @@ const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
         borderGradient="blue"
         hover
         onClick={() => onNavigate('gyro-suite')}
-        className="cursor-pointer"
+        className="cursor-pointer transition-transform hover:scale-[1.01] hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md"
       >
         <div className="p-2.5">
           <div className="flex items-center gap-2.5">
@@ -101,6 +101,35 @@ const TypeSelector: React.FC<TypeSelectorProps> = ({ onNavigate }) => {
           </div>
         </div>
       </GlassCard>
+
+      {/* Divider: Gyro Governance Reviews */}
+      <div className="mt-4 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Gyro Governance Reviews</span>
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+        </div>
+      </div>
+
+      {/* Reviews preview image in a glass card */}
+      <a
+        href="https://gyrogovernance.com/articles/?category=reviews"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <GlassCard className="mt-2 group" hover density="dense">
+          <div className="rounded-xl overflow-hidden -m-2">
+            <img
+              src={typeof chrome !== 'undefined' && chrome.runtime?.getURL
+                ? chrome.runtime.getURL('assets/media/gg_reviews.png')
+                : 'assets/media/gg_reviews.png'}
+              alt="Gyro Governance Reviews Overview"
+              className="w-full h-auto block transition-opacity duration-200 group-hover:opacity-90"
+            />
+          </div>
+        </GlassCard>
+      </a>
     </div>
   );
 };

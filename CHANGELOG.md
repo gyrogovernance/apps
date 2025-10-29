@@ -2,12 +2,47 @@
 
 All notable changes to the AI-Empowered Governance Apps browser extension will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [1.2] - 2025-10-28
+## [1.0.3] - 2025-10-29
+
+### Major Refactoring: Rapid Test (Formerly Detector)
+
+**Removed:**
+- **Deception Risk Score (DRS)**: Eliminated entire DRS calculation and all UI references. Removed from calculations.ts, tests, and all components.
+- **Transcript Storage**: Removed all transcript handling and storage. Enforced JSON-only workflow throughout.
+- **Legacy "Detector" Terminology**: Renamed all references from "Detector" to "Rapid Test" with 🔬 icon.
+
+**Renamed:**
+- **Folder**: `DetectorApp/` → `RapidTestApp/`
+- **Files**: `detector-export.ts` → `rapid-test-export.ts`
+- **Component**: `TruthSpectrumGauge` → `StructuralIntegrityGauge` (repurposed to display SI instead of DRS)
+
+**Updated Workflow:**
+- **Rapid Test**: Now correctly documents single analyst evaluation via JSON workflow (no dual analysts, no transcript storage)
+- **Journal App**: Correctly maintains dual analyst evaluation pattern
+
+**Terminology Corrections:**
+- Changed all "structural patterns" → "behavioral balance" across codebase
+- Updated SI definition to emphasize behavioral balance measurement
+- Removed em dashes throughout all files
+
+**Documentation Updates:**
+- `GyroGovernance_Apps_General_Specs.md`: Added Key Concepts, FAQ, Challenge sections; fixed Rapid Test workflow
+- `README.md`: Added Key Concepts, FAQ sections; corrected Rapid Test description
+- `USER_FLOW_AND_USABILITY.md`: Updated Detector → Rapid Test; corrected workflow patterns
+
+**Code Quality:**
+- All imports updated to new RapidTestApp folder structure
+- Removed ~50+ instances of DRS references
+- Updated ~25+ files with terminology corrections
+
+---
+
+## [1.0.3] - 2025-10-28
 
 ### Spec Compliance & Calculation Fixes
 - **SI Implementation**: Added optional weights parameter for spec-compliant weighted Hodge projection; fixed division-by-zero with epsilon protection
@@ -31,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2] - 2025-10-27
+## [1.0.2] - 2025-10-27
 
 ### Changed
 
@@ -55,11 +90,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1] - 2025-10-27
+## [1.0.1] - 2025-10-27
 
 ### Added
 
-**🛠️ Gadgets App - Unified AI Assessment Tools**
+**🤖 Gadgets App - Unified AI Assessment Tools**
 - Consolidated quick AI assessment tools into single workspace
 - Replaces standalone Detector App with integrated Gadgets workflow
 - Added 5 specialized gadgets for policy professionals:
@@ -95,7 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 **Navigation Updates**
-- WelcomeApp: "Detector" card replaced with "Gadgets" card (🛠️ icon)
+- WelcomeApp: "Detector" card replaced with "Gadgets" card (🤖 icon)
 - PersistentHeader: Updated to navigate to `'gadgets'` instead of `'detector'`
 - Notebook routing: Now routes `'gadgets'` app instead of `'detector'`
 - Quick Start Guide: Updated references from Detector to Gadgets

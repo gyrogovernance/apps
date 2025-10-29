@@ -21,10 +21,10 @@ const GADGETS: Array<{
   isTreatmentCategory?: boolean;
 }> = [
   {
-    id: 'detector',
-    icon: '🔍',
-    title: 'Detector',
-    description: 'Check AI conversations for deception'
+    id: 'rapid-test',
+    icon: '🔬',
+    title: 'Rapid Test',
+    description: 'Quick GyroDiagnostics metric computation'
   },
   {
     id: 'policy-audit',
@@ -91,7 +91,7 @@ const GadgetSelector: React.FC<GadgetSelectorProps> = ({
             key={gadget.id}
             hover
             onClick={() => handleSelectGadget(gadget.id)}
-            className="cursor-pointer"
+            className="cursor-pointer transition-transform hover:scale-[1.01] hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md"
           >
             <div className="p-2.5">
               <div className="flex items-center gap-2.5">
@@ -109,6 +109,35 @@ const GadgetSelector: React.FC<GadgetSelectorProps> = ({
           </GlassCard>
         ))}
       </div>
+
+      {/* Divider: Gyro Governance Reports */}
+      <div className="mt-6 mb-3">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Gyro Governance Reports</span>
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+        </div>
+      </div>
+
+      {/* Reports preview image in a glass card */}
+      <a 
+        href="https://gyrogovernance.com/articles/?category=reports" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <GlassCard className="mt-3 group" hover density="dense">
+          <div className="rounded-xl overflow-hidden -m-2">
+            <img
+              src={typeof chrome !== 'undefined' && chrome.runtime?.getURL
+                ? chrome.runtime.getURL('assets/media/aie_reports.png')
+                : 'assets/media/aie_reports.png'}
+              alt="Gyro Governance Reports Overview"
+              className="w-full h-auto block transition-opacity duration-200 group-hover:opacity-90"
+            />
+          </div>
+        </GlassCard>
+      </a>
 
       {/* Compact back button */}
       <div className="text-center mt-4">

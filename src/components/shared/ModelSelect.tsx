@@ -79,7 +79,10 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
             <span className="text-gray-400">▼</span>
           </Combobox.Button>
 
-          <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          <Combobox.Options 
+            className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-900 py-1 text-base shadow-xl ring-1 ring-black/10 border border-gray-200 dark:border-gray-700 focus:outline-none sm:text-sm"
+            style={{ zIndex: 40 }}
+          >
             {filteredOptions.length === 0 && query !== '' ? (
               <div className="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
                 No models found. Press Enter to use "{query}"

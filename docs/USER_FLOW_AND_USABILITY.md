@@ -39,7 +39,7 @@ The extension is structured around distinct **Apps** that function as sub-applic
 ```
 AI Inspector
 ├── 🏠 Welcome App (Home/Landing)
-├── 🛠️ Gadgets (Quick AI assessment tools)
+├── 🤖 Gadgets (Quick AI assessment tools)
 ├── 📋 Challenges (Challenge selection & creation)
 ├── 📓 Journal (Active session management & workflow)
 ├── 💡 Insights (Completed evaluations library)
@@ -68,7 +68,7 @@ AI Inspector
 │  [Hero Image: AI Inspector Logo]    │
 │                                     │
 │  Quick Start Guide (collapsible):   │
-│  ├─ 🛠️ Gadgets                      │
+│  ├─ 🤖 Gadgets                      │
 │  ├─ 📋 Challenges                   │
 │  ├─ 📓 Journal                      │
 │  ├─ 💡 Insights                     │
@@ -277,45 +277,39 @@ Report Section (Auto-Generated)
 
 ---
 
-### 3. Detector Flow (Rapid Analysis)
+### 3. Rapid Test Flow (Quick Assessment)
 
-**Purpose:** Quick deception detection (3-6 turns, ~10 minutes)
+**Purpose:** Quick quality assessment via JSON workflow (~5-10 minutes)
 
-**Flow: Welcome → Detector App**
+**Flow: Welcome → Gadgets App → Rapid Test**
 
 ```
-Detector App Workflow:
+Rapid Test Workflow (via Gadgets):
 ┌─────────────────────────────────┐
-│  Input View                     │
-│  ├─ Mode selection (Quick/Std)  │
-│  ├─ Transcript paste            │
-│  ├─ Auto-parsing (Turn markers) │
-│  └─ [Start Analysis]            │
-├─────────────────────────────────┤
-│  Analyst 1 View                 │
-│  ├─ Copy full prompt            │
-│  ├─ Paste JSON response         │
-│  └─ [Next]                      │
-├─────────────────────────────────┤
-│  Analyst 2 View                 │
-│  ├─ Short/full prompt options   │
-│  ├─ Paste JSON response         │
-│  └─ [View Results]              │
+│  Analysis Step                  │
+│  ├─ Copy analysis prompt        │
+│  ├─ Provide prompt to AI        │
+│  ├─ Receive JSON response       │
+│  ├─ Paste JSON into form        │
+│  └─ [Complete] → Results        │
 ├─────────────────────────────────┤
 │  Results View                   │
 │  ├─ Metrics dashboard           │
+│  ├─ Behavioral balance gauge    │
 │  ├─ Pathology analysis          │
 │  ├─ Export options              │
-│  └─ [New Analysis] or [Home]   │
+│  └─ [Save to Insights] or [Home]│
 └─────────────────────────────────┘
 ```
 
 **Key Differences from Full Evaluation:**
-- No epoch structure (single transcript)
-- No timer (user provides duration estimate)
+- No epoch structure (single JSON evaluation)
+- No timer (user provides duration estimate if needed)
+- Single analyst evaluation (one JSON response)
 - Ephemeral storage (uses `drafts` object, not `sessions`)
-- Results not saved to Insights library (one-off analysis)
-- Faster workflow (~10 min vs. ~35 min)
+- Results optionally saved to Insights library
+- Faster workflow (~5-10 min vs. ~35 min)
+- JSON-only workflow; no transcript storage
 
 ---
 
@@ -329,8 +323,8 @@ The Gadgets App provides four specialized assessment tools:
 
 #### Tool Categories:
 
-**Analysis Tools (3-Step Workflow):**
-- **🔍 Detector:** Check AI conversations for deception patterns
+**Analysis Tools (2-Step Workflow):**
+- **🔬 Rapid Test:** Quick quality assessment via JSON workflow
 - **📊 Policy Auditing:** Extract claims and evidence from documents
 - **📋 Policy Reporting:** Create executive summaries with attribution
 
@@ -340,29 +334,29 @@ The Gadgets App provides four specialized assessment tools:
 
 #### Gadgets Workflow Pattern:
 
-**For Analysis Tools (Detector, Policy Audit, Policy Report):**
+**For Analysis Tools (Rapid Test, Policy Audit, Policy Report):**
 
 ```
 Gadgets App Accordion Flow:
 ┌────────────────────────────────────────────────────┐
-│ Step 1: Participation                              │
-│ ├─ Task Prompt (copy to AI)                        │
-│ ├─ User pastes prompt into AI assistant            │
-│ └─ [Continue] → Step 2                             │
+│ Step 1: Analysis                                   │
+│ ├─ Analysis Prompt (copy to AI)                    │
+│ ├─ User provides prompt to AI assistant           │
+│ ├─ Receive JSON response from AI                  │
+│ ├─ Paste JSON into evaluation form                 │
+│ ├─ Real-time validation                           │
+│ └─ [Complete] → Step 2                             │
 ├────────────────────────────────────────────────────┤
-│ Step 2: Preparation                                 │
-│ ├─ Analyst evaluation form                         │
-│ ├─ Paste AI response (JSON format)                 │
-│ ├─ Real-time validation                            │
-│ └─ [Complete] → Step 3                             │
-├────────────────────────────────────────────────────┤
-│ Step 3: Provision                                  │
-│ ├─ Results dashboard (metrics, pathologies)        │
-│ ├─ Risk assessment gauge                           │
+│ Step 2: Results                                    │
+│ ├─ Metrics dashboard (QI, AR, SI)                │
+│ ├─ Behavioral balance gauge                       │
+│ ├─ Pathology analysis                             │
 │ ├─ Export options                                  │
 │ └─ [Save to Insights] or [New Gadget]              │
 └────────────────────────────────────────────────────┘
 ```
+
+**Note for Rapid Test:** Uses single analyst evaluation pattern (one JSON response). No task prompt step - just analysis prompt. JSON-only workflow; no transcript storage.
 
 **For Treatment Tools (Sanitization, Immunity Boost):**
 
@@ -390,9 +384,10 @@ Gadgets App Treatment Flow:
 
 **User Actions per Analysis Tool:**
 1. Select gadget type from selector screen
-2. Step 1: Copy task prompt, use in AI assistant
-3. Step 2: Paste AI response into evaluation form
-4. Step 3: Review results, optionally save to Insights
+2. Step 1 (Analysis): Copy analysis prompt, provide to AI, receive JSON, paste into evaluation form
+3. Step 2 (Results): Review metrics, gauge, pathologies; optionally save to Insights
+
+**Note for Rapid Test:** Single analyst evaluation. User provides analysis prompt referencing their conversation/topic, receives JSON, pastes for instant results.
 
 **User Actions per Treatment Tool:**
 1. Select treatment type from selector screen

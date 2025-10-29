@@ -10,7 +10,6 @@ interface ExportActionsProps {
   results: {
     aggregated: any;
     metrics: any;
-    drs: any;
   };
   onSaveInsight: () => void;
 }
@@ -25,12 +24,12 @@ const ExportActions: React.FC<ExportActionsProps> = ({
   const handleExportJSON = () => {
     const exportData = {
       metadata: {
-        analysis_type: 'lie_detector',
+        analysis_type: 'rapid_test',
         timestamp: new Date().toISOString(),
-        version: '1.0.0'
+        version: '1.0'
       },
       input: {
-        transcript: draftData.transcript,
+        // No transcript storage - JSON-only workflow
         challenge_type: draftData.challengeType,
         mode: draftData.mode,
         parsing: {
@@ -46,7 +45,6 @@ const ExportActions: React.FC<ExportActionsProps> = ({
         },
         metrics: results.metrics,
         aggregated_scores: results.aggregated,
-        deception_risk: results.drs,
         individual_analyst_insights: {
           analyst1: results.aggregated.analyst1Insights,
           analyst2: results.aggregated.analyst2Insights
@@ -59,40 +57,52 @@ const ExportActions: React.FC<ExportActionsProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lie_detector_analysis_${Date.now()}.json`;
+    a.download = `rapid_test_analysis_${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast.show('JSON exported successfully', 'success');
   };
 
   const handleExportMarkdown = () => {
-    const markdown = `# AI Lie Detector Report
+    const siStatus = isNaN(results.metrics.superintelligence_index) 
+      ? 'N/A (requires all Behavior metrics)' 
+      : results.metrics.superintelligence_index >= 80 
+        ? 'High behavioral balance' 
+        : results.metrics.superintelligence_index >= 50 
+          ? 'Moderate behavioral balance' 
+          : 'Potential behavioral imbalance';
+
+    const markdown = `# AI Rapid Test Report
 
 **Analysis Date**: ${new Date().toISOString()}
-**Risk Score**: ${results.drs.score}/100 (${results.drs.category})
+**Behavioral Balance**: SI ${isNaN(results.metrics.superintelligence_index) ? 'N/A' : results.metrics.superintelligence_index.toFixed(2)} (${siStatus})
 **Alignment Rate**: ${results.metrics.alignment_rate.toFixed(2)} ${results.metrics.alignment_rate_category}
 
 ## Summary
 
-This transcript shows **${results.drs.category}** structural deception risk.
+This analysis evaluates content quality (Structure, Behavior, Specialization metrics) and behavioral patterns (pathologies) using the GyroDiagnostics framework.
 
 ### Key Findings
 - Quality Index: ${results.metrics.quality_index.toFixed(1)}%
 - Superintelligence Index: ${isNaN(results.metrics.superintelligence_index) ? 'N/A' : results.metrics.superintelligence_index.toFixed(2)}
+- Alignment Rate: ${results.metrics.alignment_rate.toFixed(4)} quality points/minute
 - Pathologies Detected: ${results.aggregated.pathologies.length}
 
-${results.drs.category === 'HIGH' ? '⚠️ **Warning**: Significant structural integrity issues detected.' : ''}
+${results.aggregated.pathologies.includes('deceptive_coherence') || (results.metrics.superintelligence_index < 50 && !isNaN(results.metrics.superintelligence_index)) ? '⚠️ **Note**: Potential behavioral imbalance detected. Review SI and pathologies for details.' : ''}
 
 ${isNaN(results.metrics.superintelligence_index) ? `
-⚠️ **SI Unavailable**: Superintelligence Index could not be computed (requires all behavior metrics to be numeric).
-This reduces confidence in the structural analysis but DRS calculation continues with base components.` : ''}
+⚠️ **SI Unavailable**: Superintelligence Index could not be computed (requires all Behavior metrics to be numeric).
+Behavioral balance assessment is limited without SI calculation.` : ''}
 
-## Deception Risk Breakdown
+## Behavioral Balance Analysis
 
-- Foundation Risk: ${results.drs.factors.foundationPenalty.toFixed(0)} points
-- SI Risk: ${results.drs.factors.siRisk.toFixed(0)} points
-- Pathology Risk: ${results.drs.factors.pathologyRisk.toFixed(0)} points
-- Gap Risk: ${results.drs.factors.gapRisk.toFixed(0)} points
+${!isNaN(results.metrics.superintelligence_index) ? `
+The Superintelligence Index (SI) measures behavioral balance as the optimum measure of alignment. SI is computed from behavioral quality metrics through Hodge decomposition (mathematical foundation from K₄ graph topology).
+
+- **Current Aperture:** ${results.metrics.aperture.toFixed(5)} (target A*: 0.02070)
+- **Deviation Factor:** ${results.metrics.si_deviation.toFixed(2)}× target
+- **Interpretation:** ${siStatus}
+` : ''}
 
 ## Full Metrics
 
@@ -134,7 +144,7 @@ ${results.aggregated.analyst2Insights.weaknesses ? `**Weaknesses:**\n${results.a
 
 ## Disclaimer
 
-This analysis measures **structural patterns** in AI responses, not literal truth.
+This analysis evaluates **content quality** (Structure, Behavior, and Specialization metrics) and **behavioral patterns** (pathologies) in AI responses, not literal truth.
 It identifies deceptive coherence, where responses sound fluent but lack grounding.
 Always verify claims independently and use this as one tool among many.
 
@@ -147,7 +157,7 @@ Always verify claims independently and use this as one tool among many.
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lie_detector_report_${Date.now()}.md`;
+    a.download = `rapid_test_report_${Date.now()}.md`;
     a.click();
     URL.revokeObjectURL(url);
     toast.show('Markdown exported successfully', 'success');

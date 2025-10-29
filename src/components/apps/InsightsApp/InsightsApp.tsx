@@ -247,10 +247,10 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
     <div className="h-full flex flex-col">
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex space-x-8 px-6">
+        <nav className="flex px-3 gap-2 justify-center">
           <button
             onClick={() => setActiveTab('library')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2.5 px-2 border-b-2 font-medium text-xs whitespace-nowrap flex-1 text-center ${
               activeTab === 'library'
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -260,23 +260,23 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
           </button>
           <button
             onClick={() => setActiveTab('suites')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2.5 px-2 border-b-2 font-medium text-xs whitespace-nowrap flex-1 text-center ${
               activeTab === 'suites'
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            🎯 Suite Reports ({suitesCount})
+            🎯 Reports ({suitesCount})
           </button>
           <button
             onClick={() => setActiveTab('tracker')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2.5 px-2 border-b-2 font-medium text-xs whitespace-nowrap flex-1 text-center ${
               activeTab === 'tracker'
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            📊 Model Tracker
+            📊 AI Performance
           </button>
         </nav>
       </div>

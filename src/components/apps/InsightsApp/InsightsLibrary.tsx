@@ -146,16 +146,6 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
 
   return (
     <div className="h-full flex flex-col p-4">
-      {/* Header - Fixed */}
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <span>💡</span>
-          <span>Insights Library</span>
-        </h1>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-          {sortedInsights.length} of {allInsights.length} evaluations
-        </p>
-      </div>
 
       <GlassCard className="flex-1 flex flex-col overflow-hidden">
       {/* Filters - Fixed at top */}

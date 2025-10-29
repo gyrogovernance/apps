@@ -36,16 +36,19 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
                   </h4>
                   <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
                     <div>
-                      <strong>SI:</strong> Structural coherence measure
+                      <strong>QI (Quality Index):</strong> Weighted performance score across Structure, Behavior, and Specialization metrics
                     </div>
                     <div>
-                      <strong>Pathologies:</strong> Failure modes detected
+                      <strong>AR (Alignment Rate):</strong> Temporal efficiency metric (quality points per minute)
                     </div>
                     <div>
-                      <strong>Aperture:</strong> Balance metric (target 0.02070)
+                      <strong>SI (Superintelligence Index):</strong> Behavioral balance measure as the optimum measure of alignment. SI is computed from behavioral quality metrics via Hodge decomposition (mathematical foundation from K₄ graph topology). SI ≥80: High balance; SI ≥50: Moderate balance; SI &lt;50: Potential behavioral imbalance (per specs)
                     </div>
                     <div>
-                      <strong>Gap:</strong> Surface quality vs. foundations
+                      <strong>Aperture:</strong> Balance metric derived from cycle projection, target A* = 0.02070
+                    </div>
+                    <div>
+                      <strong>Pathologies:</strong> Behavioral/conversational failure modes detected (5 canonical types)
                     </div>
                   </div>
                 </div>
@@ -53,7 +56,7 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
           {/* Aperture and SI Information */}
           <div>
             <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Structural Coherence Analysis
+              Behavioral Balance Analysis
             </h4>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
@@ -87,7 +90,7 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
               <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
                   <strong>⚠️ SI Unavailable:</strong> Superintelligence Index could not be computed (requires all behavior metrics to be numeric).
-                  This reduces confidence in the structural analysis but DRS calculation continues with base components.
+                  Behavioral balance assessment is limited without SI calculation.
                 </p>
               </div>
             )}
@@ -119,7 +122,7 @@ const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({
                 superintelligence_index: metrics.superintelligence_index,
                 si_deviation: metrics.si_deviation,
                 aperture: metrics.aperture,
-                transcript_turns: draftData?.parsedResult?.turns?.length || 0,
+                turns_count: draftData?.parsedResult?.turns?.length || 0,
                 parsing_method: draftData?.parsedResult?.method || 'unknown',
                 analyst_models: {
                   analyst1: draftData?.model_analyst1 || 'Unknown',

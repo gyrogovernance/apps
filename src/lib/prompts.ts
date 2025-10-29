@@ -471,8 +471,8 @@ Evaluate carefully and provide honest scoring based on evidence in the transcrip
 }
 
 /**
- * Generate analyst prompt for Lie Detector workflow
- * Uses canonical GyroDiagnostics template adapted for deception detection
+ * Generate analyst prompt for Rapid Test workflow
+ * Uses canonical GyroDiagnostics template for behavioral quality assessment
  */
 export function generateDetectorAnalystPrompt(
   challengeType: ChallengeType = 'custom'
