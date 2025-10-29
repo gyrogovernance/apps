@@ -28,6 +28,13 @@
 
 ![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
 
+
+<div align="center">
+
+<a href="https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb"><img alt="Add to Chrome" height="36" src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white"></a>
+
+</div>
+
 **Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
 > **🎉 PUBLIC RELEASE v1.0**  
@@ -68,10 +75,18 @@ Communities and organizations require validation for AI-generated policy recomme
 
 ## 🚀 Quick Start (30 seconds)
 
-1. **Download**: Get the latest release from [Releases](https://github.com/gyrogovernance/apps/releases)
-2. **Extract**: Unzip to any folder
-3. **Install**: Open `chrome://extensions/` → Enable "Developer mode" → "Load unpacked" → Select folder
-4. **Launch**: Click extension icon in toolbar ✅
+<div align="center">
+
+<a href="https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb"><img alt="Add to Chrome" height="36" src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white"></a>
+
+</div>
+
+1. **Install from Store (recommended)**: [Add to Chrome](https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb)
+2. **Or Developer Install**:
+   - **Download**: Get the latest release from [Releases](https://github.com/gyrogovernance/apps/releases)
+   - **Extract**: Unzip to any folder
+   - **Load**: Open `chrome://extensions/` → Enable "Developer mode" → "Load unpacked" → Select folder
+3. **Launch**: Click extension icon in toolbar ✅
 
 ---
 
