@@ -29,7 +29,7 @@ AI-Empowered governance requires accessible validation for policy recommendation
 
 ## 🎯 Overview
 
-**GyroGovernance Apps** transforms AI conversations into validated governance insights through mathematical assessment. The platform enables communities, researchers, and policy makers to evaluate AI-generated solutions for UN Sustainable Development Goals and local challenges.
+**GyroGovernance Apps** transform AI conversations into validated governance insights through mathematical assessment. The platform enables communities, researchers, and policy makers to evaluate AI-generated solutions for UN Sustainable Development Goals and local challenges.
 
 ### Platform Capabilities
 

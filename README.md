@@ -1,11 +1,11 @@
 # AI-Empowered Governance Apps
 > **Gyroscopic Alignment Policy Development Lab**
 
-![AiE](/assets/gyrogovernance_app.png)
+![AiE](/assets/gyro_cover_apps.png)
 
 <div align="center">
 
-### G Y R O G O V E R N A N C E
+**G Y R O  - G O V E R N A N C E** 
 
 [![Home](/assets/menu/gyro_icon_home.svg)](https://gyrogovernance.com)
 [![Apps](/assets/menu/gyro_icon_apps.svg)](https://github.com/gyrogovernance/apps)
@@ -24,7 +24,6 @@
 
 ---
 
-![AI Inspector Browser Extension](/assets/ai_inspector_promo_transp.png)
 # 🔍 AI Inspector - Browser Extension
 
 ![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
