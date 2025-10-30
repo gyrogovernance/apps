@@ -7,12 +7,12 @@
 
 **G Y R O  - G O V E R N A N C E** 
 
-[![Home](/assets/menu/gyro_icon_home.svg)](https://gyrogovernance.com)
-[![Apps](/assets/menu/gyro_icon_apps.svg)](https://github.com/gyrogovernance/apps)
-[![Diagnostics](/assets/menu/gyro_icon_diagnostics.svg)](https://github.com/gyrogovernance/diagnostics)
-[![Tools](/assets/menu/gyro_icon_tools.svg)](https://github.com/gyrogovernance/tools)
-[![Science](/assets/menu/gyro_icon_science.svg)](https://github.com/gyrogovernance/science)
-[![Superintelligence](/assets/menu/gyro_icon_si.svg)](https://github.com/gyrogovernance/superintelligence)
+[![Home](/assets/menu/gg_icon_home.svg)](https://gyrogovernance.com)
+[![Apps](/assets/menu/gg_icon_apps.svg)](https://github.com/gyrogovernance/apps)
+[![Diagnostics](/assets/menu/gg_icon_diagnostics.svg)](https://github.com/gyrogovernance/diagnostics)
+[![Tools](/assets/menu/gg_icon_tools.svg)](https://github.com/gyrogovernance/tools)
+[![Science](/assets/menu/gg_icon_science.svg)](https://github.com/gyrogovernance/science)
+[![Superintelligence](/assets/menu/gg_icon_si.svg)](https://github.com/gyrogovernance/superintelligence)
 
 </div>
 
@@ -31,7 +31,7 @@
 
 <div align="center">
 
-<a href="https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb"><img alt="Add to Chrome" height="36" src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white"></a>
+<a href="https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb"><img alt="Add to Chrome" width="220" src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white"></a>
 
 </div>
 
