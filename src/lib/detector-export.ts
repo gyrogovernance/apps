@@ -1,8 +1,8 @@
-import { DetectorUIState } from '../types';
+import { RapidTestUIState } from '../types';
 import { formatPathologyName } from './text-utils';
 
-interface DetectorExportData {
-  draftData: DetectorUIState;
+interface RapidTestExportData {
+  draftData: RapidTestUIState;
   results: {
     aggregated: any;
     metrics: any;
@@ -12,9 +12,9 @@ interface DetectorExportData {
 /**
  * Export detector analysis as Markdown report
  */
-export function exportDetectorAsMarkdown(
-  draftData: DetectorUIState,
-  results: DetectorExportData['results']
+export function exportRapidTestAsMarkdown(
+  draftData: RapidTestUIState,
+  results: RapidTestExportData['results']
 ): string {
   const { aggregated, metrics } = results;
   
@@ -139,9 +139,9 @@ These metrics are evaluated through Hodge decomposition (mathematical foundation
 /**
  * Export detector analysis as JSON data
  */
-export function exportDetectorAsJSON(
-  draftData: DetectorUIState,
-  results: DetectorExportData['results']
+export function exportRapidTestAsJSON(
+  draftData: RapidTestUIState,
+  results: RapidTestExportData['results']
 ): string {
   const exportData = {
     metadata: {

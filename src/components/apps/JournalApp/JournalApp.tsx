@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useEffect } from 'react';
+import { useScrollToTop } from '../../../hooks/useScrollToTop';
 import { NotebookState } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
 import { getNextSection } from '../../../lib/session-utils';
@@ -25,20 +26,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
   onNavigateToSection
 }) => {
   // Scroll to top whenever the current section or active session changes
-  useEffect(() => {
-    const scrollToTop = () => {
-      const scrollableContainer = document.querySelector('.overflow-y-auto');
-      if (scrollableContainer) {
-        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    scrollToTop();
-    const timeoutId = setTimeout(scrollToTop, 50);
-    return () => clearTimeout(timeoutId);
-  }, [state.ui.currentSection, state.activeSessionId]);
+  useScrollToTop([state.ui.currentSection, state.activeSessionId]);
   const handleCloseSession = async (sessionId: string) => {
     try {
       const session = getSessionById(state, sessionId);

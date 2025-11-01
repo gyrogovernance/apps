@@ -19,14 +19,14 @@
 
 ## Executive Summary
 
-**AI Inspector** is a browser extension that implements the **GyroDiagnostics** evaluation methodology—a sophisticated framework for assessing AI model outputs through mathematical and governance-quality metrics. The application transforms complex evaluation protocols into an accessible, clipboard-based workflow that empowers users to conduct professional-grade AI model assessments without requiring API keys or technical infrastructure.
+**AI Inspector** is a browser extension that implements the **GyroDiagnostics** evaluation methodology, a sophisticated framework for assessing AI model outputs through mathematical and governance-quality metrics. The application transforms complex evaluation protocols into an accessible, clipboard-based workflow that empowers users to conduct professional-grade AI model assessments without requiring API keys or technical infrastructure.
 
 ### Key Characteristics:
-- **Primary Paradigm:** Multi-session workspace with app-based navigation
-- **Core Methodology:** Three "P"s flow (Participation → Preparation → Provision) + Quick Gadgets tools
+- **Primary Paradigm:** Multi-session workspace with 6 specialized apps
+- **Core Methodology:** Three "P"s flow (Participation → Preparation → Provision) + 5 specialized gadget tools
 - **Platform Approach:** Clipboard-based, platform-agnostic
 - **Target Duration:** 30-40 minutes per complete evaluation; 3-10 minutes for gadget tools
-- **Output:** Structured insights with QI, SI, and AR metrics + governance recommendations + rapid assessment results
+- **Output:** Structured insights with QI, SI, and AR metrics + governance recommendations + specialized assessments
 
 ---
 
@@ -39,12 +39,12 @@ The extension is structured around distinct **Apps** that function as sub-applic
 ```
 AI Inspector
 ├── 🏠 Welcome App (Home/Landing)
-├── 🤖 Gadgets (Quick AI assessment tools)
+├── 🤖 Gadgets (5 specialized AI assessment tools)
 ├── 📋 Challenges (Challenge selection & creation)
 ├── 📓 Journal (Active session management & workflow)
 ├── 💡 Insights (Completed evaluations library)
-├── 📖 Glossary (Terminology reference modal)
-└── ⚙️ Settings (Data management & preferences)
+├── 📖 Glossary (Terminology reference)
+└── ⚙️ Settings (Preferences & data management)
 ```
 
 ### Navigation Model
@@ -81,17 +81,19 @@ AI Inspector
 
 **User Actions:**
 1. User lands on Welcome App (default first screen)
-2. Views 6 app cards in 3x2 grid layout:
+2. Views app cards in 3x2 grid layout:
    - Row 1: Gadgets, Challenges
    - Row 2: Journal, Insights
    - Row 3: Glossary, Settings
-3. Reads Quick Start Guide (persistent across sessions via localStorage)
-4. Can import official GyroDiagnostics benchmark data or start custom evaluation
+3. Reads collapsible Quick Start Guide (state persists via localStorage)
+4. Can import official GyroDiagnostics benchmark results or start evaluation
+5. Resume active sessions or start new evaluation
 
 **Design Notes:**
-- Progressive disclosure: Guide is collapsible to reduce cognitive load
-- Badge system shows active sessions count
-- Visual hierarchy guides toward primary action: "Start New Evaluation"
+- Progressive disclosure: Guide collapses to reduce cognitive load
+- Badge system shows active/completed session counts
+- Resume/Start buttons provide clear primary actions
+- Official results import provides benchmark data for learning
 
 ---
 
@@ -151,17 +153,26 @@ The Journal App orchestrates the multi-stage evaluation process:
 ```
 Journal App Layout:
 ┌────────────────────────────────────────────────────┐
-│ [Session Tabs: Tab1 | Tab2 | + New]               │ ← Tab bar for multi-session
+│ [Session Tabs: Session1 | Session2 | + New]        │ ← Tab bar for multi-session
 ├────────────────────────────────────────────────────┤
-│ [Progress Dashboard: ████░░░ 3/7 complete]         │ ← Visual progress
+│ [Progress Dashboard: ████░░░ 3/7 complete]         │ ← 7-step visual progress
 ├────────────────────────────────────────────────────┤
-│ [Timer: ⏱️ 12:34]                                  │ ← Active during epochs
+│ [Timer: ⏱️ 12:34]                                  │ ← Active during epochs only
 ├────────────────────────────────────────────────────┤
 │                                                    │
 │  [Main Content: Current Section View]             │
 │                                                    │
 └────────────────────────────────────────────────────┘
 ```
+
+The Progress Dashboard shows 7 distinct stages:
+1. **Epoch 1** (10-15 min) - 6-turn synthesis phase
+2. **Analyst 1 - Epoch 1** (3-5 min) - First evaluation of Epoch 1
+3. **Analyst 2 - Epoch 1** (3-5 min) - Second evaluation of Epoch 1
+4. **Epoch 2** (10-15 min) - 6-turn synthesis phase using Epoch 1 model
+5. **Analyst 1 - Epoch 2** (3-5 min) - First evaluation of Epoch 2
+6. **Analyst 2 - Epoch 2** (3-5 min) - Second evaluation of Epoch 2
+7. **Report** (1 min) - Final metrics and insights generation
 
 ##### Stage 1: Epoch 1 (Synthesis)
 
@@ -187,9 +198,10 @@ Journal App Layout:
 - Word count + token estimate display
 - Turn summary shows previously captured turns
 - Draft auto-save (if enabled in settings)
-- Timer sync prevents data loss on navigation
+- Timer with auto-capture on completion/navigation (editable mm:ss format for precision)
+- Model context hint shown in header during analyst steps
 
-##### Stage 2: Analyst 1 - Epoch 1
+##### Stage 2: Analyst 1 - Epoch 1 (3-5 min)
 
 **Component:** `AnalystSection`
 
@@ -277,60 +289,24 @@ Report Section (Auto-Generated)
 
 ---
 
-### 3. Rapid Test Flow (Quick Assessment)
+### 3. Gadgets Flow (Quick Assessment Tools)
 
-**Purpose:** Quick quality assessment via JSON workflow (~5-10 minutes)
-
-**Flow: Welcome → Gadgets App → Rapid Test**
-
-```
-Rapid Test Workflow (via Gadgets):
-┌─────────────────────────────────┐
-│  Analysis Step                  │
-│  ├─ Copy analysis prompt        │
-│  ├─ Provide prompt to AI        │
-│  ├─ Receive JSON response       │
-│  ├─ Paste JSON into form        │
-│  └─ [Complete] → Results        │
-├─────────────────────────────────┤
-│  Results View                   │
-│  ├─ Metrics dashboard           │
-│  ├─ Behavioral balance gauge    │
-│  ├─ Pathology analysis          │
-│  ├─ Export options              │
-│  └─ [Save to Insights] or [Home]│
-└─────────────────────────────────┘
-```
-
-**Key Differences from Full Evaluation:**
-- No epoch structure (single JSON evaluation)
-- No timer (user provides duration estimate if needed)
-- Single analyst evaluation (one JSON response)
-- Ephemeral storage (uses `drafts` object, not `sessions`)
-- Results optionally saved to Insights library
-- Faster workflow (~5-10 min vs. ~35 min)
-- JSON-only workflow; no transcript storage
-
----
-
-### 4. Gadgets Flow (Quick Assessment Tools)
-
-**Purpose:** Rapid AI assessment tools for specialized use cases (3-10 minutes each)
+**Purpose:** Specialized AI assessment tools for different use cases (3-10 minutes each)
 
 **Flow: Welcome → Gadgets App → Tool Selection → Assessment Workflow**
 
-The Gadgets App provides four specialized assessment tools:
+The Gadgets App provides five specialized assessment tools:
 
 #### Tool Categories:
 
-**Analysis Tools (2-Step Workflow):**
-- **🔬 Rapid Test:** Quick quality assessment via JSON workflow
-- **📊 Policy Auditing:** Extract claims and evidence from documents
-- **📋 Policy Reporting:** Create executive summaries with attribution
+**Analysis Tools (3-Step Accordion Workflow):**
+- **🔬 Rapid Test:** Quick GyroDiagnostics metric computation
+- **📊 Policy Auditing:** Extract claims & evidence from documents
+- **📋 Policy Reporting:** Create executive synthesis with attribution
 
-**Treatment Tools (1-Step Workflow):**
-- **💊 Pathologies Immunity Boost:** Enhance content quality across 12 metrics
+**Treatment Tools (2-Step Workflow):**
 - **🦠 AI Infection Sanitization:** Remove hidden patterns and normalize text
+- **💊 Pathologies Immunity Boost:** Enhance content quality across 12 metrics
 
 #### Gadgets Workflow Pattern:
 
@@ -339,36 +315,39 @@ The Gadgets App provides four specialized assessment tools:
 ```
 Gadgets App Accordion Flow:
 ┌────────────────────────────────────────────────────┐
-│ Step 1: Analysis                                   │
-│ ├─ Analysis Prompt (copy to AI)                    │
+│ Step 1: Task Prompt                              │
+│ ├─ Task prompt (copy to AI)                       │
+│ ├─ User applies task in AI assistant              │
+│ └─ [Complete] → Step 2                            │
+├────────────────────────────────────────────────────┤
+│ Step 2: Analysis                                  │
+│ ├─ Analysis prompt (copy to AI)                   │
 │ ├─ User provides prompt to AI assistant           │
 │ ├─ Receive JSON response from AI                  │
-│ ├─ Paste JSON into evaluation form                 │
+│ ├─ Paste JSON into evaluation form                │
 │ ├─ Real-time validation                           │
-│ └─ [Complete] → Step 2                             │
+│ └─ [Complete] → Step 3                            │
 ├────────────────────────────────────────────────────┤
-│ Step 2: Results                                    │
+│ Step 3: Results                                   │
 │ ├─ Metrics dashboard (QI, AR, SI)                │
 │ ├─ Behavioral balance gauge                       │
 │ ├─ Pathology analysis                             │
-│ ├─ Export options                                  │
+│ ├─ Export options                                 │
 │ └─ [Save to Insights] or [New Gadget]              │
 └────────────────────────────────────────────────────┘
 ```
-
-**Note for Rapid Test:** Uses single analyst evaluation pattern (one JSON response). No task prompt step - just analysis prompt. JSON-only workflow; no transcript storage.
 
 **For Treatment Tools (Sanitization, Immunity Boost):**
 
 ```
 Gadgets App Treatment Flow:
 ┌────────────────────────────────────────────────────┐
-│ Step 1: Participation                              │
-│ ├─ Task Prompt (copy to AI)                        │
+│ Step 1: Task Prompt                              │
+│ ├─ Task prompt (copy to AI)                       │
 │ ├─ User applies treatment in AI assistant          │
 │ └─ [Complete] (No further analysis needed)         │
 ├────────────────────────────────────────────────────┤
-│ Treatment Complete Card                            │
+│ Treatment Complete Card                           │
 │ ├─ Confirmation message                            │
 │ ├─ Instructions for using improved output          │
 │ └─ [← Home] or [🔄 New Gadget]                      │
@@ -379,25 +358,12 @@ Gadgets App Treatment Flow:
 - **Draft-Based Storage:** Uses `drafts` object for ephemeral data
 - **No Session Persistence:** Results optional save to Insights library
 - **Flexible AI Usage:** Same or different AI models for different steps
-- **Progressive Disclosure:** Accordion interface prevents overwhelming
+- **Progressive Disclosure:** Accordion interface prevents information overload
 - **Copyable Prompts:** Pre-built prompts for each tool type
-
-**User Actions per Analysis Tool:**
-1. Select gadget type from selector screen
-2. Step 1 (Analysis): Copy analysis prompt, provide to AI, receive JSON, paste into evaluation form
-3. Step 2 (Results): Review metrics, gauge, pathologies; optionally save to Insights
-
-**Note for Rapid Test:** Single analyst evaluation. User provides analysis prompt referencing their conversation/topic, receives JSON, pastes for instant results.
-
-**User Actions per Treatment Tool:**
-1. Select treatment type from selector screen
-2. Step 1: Copy task prompt, use in AI assistant
-3. Receive confirmation of treatment completion
-4. Use improved output from AI assistant
 
 ---
 
-### 5. Insights Library Flow
+### 4. Insights Library Flow
 
 **Flow: Any App → Insights App**
 
@@ -443,19 +409,19 @@ Insights App (Tabbed Interface)
 
 ```
 Settings App
-├── Import/Export Section
-│   ├── Import JSON/Markdown
-│   ├── Import .zip (batch)
-│   └── Export all data
 ├── Preferences
 │   ├── Auto-save drafts (toggle)
-│   ├── Theme selection
-│   └── Timer persistence
-├── Keyboard Shortcuts
-│   └── Reference list
-└── Data Management
-    ├── View storage usage
-    └── [⚠️ Reset All Data]
+│   ├── Theme selection (Light/Dark/Auto)
+│   └── Default platform (ChatGPT/Claude/etc.)
+├── Import/Export Section
+│   ├── Import GyroDiagnostics .zip (batch)
+│   ├── Export all data
+│   └── View storage usage
+├── Data Management
+│   └── [⚠️ Reset All Data] (with confirmation)
+└── About
+    ├── Version info
+    └── Links to documentation
 ```
 
 ---
@@ -488,7 +454,7 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 
 **Opportunities:**
 - Could add estimated time remaining calculation
-- Draft save indicator could be more prominent
+- Draft save indicator shows brief toast on successful save
 
 ---
 
@@ -519,17 +485,18 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 
 **Strengths:**
 - **Multi-Session Support:** Users can pause and switch between evaluations
-- **Tab System:** Close/reopen sessions freely
+- **Tab System:** Close/reopen sessions freely (empty sessions auto-delete)
 - **Edit Scores:** Completed analyst evaluations can be re-edited
 - **Cancel Actions:** Modal confirmations for destructive actions
 - **Back Navigation:** "← Back" buttons at every stage
 - **Breadcrumb Trail:** Persistent header shows navigation path
+- **Model Context Hints:** Header shows synthesizer model during analyst steps
 
 **Weaknesses:**
-- **No Undo:** Once a turn is saved, it cannot be easily deleted/edited
-- **No Draft Deletion:** Drafts persist until overwritten
+- **No Turn Undo:** Once a turn is saved, it cannot be easily deleted/edited
+- **No Draft Deletion:** Drafts persist until overwritten or session completes
 - **Limited Turn Editing:** Must re-validate entire analyst JSON to fix one field
-- **Suite Commitment:** Starting a suite creates all 5 sessions (cannot cancel mid-suite easily)
+- **Suite Commitment:** Starting a suite creates all 5 sessions atomically
 
 **Recommendations:**
 - Add "Delete Last Turn" function in synthesis
@@ -567,26 +534,27 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 
 **Implementation:**
 - **Validation Before Action:**
-  - JSON validation with specific error messages
+  - JSON validation with specific error messages and examples
   - Word count checks before save
   - Model name required fields
   - Duration format validation (mm:ss)
 - **Confirmations:**
-  - Destructive actions (Reset All Data, Delete Session) require modal confirmation
-  - Confirmation includes description of consequences
+  - Destructive actions require modal confirmation with consequences
+  - Session close/pause decisions based on completion state
 - **Auto-Save:**
-  - Timer state persists across navigation
-  - Draft auto-save prevents data loss (optional)
-  - Session state atomic updates prevent race conditions
+  - Timer state persists across navigation with race condition prevention
+  - Draft auto-save with toast feedback (optional)
+  - Session state atomic updates with rollback on storage failure
+  - Formatted error messages via formatErrorForUser (user-friendly, non-technical)
 - **Constraints:**
   - Disabled buttons when prerequisites not met
-  - Read-only fields (Epoch 2 model)
-  - Sequential progress prevents skipping stages
+  - Read-only fields (Epoch 2 model inherits from Epoch 1)
+  - Sequential progress enforces methodology requirements
 
 **Examples:**
 - Cannot advance from analyst section without valid JSON
 - Cannot proceed from synthesis without all 6 turns
-- Suite atomically creates all sessions (no partial state)
+- Suite atomically creates all 5 sessions with error rollback
 
 **Opportunities:**
 - Could add confirmation before navigating away with unsaved draft
@@ -660,6 +628,7 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 - **Density:** Some views are information-dense (Report Section metrics)
 - **Icon Usage:** Emojis provide visual interest but may feel informal for enterprise use
 - **Welcome Screen:** Quick Start Guide section is quite long
+- **Extension Constraints:** Optimized for 360px width via compact cards and accordions
 
 **Recommendations:**
 - Consider optional compact view for metrics
@@ -703,18 +672,20 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 ### 10. Help and Documentation ✅ Good
 
 **Implementation:**
-- **Glossary App:** Dedicated terminology reference accessible from any screen
-- **Quick Start Guide:** Step-by-step walkthrough on Welcome screen
+- **Glossary App:** Dedicated terminology reference accessible from any screen (modal/non-disruptive overlay with searchable CGM-aligned terms)
+- **Quick Start Guide:** Collapsible step-by-step walkthrough on Welcome screen
 - **Contextual Instructions:** Every section has instructions at top
-- **Example Data:** JSON examples, prompt previews, sample insights
+- **Example Data:** JSON examples with validation, prompt previews, sample insights
 - **Helper Text:** Micro-copy under inputs explains purpose/format
-- **External Links:** Links to GitHub repo, methodology documentation
-- **Import Official Results:** Provides benchmark data for learning
+- **Model Context Hints:** Header shows synthesizer model during analyst steps
+- **External Links:** Links to GitHub repo, GyroGovernance site, methodology docs
+- **Import Official Results:** Provides benchmark data with progress feedback
 
 **Documentation Structure:**
 - `docs/` folder in repo (GyroDiagnostics_General_Specs.md, etc.)
-- In-app glossary (accessible via 📖 icon)
-- Quick Start collapsible on Welcome
+- In-app glossary with searchable terms
+- Persistent Quick Start guide (collapse state saved)
+- Official benchmark results for learning and comparison
 
 **Opportunities:**
 - Add video walkthrough or GIF tutorials
@@ -765,15 +736,23 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 **AI Inspector successfully transforms a complex, multi-stage AI evaluation methodology into an accessible browser extension with both comprehensive and specialized assessment tools.** The application demonstrates strong adherence to core usability principles, particularly in system status visibility, consistency, error prevention, and progressive disclosure.
 
 ### Key Achievements:
-- **Workflow Diversity:** Both comprehensive 7-stage evaluations and quick 3-step gadget tools
-- **Workflow Clarity:** Complex processes broken into digestible, progressive steps
-- **Flexibility:** Multi-session workspace plus specialized tools for diverse user needs
-- **Data Integrity:** Robust state management prevents data loss across all workflows
+- **Workflow Diversity:** Both comprehensive 7-stage evaluations and specialized 3-step gadget tools
+- **Workflow Clarity:** Complex GyroDiagnostics methodology distilled into clear, sequential stages
+- **Multi-Session Architecture:** Tab-based workspace supports parallel evaluations
+- **Data Integrity:** Atomic storage operations with rollback prevent data loss
 - **Accessibility:** Clipboard-based approach removes technical barriers
 - **Progressive Complexity:** Users can start with simple gadgets and graduate to full evaluations
+- **Error Recovery:** User-friendly error messages and graceful degradation
+
+### Recent Improvements (v2.1):
+- **Timer Reliability:** Fixed race conditions preventing duplicate duration captures
+- **State Persistence:** Added awaited storage with rollback on failure
+- **User Feedback:** Model context hints and draft save toasts
+- **Error Handling:** Consistent error formatting across async operations
+- **Model Context Hints:** Header displays synthesizer model during analyst steps (reduces recall burden)
 
 ### Primary Areas for Enhancement:
-- **User Control:** Add undo/edit capabilities for greater freedom
+- **User Control:** Add turn undo/edit capabilities for greater freedom
 - **Efficiency:** Implement keyboard shortcuts and batch operations
 - **Onboarding:** Create interactive first-time user experience
 - **Comparison:** Enable side-by-side insight analysis

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { NotebookState, Section, AppScreen, ChallengeType, Platform, INITIAL_STATE } from '../types';
 import { storage, sessions } from '../lib/storage';
+import { formatErrorForUser } from '../lib/error-utils';
 import { chromeAPI } from '../lib/chrome-mock';
 import { getSessionById } from '../lib/session-helpers';
 import { useToast } from './shared/Toast';
@@ -66,23 +67,29 @@ const Notebook: React.FC = () => {
     };
   }, []);
 
-  // Save state on changes - using functional setState to avoid race conditions
-  const updateState = (updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)) => {
-    setState(prev => {
-      const u = typeof updates === 'function' ? updates(prev) : updates;
+  // Save state on changes with awaited persistence; rollback UI if persistence fails
+  const updateState = async (
+    updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)
+  ) => {
+    const prevState = state;
+    const u = typeof updates === 'function' ? (updates as (p: NotebookState) => Partial<NotebookState>)(prevState) : updates;
+    const newState: NotebookState = {
+      ...prevState,
+      ...u,
+      ui: u.ui ? { ...prevState.ui, ...u.ui } : prevState.ui,
+      sessions: u.sessions !== undefined ? u.sessions : prevState.sessions,
+      activeSessionId: u.activeSessionId !== undefined ? u.activeSessionId : prevState.activeSessionId,
+    };
 
-      const newState: NotebookState = {
-        ...prev,
-        ...u,
-        ui: u.ui ? { ...prev.ui, ...u.ui } : prev.ui,
-        sessions: u.sessions !== undefined ? u.sessions : prev.sessions,
-        activeSessionId: u.activeSessionId !== undefined ? u.activeSessionId : prev.activeSessionId,
-      };
-
-      // Persist atomically with the merged state
-      storage.set(newState);
-      return newState;
-    });
+    try {
+      await storage.set(newState);
+      setState(newState);
+    } catch (error) {
+      const msg = formatErrorForUser(error);
+      toast.show(msg || 'Failed to persist changes', 'error');
+      // keep previous state
+      setState(prevState);
+    }
   };
 
   const navigateToApp = (app: AppScreen) => {
@@ -164,7 +171,7 @@ const Notebook: React.FC = () => {
       toast.show('Session created successfully', 'success');
     } catch (error) {
       console.error('Error creating session:', error);
-      toast.show('Failed to create session', 'error');
+      toast.show(formatErrorForUser(error), 'error');
     } finally {
       setOperationLoading(false);
     }
@@ -221,7 +228,7 @@ const Notebook: React.FC = () => {
       toast.show('GyroDiagnostics Suite created - 5 challenges ready', 'success');
     } catch (error) {
       console.error('Error starting Gyro Suite:', error);
-      toast.show('Failed to start Gyro Suite', 'error');
+      toast.show(formatErrorForUser(error), 'error');
     } finally {
       setOperationLoading(false);
     }

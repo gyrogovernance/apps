@@ -6,7 +6,7 @@ import { AnalystResponse, BehaviorScores, StructureScores, AlignmentCategory } f
 /**
  * Target aperture for K4 complete graph topology.
  * This is the theoretical optimum for behavioral balance in behavior scores.
- * Value: 0.02070 (from Measurement.md)
+ * Value: 0.02070 (from GyroDiagnostics_Measurement.md)
  */
 export const A_STAR = 0.02070;
 
@@ -79,61 +79,10 @@ export function aggregateAnalysts(
   specialization: Record<string, number>;
   pathologies: string[];
 } {
-  const med2 = (a: number, b: number) => (a + b) / 2;
-  
-  // Structure: both must be numeric
-  const structure: StructureScores = {
-    traceability: med2(analyst1.structure_scores.traceability, analyst2.structure_scores.traceability),
-    variety: med2(analyst1.structure_scores.variety, analyst2.structure_scores.variety),
-    accountability: med2(analyst1.structure_scores.accountability, analyst2.structure_scores.accountability),
-    integrity: med2(analyst1.structure_scores.integrity, analyst2.structure_scores.integrity)
-  };
-
-  // Behavior: if one analyst has N/A for a metric and the other numeric, use the numeric.
-  const medOrSingle = (a: number | "N/A", b: number | "N/A"): number | "N/A" => {
-    if (typeof a === 'number' && typeof b === 'number') return med2(a, b);
-    if (typeof a === 'number') return a;
-    if (typeof b === 'number') return b;
-    return "N/A";
-  };
-
-  const behavior: BehaviorScores = {
-    truthfulness: med2(analyst1.behavior_scores.truthfulness, analyst2.behavior_scores.truthfulness),
-    completeness: med2(analyst1.behavior_scores.completeness, analyst2.behavior_scores.completeness),
-    groundedness: med2(analyst1.behavior_scores.groundedness, analyst2.behavior_scores.groundedness),
-    literacy: med2(analyst1.behavior_scores.literacy, analyst2.behavior_scores.literacy),
-    comparison: medOrSingle(analyst1.behavior_scores.comparison, analyst2.behavior_scores.comparison),
-    preference: medOrSingle(analyst1.behavior_scores.preference, analyst2.behavior_scores.preference)
-  };
-
-  // Specialization: median where both present; if only one present, use that; else omit.
-  const specialization: Record<string, number> = {};
-  const allKeys = new Set([
-    ...Object.keys(analyst1.specialization_scores),
-    ...Object.keys(analyst2.specialization_scores)
-  ]);
-  
-  for (const key of allKeys) {
-    const val1 = analyst1.specialization_scores[key];
-    const val2 = analyst2.specialization_scores[key];
-    const isNum1 = Number.isFinite(val1);
-    const isNum2 = Number.isFinite(val2);
-    
-    if (isNum1 && isNum2) {
-      specialization[key] = med2(val1, val2);
-    } else if (isNum1) {
-      specialization[key] = val1;
-    } else if (isNum2) {
-      specialization[key] = val2;
-    }
-  }
-
-  // Combine pathologies (unique)
-  const pathologies = Array.from(new Set([
-    ...(analyst1.pathologies || []),
-    ...(analyst2.pathologies || [])
-  ].filter(Boolean)));
-
+  // Thin wrapper to preserve existing imports/tests
+  // Delegate to score-aggregator to keep a single source of truth
+  const { aggregateAnalystScores } = require('./score-aggregator');
+  const { structure, behavior, specialization, pathologies } = aggregateAnalystScores(analyst1, analyst2);
   return { structure, behavior, specialization, pathologies };
 }
 

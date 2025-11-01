@@ -105,7 +105,7 @@ Tests validate analyst score combination:
 All tests validate against the canonical specifications:
 
 - `docs/GyroDiagnostics_General_Specs.md` - Core methodology
-- `docs/Measurement.md` - Mathematical definitions
+- `docs/GyroDiagnostics_Measurement.md` - Mathematical definitions
 - `.cursorrules` - Canonical terminology and definitions
 
 ## Test Philosophy

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 import { NotebookState } from '../../types';
 import AppCard from '../shared/AppCard';
 import GlassCard from '../shared/GlassCard';
@@ -20,20 +21,7 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
   onResume 
 }) => {
   // Scroll to top when welcome app loads
-  useEffect(() => {
-    const scrollToTop = () => {
-      const scrollableContainer = document.querySelector('.overflow-y-auto');
-      if (scrollableContainer) {
-        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    scrollToTop();
-    const timeoutId = setTimeout(scrollToTop, 50);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useScrollToTop([]);
   const [isGuideOpen, setIsGuideOpen] = React.useState(true);
   const [isImporting, setIsImporting] = React.useState(false);
   const toast = useToast();
@@ -249,7 +237,7 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
                   </div>
                   <div className="p-2 bg-white/40 dark:bg-gray-800/60 rounded text-xs">
                     <div className="font-semibold text-red-700 dark:text-red-300 mb-0.5">🤖 Gadgets</div>
-                    <div className="text-gray-600 dark:text-gray-300">Quick AI assessment tools (Detector, Policy, Treatment)</div>
+                    <div className="text-gray-600 dark:text-gray-300">Quick AI assessment tools (Rapid Test, Policy Analysis, AI ContentTreatment)</div>
                   </div>
                 </div>
 

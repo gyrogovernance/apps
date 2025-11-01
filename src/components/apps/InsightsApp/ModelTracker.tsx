@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
+import { median, mostCommon } from '../../../lib/stats';
 import { GovernanceInsight } from '../../../types';
 import { getAlignmentColor, getQIColor } from '../../../lib/ui-utils';
 import { formatDuration, formatDate } from '../../../lib/export-utils';
 import GlassCard from '../../shared/GlassCard';
+import CoreMetricsRings from '../../shared/CoreMetricsRings';
 
 interface SuiteAggregate {
   suiteRunId: string;
@@ -65,22 +67,8 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
           (i.process.durations.epoch1_minutes + i.process.durations.epoch2_minutes)
         );
 
-        // Calculate medians
-        const median = (arr: number[]) => {
-          const sorted = [...arr].sort((a, b) => a - b);
-          const mid = Math.floor(sorted.length / 2);
-          return sorted.length % 2 === 0 
-            ? (sorted[mid - 1] + sorted[mid]) / 2 
-            : sorted[mid];
-        };
-
         // Find most common AR category
-        const arCategoryCounts = arCategories.reduce((acc, cat) => {
-          acc[cat] = (acc[cat] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-        const mostCommonARCategory = Object.entries(arCategoryCounts)
-          .sort(([,a], [,b]) => b - a)[0]?.[0] || 'UNKNOWN';
+        const mostCommonARCategory = mostCommon(arCategories) || 'UNKNOWN';
 
         return {
           suiteRunId,
@@ -200,108 +188,14 @@ export const ModelTracker: React.FC<ModelTrackerProps> = ({
                 </div>
 
                 {/* Progress Rings - Horizontal Row */}
-                <div className="flex items-center justify-center gap-6 mb-3">
-                  {/* QI Ring */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative">
-                      <svg width="48" height="48" className="transform -rotate-90">
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                          className="text-gray-200 dark:text-gray-700"
-                        />
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                          strokeDasharray={`${(suite.medianQI / 100) * 125.66} 125.66`}
-                          strokeLinecap="round"
-                          className={suite.medianQI >= 80 ? 'text-yellow-500' : suite.medianQI >= 60 ? 'text-yellow-500' : suite.medianQI >= 40 ? 'text-orange-500' : 'text-red-500'}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-base font-bold text-gray-700 dark:text-gray-300">
-                          {Math.round(suite.medianQI)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">QI</div>
-                  </div>
-
-                  {/* SI Ring */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative">
-                      <svg width="48" height="48" className="transform -rotate-90">
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                          className="text-gray-200 dark:text-gray-700"
-                        />
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                          strokeDasharray={`${Math.min((suite.medianSI / 15) * 125.66, 125.66)} 125.66`}
-                          strokeLinecap="round"
-                          className={suite.medianSI >= 12 ? 'text-blue-500' : suite.medianSI >= 8 ? 'text-blue-500' : suite.medianSI >= 4 ? 'text-yellow-500' : 'text-red-500'}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-base font-bold text-gray-700 dark:text-gray-300">
-                          {suite.medianSI.toFixed(1)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">SI</div>
-                  </div>
-
-                  {/* AR Ring */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative">
-                      <svg width="48" height="48" className="transform -rotate-90">
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                          className="text-gray-200 dark:text-gray-700"
-                        />
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                          strokeDasharray={`${Math.min((suite.medianAR / 0.5) * 125.66, 125.66)} 125.66`}
-                          strokeLinecap="round"
-                          className={suite.medianAR >= 0.3 ? 'text-yellow-500' : suite.medianAR >= 0.2 ? 'text-yellow-500' : suite.medianAR >= 0.1 ? 'text-yellow-500' : 'text-red-500'}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-base font-bold text-gray-700 dark:text-gray-300">
-                          {suite.medianAR.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">AR</div>
-                  </div>
+                <div className="flex items-center justify-center mb-3">
+                  <CoreMetricsRings
+                    qi={suite.medianQI}
+                    si={suite.medianSI}
+                    arCategory={suite.mostCommonARCategory as any}
+                    arRate={suite.medianAR}
+                    size="sm"
+                  />
                 </div>
 
                 {/* AR Category Badge */}

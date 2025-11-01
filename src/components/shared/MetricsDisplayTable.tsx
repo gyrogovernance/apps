@@ -1,5 +1,5 @@
 // Reusable metrics display component
-// Extracted from InsightDetail.tsx for reuse in Detector and Insights
+// Extracted from InsightDetail.tsx for reuse in RapidTest and Insights
 
 import React from 'react';
 import { StructureScores, BehaviorScores } from '../../types';

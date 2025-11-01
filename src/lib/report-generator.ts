@@ -13,6 +13,7 @@ import {
   A_STAR
 } from './calculations';
 import { behaviorScoresToArray } from './parsing';
+import { GADGET_CONSTANTS } from './constants';
 
 /**
  * Generate a complete GovernanceInsight from a finished session.
@@ -192,7 +193,7 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
 
 /**
  * Generate a GovernanceInsight from gadget evaluation data.
- * Simplified version for single-transcript evaluations (Detector, Gadgets).
+ * Simplified version for single-transcript evaluations (RapidTest, Gadgets).
  * 
  * @param draftData - The gadget draft containing transcript and analyst evaluations
  * @param gadgetType - Type of gadget used
@@ -236,9 +237,12 @@ export function generateInsightFromGadget(
   // Calculate QI
   const qualityIndex = calculateQualityIndex(structureAvg, behaviorAvg, specializationAvg);
 
-  // Calculate AR (if duration provided)
-  // For gadgets, default to 1 minute to enable SI calculation
-  const durationMinutes = draftData.durationMinutes || 1;
+  // Calculate AR (coerce duration and avoid falsy 0 → default)
+  // For gadgets, default to 6 minutes if not provided or ≤ 0
+  const parsedDuration = Number(draftData.durationMinutes);
+  const durationMinutes = Number.isFinite(parsedDuration) && parsedDuration > 0 
+    ? Math.max(parsedDuration, GADGET_CONSTANTS.DEFAULT_DURATION_MINUTES)
+    : GADGET_CONSTANTS.DEFAULT_DURATION_MINUTES;
   const { rate: alignmentRate, category: alignmentCategory } = calculateAlignmentRate(
     qualityIndex,
     durationMinutes
@@ -255,11 +259,11 @@ export function generateInsightFromGadget(
     deviation = result.deviation;
     aperture = result.aperture;
   } catch (error) {
-    // If SI calculation fails (e.g., due to N/A values), set to 0
+    // If SI calculation fails (e.g., due to N/A values), mark as unavailable
     console.warn('SI calculation skipped:', error);
-    si = 0;
-    deviation = 0;
-    aperture = A_STAR; // Default to target
+    si = NaN;
+    deviation = NaN;
+    aperture = A_STAR;
   }
 
   // Get pathologies
@@ -272,6 +276,20 @@ export function generateInsightFromGadget(
   const combinedInsights = analyst2 
     ? `${analyst1.insights}\n\n---\n\n${analyst2.insights}`
     : (analyst1.insights || '');
+
+  // Normalize tags helper for consistent style
+  const normalizeTags = (tags: string[]): string[] => {
+    const singularMap: Record<string, string> = {
+      gadgets: 'gadget',
+      'policy analysis': 'policy-analysis',
+      'policy-analysis': 'policy-analysis'
+    };
+    return Array.from(new Set(tags.map(t => {
+      const raw = (t || '').toString().trim().toLowerCase();
+      const kebab = raw.replace(/\s+/g, '-');
+      return singularMap[kebab] || kebab;
+    })));
+  };
 
   const insight: GovernanceInsight = {
     id: `gadget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -334,7 +352,10 @@ export function generateInsightFromGadget(
       license: 'CC0' as const,
       contributor: 'Anonymous'
     },
-    tags: [gadgetType, 'gadget'],
+    tags: (() => {
+      // Simplify: all gadget outputs belong to one library bucket
+      return normalizeTags(['policy-analyses']);
+    })(),
     starred: false,
     notes: ''
   };

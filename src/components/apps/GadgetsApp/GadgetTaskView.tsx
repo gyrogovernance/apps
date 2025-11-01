@@ -1,9 +1,8 @@
 import React from 'react';
-import { NotebookState, GadgetType, GadgetView } from '../../../types';
+import { NotebookState, GadgetType } from '../../../types';
 import { useToast } from '../../shared/Toast';
 import GlassCard from '../../shared/GlassCard';
 import { CopyableDetails } from '../../shared/CopyableDetails';
-import { POLICY_AUDIT_TASK, POLICY_REPORT_TASK, SANITIZE_TASK, IMMUNITY_BOOST_TASK } from '../../../lib/prompts';
 
 interface GadgetTaskViewProps {
   state: NotebookState;
@@ -11,41 +10,9 @@ interface GadgetTaskViewProps {
   gadgetType: GadgetType;
   onNext: () => void;
   onBack: () => void;
-  navigateToView: (view: GadgetView) => void;
 }
 
-const GADGET_INFO: Record<GadgetType, { title: string; description: string; taskPrompt: string; icon: string }> = {
-  'rapid-test': {
-    title: 'Rapid Test',
-    icon: '🔬',
-    description: 'Quick GyroDiagnostics metric computation',
-    taskPrompt: ''
-  },
-  'policy-audit': {
-    title: 'Policy Auditing',
-    icon: '📊',
-    description: 'Extract claims & evidence from documents',
-    taskPrompt: POLICY_AUDIT_TASK
-  },
-  'policy-report': {
-    title: 'Policy Reporting',
-    icon: '📋',
-    description: 'Create executive synthesis with attribution',
-    taskPrompt: POLICY_REPORT_TASK
-  },
-  'sanitize': {
-    title: 'AI Infections Sanitization',
-    icon: '🦠',
-    description: 'Remove hidden patterns and normalize text',
-    taskPrompt: SANITIZE_TASK
-  },
-  'immunity-boost': {
-    title: 'Pathologies Immunity Boost',
-    icon: '💊',
-    description: 'Enhance content quality across 12 metrics',
-    taskPrompt: IMMUNITY_BOOST_TASK
-  }
-};
+import { GADGETS } from '../../../lib/gadgets';
 
 const GadgetTaskView: React.FC<GadgetTaskViewProps> = ({
   state,
@@ -53,10 +20,10 @@ const GadgetTaskView: React.FC<GadgetTaskViewProps> = ({
   gadgetType,
   onNext,
   onBack,
-  navigateToView
+  
 }) => {
   const toast = useToast();
-  const gadgetInfo = GADGET_INFO[gadgetType];
+  const gadgetInfo = GADGETS[gadgetType];
   const draftKey = state.ui.gadgetDraftKey;
 
   const handleNext = async () => {

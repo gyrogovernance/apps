@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
+import { median, mostCommon } from '../../../lib/stats';
 import { GovernanceInsight } from '../../../types';
-import { insights as insightsStorage } from '../../../lib/storage';
 import { getAlignmentBadgeColor, getQIColor } from '../../../lib/ui-utils';
 import { formatDuration, formatDate } from '../../../lib/export-utils';
-import { useToast } from '../../shared/Toast';
 import GlassCard from '../../shared/GlassCard';
 
 interface SuiteAggregate {
@@ -33,7 +32,6 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
   onViewInsight,
   onExportSuite
 }) => {
-  const toast = useToast();
 
   // Group insights by suiteRunId and calculate aggregates
   const suites = useMemo(() => {
@@ -72,22 +70,8 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
           (i.process.durations.epoch1_minutes + i.process.durations.epoch2_minutes)
         );
 
-        // Calculate medians
-        const median = (arr: number[]) => {
-          const sorted = [...arr].sort((a, b) => a - b);
-          const mid = Math.floor(sorted.length / 2);
-          return sorted.length % 2 === 0 
-            ? (sorted[mid - 1] + sorted[mid]) / 2 
-            : sorted[mid];
-        };
-
         // Find most common AR category
-        const arCategoryCounts = arCategories.reduce((acc, cat) => {
-          acc[cat] = (acc[cat] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-        const mostCommonARCategory = Object.entries(arCategoryCounts)
-          .sort(([,a], [,b]) => b - a)[0]?.[0] || 'UNKNOWN';
+        const mostCommonARCategory = mostCommon(arCategories) || 'UNKNOWN';
 
         return {
           suiteRunId,

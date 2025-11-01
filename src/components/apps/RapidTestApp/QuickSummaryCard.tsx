@@ -1,8 +1,9 @@
 // Quick Summary Card - Shows behavioral balance summary based on SI and pathologies
 // Includes AR estimation with user override
 
-import React, { useState } from 'react';
+import React from 'react';
 import GlassCard from '../../shared/GlassCard';
+import CoreMetricsRings from '../../shared/CoreMetricsRings';
 
 interface QuickSummaryCardProps {
   metrics: {
@@ -97,111 +98,14 @@ const QuickSummaryCard: React.FC<QuickSummaryCardProps> = ({
       </div>
 
       {/* Quick Metrics with Progress Rings */}
-      <div className="flex justify-center gap-8 mb-4">
-        {/* QI Ring */}
-        <div className="flex flex-col items-center">
-          <div className="relative mb-2">
-            <svg width="48" height="48" className="transform -rotate-90">
-              <circle
-                cx="24"
-                cy="24"
-                r="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="text-gray-200 dark:text-gray-700"
-              />
-              <circle
-                cx="24"
-                cy="24"
-                r="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeDasharray={`${(metrics.quality_index / 100) * 113.1} 113.1`}
-                strokeLinecap="round"
-                className={metrics.quality_index >= 80 ? 'text-green-500' : metrics.quality_index >= 60 ? 'text-yellow-500' : metrics.quality_index >= 40 ? 'text-orange-500' : 'text-red-500'}
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                {Math.round(metrics.quality_index)}
-              </span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">QI</div>
-        </div>
-
-        {/* SI Ring */}
-        <div className="flex flex-col items-center">
-          <div className="relative mb-2">
-            <svg width="48" height="48" className="transform -rotate-90">
-              <circle
-                cx="24"
-                cy="24"
-                r="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="text-gray-200 dark:text-gray-700"
-              />
-              <circle
-                cx="24"
-                cy="24"
-                r="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeDasharray={`${Math.min((metrics.superintelligence_index / 100) * 113.1, 113.1)} 113.1`}
-                strokeLinecap="round"
-                className={metrics.superintelligence_index >= 80 ? 'text-purple-500' : metrics.superintelligence_index >= 50 ? 'text-blue-500' : metrics.superintelligence_index >= 25 ? 'text-yellow-500' : 'text-red-500'}
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                {isNaN(metrics.superintelligence_index) ? 'N/A' : metrics.superintelligence_index.toFixed(1)}
-              </span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">SI</div>
-        </div>
-
-        {/* AR Ring */}
-        <div className="flex flex-col items-center">
-          <div className="relative mb-2">
-            <svg width="48" height="48" className="transform -rotate-90">
-              <circle
-                cx="24"
-                cy="24"
-                r="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="text-gray-200 dark:text-gray-700"
-              />
-              <circle
-                cx="24"
-                cy="24"
-                r="18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeDasharray={`${Math.min((metrics.alignment_rate / 0.5) * 113.1, 113.1)} 113.1`}
-                strokeLinecap="round"
-                className={metrics.alignment_rate >= 0.3 ? 'text-emerald-500' : metrics.alignment_rate >= 0.2 ? 'text-green-500' : metrics.alignment_rate >= 0.1 ? 'text-yellow-500' : 'text-red-500'}
-              />
-              {metrics.alignment_rate > 0.5 && (
-                <title>AR capped at 0.5 for display</title>
-              )}
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                {metrics.alignment_rate.toFixed(2)}
-              </span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">AR</div>
-        </div>
+      <div className="flex justify-center mb-4">
+        <CoreMetricsRings 
+          qi={metrics.quality_index}
+          si={isNaN(metrics.superintelligence_index) ? null : metrics.superintelligence_index}
+          arCategory={metrics.alignment_rate_category as any}
+          arRate={metrics.alignment_rate}
+          size="sm"
+        />
       </div>
 
       {/* AR Category Badge */}

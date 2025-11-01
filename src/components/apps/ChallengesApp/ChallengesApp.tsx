@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useScrollToTop } from '../../../hooks/useScrollToTop';
 import { NotebookState, ChallengesView, ChallengeType, Platform } from '../../../types';
 import { getChallengeById } from '../../../lib/challenges';
 import TypeSelector from './TypeSelector';
@@ -28,20 +29,7 @@ const ChallengesApp: React.FC<ChallengesAppProps> = ({
   const currentView = state.ui.challengesView || 'select-type';
 
   // Scroll to top whenever the challenges view changes
-  useEffect(() => {
-    const scrollToTop = () => {
-      const scrollableContainer = document.querySelector('.overflow-y-auto');
-      if (scrollableContainer) {
-        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    scrollToTop();
-    const timeoutId = setTimeout(scrollToTop, 50);
-    return () => clearTimeout(timeoutId);
-  }, [currentView]);
+  useScrollToTop([currentView]);
 
   const navigateToView = (view: ChallengesView) => {
     onUpdate(prev => ({

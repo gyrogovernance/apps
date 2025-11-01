@@ -1,9 +1,10 @@
 // Reusable analyst evaluation form component
-// Extracted from AnalystSection.tsx for reuse in Detector and GyroDiagnostics
+// Extracted from AnalystSection.tsx for reuse in RapidTest and GyroDiagnostics
 
 import React, { useState, useEffect } from 'react';
+import { UNSPECIFIED_MODEL } from '../../lib/model-list';
 import { ChallengeType, AnalystResponse } from '../../types';
-import { generateAnalystPrompt, generateDetectorAnalystPrompt } from '../../lib/prompts';
+import { generateAnalystPrompt, generateRapidTestAnalystPrompt } from '../../lib/prompts';
 import { validateAnalystJSON } from '../../lib/parsing';
 import { useToast } from './Toast';
 import { useDrafts } from '../../hooks/useDrafts';
@@ -17,7 +18,7 @@ interface AnalystEvaluationFormProps {
   onComplete: (evaluation: AnalystResponse, modelName: string) => void;
   onBack?: () => void;
   existingEvaluation?: AnalystResponse; // For edit mode
-  mode?: 'detector' | 'standard'; // Detector uses shorter prompt
+  mode?: 'detector' | 'standard'; // RapidTest uses shorter prompt
   sessionId?: string; // For draft storage
   draftKey?: string; // For draft storage
   className?: string; // Additional className for wrapper
@@ -47,8 +48,10 @@ const AnalystEvaluationForm: React.FC<AnalystEvaluationFormProps> = ({
 }) => {
   const toast = useToast();
   
-  const [jsonInput, setJsonInput] = useState('');
-  const [modelName, setModelName] = useState(defaultModelName || 'Unspecified');
+  const draftEnabled = Boolean(sessionId && draftKey);
+  const draftsHook = draftEnabled ? useDrafts({ sessionId: sessionId!, key: draftKey!, enabled: true }) : null;
+  const [jsonInput, setJsonInput] = draftsHook ? [draftsHook.value as string, draftsHook.setValue as React.Dispatch<React.SetStateAction<string>>] : useState('');
+  const [modelName, setModelName] = useState(defaultModelName || UNSPECIFIED_MODEL.value);
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     errors: string[];
@@ -64,13 +67,13 @@ const AnalystEvaluationForm: React.FC<AnalystEvaluationFormProps> = ({
       setValidationResult(null);
       setIsEditing(false);
       // Clear the JSON input when switching analysts
-      setJsonInput('');
+      if (!draftsHook) setJsonInput('');
     }
   }, [analystNumber, isComplete]);
 
   // Sync model name with defaultModelName when it changes (for gadgets)
   useEffect(() => {
-    if (defaultModelName && defaultModelName !== 'Unspecified') {
+    if (defaultModelName && defaultModelName !== UNSPECIFIED_MODEL.value) {
       setModelName(defaultModelName);
     }
   }, [defaultModelName]);
@@ -95,10 +98,10 @@ const AnalystEvaluationForm: React.FC<AnalystEvaluationFormProps> = ({
       return;
     }
     
-    // Allow submission with empty or "Unspecified" model
-    const finalModelName = (modelName.trim() || 'Unspecified');
+    // Allow submission with empty or unspecified model
+    const finalModelName = (modelName.trim() || UNSPECIFIED_MODEL.value);
     if (!modelName.trim() || modelName.trim() === '') {
-      setModelName('Unspecified');
+      setModelName(UNSPECIFIED_MODEL.value);
     }
     
     const result = validateAnalystJSON(jsonInput, challengeType);
@@ -121,7 +124,7 @@ const AnalystEvaluationForm: React.FC<AnalystEvaluationFormProps> = ({
 
   // Generate appropriate prompt based on mode
   const analystPrompt = mode === 'detector'
-    ? generateDetectorAnalystPrompt(challengeType)
+    ? generateRapidTestAnalystPrompt(challengeType)
     : generateAnalystPrompt([transcript], challengeType);
 
   const showForm = !isComplete || isEditing;
@@ -278,7 +281,7 @@ const AnalystEvaluationForm: React.FC<AnalystEvaluationFormProps> = ({
                 Paste JSON to continue
               </p>
             )}
-            {jsonInput.trim() && modelName.trim() && modelName !== 'Unspecified' ? null : jsonInput.trim() && (
+            {jsonInput.trim() && modelName.trim() && modelName !== UNSPECIFIED_MODEL.value ? null : jsonInput.trim() && (
               <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
                 ⚠️ Tip: Select your AI model for better insights tracking (optional - you can proceed with Unspecified)
               </p>

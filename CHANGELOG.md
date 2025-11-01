@@ -7,7 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.3] - 2025-10-29
+## [1.0.4] - 2025-10-01
+
+### Changed
+- Started extensive tests
+- Improved Prompts
+
+---
+
+## [1.0.3] - 2025-10-30
+
+### Changed
+- SmartTooltip: lighter background, rounded border, subtle margin (bottom/sides), and shadow for better readability in sidebar
+- GadgetAccordion: SI gauge shows alignment category label (no numeric), medium size to prevent overlap; Results no longer collapses when completing Analysis
+- Guided instructions (Rapid Test): clarified Step 1/Step 2 copy; moved benefits into guide and added metrics note after both steps
+- Consolidated ring visuals: replaced inline metric rings with shared component in GadgetAccordion, ModelTracker, and Rapid Test QuickSummary
+- Unified analyst aggregation: `calculations.aggregateAnalysts` now delegates to `score-aggregator.aggregateAnalystScores` (single source of truth)
+- Centralized Gadget metadata in `src/lib/gadgets.ts`; updated Accordion/Selector/TaskView/Results to consume it
+- Normalized SI gauge in `Insights/ModelTracker` to 0–100 with thresholds (≥80 green, ≥50 yellow)
+- Fixed Settings export median bug (two-value median now averaged correctly)
+- Reused detector export builders in Rapid Test (`ExportActions` uses `exportDetectorAsMarkdown/JSON`)
+- Restored drafts in `AnalystEvaluationForm` via `useDrafts` when `sessionId`/`draftKey` present
+- SI in gadget insights now returns `NaN` (not 0) when behavior N/A; aperture stays `A_STAR`
+- Removed duplicate SI card in `GlossaryApp`
+- Added small `stats.ts` (median, mostCommon) and refactored Insights views to use it
+- Added `useScrollToTop` hook; replaced repeated effects in `InsightsApp`, `SettingsApp`, `JournalApp`, `ChallengesApp`, `WelcomeApp`
+- Made `CopyableDetails` uncontrolled (internal open state) to respect user toggles
+
+### Fixed
+- `lib/gadgets.ts` now imports prompts from `./prompts` (was metric-definitions)
+- `GadgetTaskView` uses `GADGETS[gadgetType]` (removed stale `GADGET_INFO` reference)
+- Glossary AR categories corrected to spec: VALID (0.03–0.15 /min), SUPERFICIAL (>0.15 /min), SLOW (<0.03 /min)
+- QI ring color thresholds unified (≥80 green, ≥60 yellow, ≥40 orange, else red)
+- Removed unused imports in `SuiteReports`, `GadgetSelector`, `GadgetAccordion`
+- Replaced hard-coded 'Unspecified' with `UNSPECIFIED_MODEL.value` across components
+- Transcript parser method naming: `parseByTurnLabel` now reports `turn_labels` (clarity vs. `turn_markers`)
+
+### Removed
+- Deleted unused legacy `GadgetResults.tsx` (dual-analyst expectations no longer apply)
+
+### Previous (2025-10-29)
 
 ### Major Refactoring: Rapid Test (Formerly Detector)
 
@@ -93,6 +132,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2025-10-27
 
 ### Added
+- CoreMetricsRings component (QI/SI/AR rings, two-line labels, tooltips) in `src/components/shared/CoreMetricsRings.tsx`
+- Prompt update: analyst `insights` must include "## Actionable Recommendations" (3–5 items) in `src/lib/prompts.ts`
 
 **🤖 Gadgets App - Unified AI Assessment Tools**
 - Consolidated quick AI assessment tools into single workspace
@@ -192,7 +233,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `transcript-parser.ts` - Multi-strategy transcript parsing with confidence scoring
 - `score-aggregator.ts` - Centralized analyst score aggregation and quality metrics
 - `calculateDeceptionRiskScore()` - Core DRS calculation in `calculations.ts`
-- `generateDetectorAnalystPrompt()` - Specialized prompt for deception analysis
+- `generateRapidTestAnalystPrompt()` - Specialized prompt for deception analysis
 
 **Navigation Integration**
 - Added Detector card to WelcomeApp with 🔍 icon

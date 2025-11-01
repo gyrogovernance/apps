@@ -32,3 +32,10 @@ export const SESSION_CONSTANTS = {
   ANALYSTS_PER_EPOCH: 2
 } as const;
 
+/**
+ * Gadget Defaults
+ */
+export const GADGET_CONSTANTS = {
+  DEFAULT_DURATION_MINUTES: 12
+} as const;
+

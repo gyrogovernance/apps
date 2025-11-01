@@ -5,8 +5,8 @@ export type AppScreen = 'welcome' | 'challenges' | 'journal' | 'insights' | 'set
 export type ChallengesView = 'select-type' | 'gyro-suite' | 'sdg-gallery' | 'custom-builder' | 'prompt-workshop';
 export type JournalView = 'home' | 'session' | 'active-session' | 'synthesis' | 'analysis';
 export type InsightsView = 'library' | 'detail' | 'comparison' | 'suites' | 'tracker';
-export type DetectorView = 'input' | 'analyst1' | 'analyst2' | 'results';
-export type DetectorMode = 'quick' | 'standard' | 'custom';
+export type RapidTestView = 'input' | 'analyst1' | 'analyst2' | 'results';
+export type RapidTestMode = 'quick' | 'standard' | 'custom';
 export type GadgetView = 'selector' | 'treatment-selector' | 'accordion';
 export type GadgetType = 'rapid-test' | 'policy-audit' | 'policy-report' | 'sanitize' | 'immunity-boost';
 
@@ -19,7 +19,7 @@ export type AlignmentCategory = 'VALID' | 'SUPERFICIAL' | 'SLOW';
 export type SessionStatus = 'active' | 'paused' | 'analyzing' | 'complete';
 export type EpochStatus = 'pending' | 'in-progress' | 'complete';
 
-// Lie Detector types
+// Lie RapidTest types
 export interface TranscriptParseResult {
   turns: Turn[];
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -106,7 +106,7 @@ export interface Session {
 }
 
 // UI State for detector workflow (ephemeral, not stored)
-export interface DetectorUIState {
+export interface RapidTestUIState {
   transcript: string;
   parsedResult: TranscriptParseResult | null;
   analyst1?: AnalystResponse;
@@ -138,7 +138,8 @@ export interface NotebookState {
     challengesView?: ChallengesView;
     journalView?: JournalView;
     insightsView?: InsightsView;
-    detectorView?: DetectorView; // Added for Detector app navigation
+    pendingInsightId?: string; // If set, InsightsApp will open this insight in detail view
+    detectorView?: RapidTestView; // Added for RapidTest app navigation
     gadgetView?: GadgetView; // Added for Gadgets app navigation
     gadgetType?: GadgetType; // Track which gadget is active
     gadgetDraftKey?: string; // Track active gadget draft

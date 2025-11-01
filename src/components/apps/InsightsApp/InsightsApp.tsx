@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { median } from '../../../lib/stats';
 import { NotebookState, InsightsView, GovernanceInsight } from '../../../types';
 import { insights as insightsStorage } from '../../../lib/storage';
 import { downloadFile, formatDate, formatDuration } from '../../../lib/export-utils';
@@ -7,6 +8,7 @@ import InsightsLibrary from './InsightsLibrary';
 import InsightDetail from './InsightDetail';
 import { SuiteReports } from './SuiteReports';
 import { ModelTracker } from './ModelTracker';
+import { useScrollToTop } from '../../../hooks/useScrollToTop';
 
 interface InsightsAppProps {
   state: NotebookState;
@@ -20,26 +22,22 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
   const [selectedInsightId, setSelectedInsightId] = useState<string | null>(null);
 
   // Scroll to top whenever the insights view or selected insight changes
-  useEffect(() => {
-    const scrollToTop = () => {
-      const scrollableContainer = document.querySelector('.overflow-y-auto');
-      if (scrollableContainer) {
-        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    scrollToTop();
-    const timeoutId = setTimeout(scrollToTop, 50);
-    return () => clearTimeout(timeoutId);
-  }, [state.ui.insightsView, selectedInsightId]);
+  useScrollToTop([state.ui.insightsView, selectedInsightId]);
   const [selectedInsight, setSelectedInsight] = useState<GovernanceInsight | null>(null);
   const [allInsights, setAllInsights] = useState<GovernanceInsight[]>([]);
   const [activeTab, setActiveTab] = useState<InsightsTab>('library');
   const toast = useToast();
 
   const currentView = state.ui.insightsView || 'library';
+
+  // If another app requests opening a specific insight, honor it
+  useEffect(() => {
+    const pendingId = state.ui.pendingInsightId;
+    if (pendingId) {
+      setSelectedInsightId(pendingId);
+      onUpdate(prev => ({ ui: { ...prev.ui, pendingInsightId: undefined, insightsView: 'detail' } }));
+    }
+  }, [state.ui.pendingInsightId]);
 
   // Load all insights for suite grouping
   useEffect(() => {
@@ -89,12 +87,6 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
       const sis = sortedInsights.map(i => i.quality.superintelligence_index);
       const ars = sortedInsights.map(i => i.quality.alignment_rate);
       
-      const median = (arr: number[]) => {
-        const sorted = [...arr].sort((a, b) => a - b);
-        const mid = Math.floor(sorted.length / 2);
-        return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-      };
-
       const medianQI = median(qis);
       const medianSI = median(sis);
       const medianAR = median(ars);
@@ -259,16 +251,6 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
             📖 Library ({allInsights.length})
           </button>
           <button
-            onClick={() => setActiveTab('suites')}
-            className={`py-2.5 px-2 border-b-2 font-medium text-xs whitespace-nowrap flex-1 text-center ${
-              activeTab === 'suites'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            🎯 Reports ({suitesCount})
-          </button>
-          <button
             onClick={() => setActiveTab('tracker')}
             className={`py-2.5 px-2 border-b-2 font-medium text-xs whitespace-nowrap flex-1 text-center ${
               activeTab === 'tracker'
@@ -277,6 +259,16 @@ const InsightsApp: React.FC<InsightsAppProps> = ({ state, onUpdate }) => {
             }`}
           >
             📊 AI Performance
+          </button>
+          <button
+            onClick={() => setActiveTab('suites')}
+            className={`py-2.5 px-2 border-b-2 font-medium text-xs whitespace-nowrap flex-1 text-center ${
+              activeTab === 'suites'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            🎯 Reports ({suitesCount})
           </button>
         </nav>
       </div>

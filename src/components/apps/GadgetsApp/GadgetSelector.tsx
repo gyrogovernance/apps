@@ -2,9 +2,7 @@
 
 import React from 'react';
 import { NotebookState, GadgetType, GadgetView } from '../../../types';
-import { CopyableDetails } from '../../shared/CopyableDetails';
 import GlassCard from '../../shared/GlassCard';
-import { POLICY_AUDIT_TASK, POLICY_REPORT_TASK, SANITIZE_TASK, IMMUNITY_BOOST_TASK } from '../../../lib/prompts';
 
 interface GadgetSelectorProps {
   state: NotebookState;
@@ -13,39 +11,19 @@ interface GadgetSelectorProps {
   navigateToView: (view: GadgetView) => void;
 }
 
-const GADGETS: Array<{
-  id: GadgetType;
-  icon: string;
-  title: string;
-  description: string;
-  isTreatmentCategory?: boolean;
-}> = [
-  {
-    id: 'rapid-test',
-    icon: '🔬',
-    title: 'Rapid Test',
-    description: 'Quick GyroDiagnostics metric computation'
-  },
-  {
-    id: 'policy-audit',
-    icon: '📊',
-    title: 'Policy Auditing',
-    description: 'Extract claims & evidence'
-  },
-  {
-    id: 'policy-report',
-    icon: '📋',
-    title: 'Policy Reporting',
-    description: 'Create executive summary'
-  },
-  {
-    id: 'treatment' as any, // Special case for treatment category
-    icon: '💊',
-    title: 'Treatment',
-    description: 'Improve content quality',
-    isTreatmentCategory: true
-  }
-];
+import { GADGETS as GADGET_MAP } from '../../../lib/gadgets';
+
+const ANALYSIS_GADGETS = (
+  Object.entries(GADGET_MAP)
+    .filter(([, g]) => g.isAnalysis)
+    .map(([id, g]) => ({ id: id as GadgetType, icon: g.icon, title: g.title, description: g.description }))
+);
+
+const TREATMENT_GADGETS = (
+  Object.entries(GADGET_MAP)
+    .filter(([, g]) => !g.isAnalysis)
+    .map(([id, g]) => ({ id: id as GadgetType, icon: g.icon, title: g.title, description: g.description }))
+);
 
 const GadgetSelector: React.FC<GadgetSelectorProps> = ({
   state,
@@ -53,12 +31,7 @@ const GadgetSelector: React.FC<GadgetSelectorProps> = ({
   onNavigateHome,
   navigateToView
 }) => {
-  const handleSelectGadget = (gadgetType: GadgetType | 'treatment') => {
-    if (gadgetType === 'treatment') {
-      // Navigate to treatment selector
-      navigateToView('treatment-selector');
-      return;
-    }
+  const handleSelectGadget = (gadgetType: GadgetType) => {
 
     // Create a new draft for this gadget run
     const draftTimestamp = Date.now();
@@ -84,9 +57,12 @@ const GadgetSelector: React.FC<GadgetSelectorProps> = ({
   return (
     <div className="w-full px-3 py-4">
 
-      {/* Single column, compact cards */}
+      {/* Analysis Gadgets */}
+      <div className="px-1 mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        Analysis
+      </div>
       <div className="space-y-3">
-        {GADGETS.map(gadget => (
+        {ANALYSIS_GADGETS.map(gadget => (
           <GlassCard
             key={gadget.id}
             hover
@@ -109,6 +85,39 @@ const GadgetSelector: React.FC<GadgetSelectorProps> = ({
           </GlassCard>
         ))}
       </div>
+
+      {/* Treatments Label and List */}
+      {TREATMENT_GADGETS.length > 0 && (
+        <div className="mt-5">
+          <div className="px-1 mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Treatments
+          </div>
+          <div className="space-y-3">
+            {TREATMENT_GADGETS.map(gadget => (
+              <GlassCard
+                key={gadget.id}
+                hover
+                onClick={() => handleSelectGadget(gadget.id)}
+                className="cursor-pointer transition-transform hover:scale-[1.01] hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md"
+              >
+                <div className="p-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl flex-shrink-0">{gadget.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5 leading-tight">
+                        {gadget.title}
+                      </h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                        {gadget.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Divider: Gyro Governance Reports */}
       <div className="mt-6 mb-3">

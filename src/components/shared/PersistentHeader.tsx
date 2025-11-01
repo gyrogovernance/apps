@@ -1,4 +1,5 @@
 import React from 'react';
+import { UNSPECIFIED_MODEL } from '../../lib/model-list';
 import { NotebookState, AppScreen } from '../../types';
 import { getActiveSession } from '../../lib/session-helpers';
 import { getSessionProgress } from '../../lib/session-utils';
@@ -52,6 +53,11 @@ export const PersistentHeader: React.FC<PersistentHeaderProps> = ({
           <h1 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
             {getPageTitle()}
           </h1>
+          {state.ui.currentApp === 'journal' && state.ui.currentSection?.startsWith('analyst') && activeSession && (
+            <div className="ml-3 text-xs text-gray-600 dark:text-gray-300 truncate max-w-[50%]" title="Synthesizer model used in Epoch 1">
+              Synth Model: {activeSession.process.model_epoch1 || UNSPECIFIED_MODEL.label}
+            </div>
+          )}
         </div>
 
         {/* Right: Quick navigation - compact */}

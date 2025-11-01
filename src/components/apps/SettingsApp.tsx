@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 import { useToast } from '../shared/Toast';
 import { useConfirm } from '../shared/Modal';
 import { chromeAPI } from '../../lib/chrome-mock';
@@ -25,20 +26,7 @@ export const SettingsApp: React.FC = () => {
   const { confirm, ConfirmModal } = useConfirm();
 
   // Scroll to top when settings app loads
-  useEffect(() => {
-    const scrollToTop = () => {
-      const scrollableContainer = document.querySelector('.overflow-y-auto');
-      if (scrollableContainer) {
-        scrollableContainer.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    scrollToTop();
-    const timeoutId = setTimeout(scrollToTop, 50);
-    return () => clearTimeout(timeoutId);
-  }, []);
+  useScrollToTop([]);
 
   useEffect(() => {
     // Load settings from storage
@@ -111,7 +99,8 @@ export const SettingsApp: React.FC = () => {
         const qiNorm = (insight.quality?.quality_index || 0) / 100;
         const d1 = insight.process?.durations?.epoch1_minutes || 0;
         const d2 = insight.process?.durations?.epoch2_minutes || 0;
-        const medianDuration = [d1, d2].sort((a: number, b: number) => a - b)[Math.floor([d1, d2].length / 2)];
+        const arr = [d1, d2].filter((n: number) => Number.isFinite(n));
+        const medianDuration = arr.length === 2 ? (arr[0] + arr[1]) / 2 : (arr[0] || 0);
         
         // Create GyroDiagnostics challenge structure
         modelData[modelName][challengeType] = {

@@ -1,20 +1,24 @@
 // src/components/apps/GadgetsApp/GadgetAccordion.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NotebookState, GadgetType, AnalystResponse } from '../../../types';
 import { useToast } from '../../shared/Toast';
 import { useConfirm } from '../../shared/Modal';
 import GlassCard from '../../shared/GlassCard';
 import { CopyableDetails } from '../../shared/CopyableDetails';
-import { POLICY_AUDIT_TASK, POLICY_REPORT_TASK, SANITIZE_TASK, IMMUNITY_BOOST_TASK } from '../../../lib/prompts';
 import AnalystEvaluationForm from '../../shared/AnalystEvaluationForm';
-import { generateDetectorAnalystPrompt, generateAnalystPrompt } from '../../../lib/prompts';
+import { generateRapidTestAnalystPrompt, generateAnalystPrompt, generatePolicyGadgetAnalystPrompt } from '../../../lib/prompts';
 import { generateInsightFromGadget } from '../../../lib/report-generator';
 import { insights as insightsStorage } from '../../../lib/storage';
 import { formatPathologyName } from '../../../lib/text-utils';
 import { UNSPECIFIED_MODEL } from '../../../lib/model-list';
 import { ModelSelect } from '../../shared/ModelSelect';
 import { A_STAR } from '../../../lib/calculations';
+import { GADGET_CONSTANTS } from '../../../lib/constants';
+import StructuralIntegrityGauge from '../../shared/StructuralIntegrityGauge';
+import { SmartTooltip } from '../../shared/SmartTooltip';
+import ReactMarkdown from 'react-markdown';
+import CoreMetricsRings from '../../shared/CoreMetricsRings';
 
 interface GadgetAccordionProps {
   state: NotebookState;
@@ -23,43 +27,7 @@ interface GadgetAccordionProps {
   onNavigateHome: () => void;
 }
 
-const GADGET_INFO: Record<GadgetType, { title: string; description: string; taskPrompt: string; icon: string; isAnalysis: boolean }> = {
-  'rapid-test': {
-    title: 'Rapid Test',
-    icon: '🔬',
-    description: 'Quick GyroDiagnostics metric computation',
-    taskPrompt: '',
-    isAnalysis: true
-  },
-  'policy-audit': {
-    title: 'Policy Auditing',
-    icon: '📊',
-    description: 'Extract claims & evidence from documents',
-    taskPrompt: POLICY_AUDIT_TASK,
-    isAnalysis: true
-  },
-  'policy-report': {
-    title: 'Policy Reporting',
-    icon: '📋',
-    description: 'Create executive synthesis with attribution',
-    taskPrompt: POLICY_REPORT_TASK,
-    isAnalysis: true
-  },
-  'sanitize': {
-    title: 'AI Infections Sanitization',
-    icon: '🦠',
-    description: 'Remove hidden patterns and normalize text',
-    taskPrompt: SANITIZE_TASK,
-    isAnalysis: false
-  },
-  'immunity-boost': {
-    title: 'Pathologies Immunity Boost',
-    icon: '💊',
-    description: 'Enhance content quality across 12 metrics',
-    taskPrompt: IMMUNITY_BOOST_TASK,
-    isAnalysis: false
-  }
-};
+import { GADGETS } from '../../../lib/gadgets';
 
 interface StepState {
   expanded: boolean;
@@ -79,13 +47,16 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
 }) => {
   const toast = useToast();
   const { confirm, ConfirmModal } = useConfirm();
-  const gadgetInfo = GADGET_INFO[gadgetType];
+  const gadgetInfo = GADGETS[gadgetType];
   const isAnalysisGadget = gadgetInfo.isAnalysis;
   const taskPrompt = gadgetInfo.taskPrompt;
-  const analystPrompt = gadgetType === 'rapid-test' 
-    ? generateDetectorAnalystPrompt('custom')
-    : generateAnalystPrompt([''], 'custom');
-  const totalSteps = isAnalysisGadget ? 2 : 1;
+  const analystPrompt = (gadgetType === 'rapid-test'
+    ? generateRapidTestAnalystPrompt('custom')
+    : (gadgetType === 'policy-audit' || gadgetType === 'policy-report')
+      ? generatePolicyGadgetAnalystPrompt()
+      : generateAnalystPrompt([''], 'custom'));
+  const step1HeaderRef = useRef<HTMLDivElement | null>(null);
+  const step2HeaderRef = useRef<HTMLDivElement | null>(null);
   
   const [steps, setSteps] = useState<Record<number, StepState>>({
     1: { expanded: true, completed: false },
@@ -105,7 +76,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
           ...state.drafts || {},
           [draftKey]: {
             type: gadgetType,
-            durationMinutes: 0,
+            durationMinutes: GADGET_CONSTANTS.DEFAULT_DURATION_MINUTES,
             timestamp: Date.now()
           }
         }
@@ -117,7 +88,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
   const analyst1 = draftData.analyst1 as AnalystResponse | undefined;
 
   // Model name state (the model the user is testing/using, not an analyst model)
-  const [modelName, setModelName] = useState(draftData.model_name || draftData.model_analyst1 || 'Unspecified');
+  const [modelName, setModelName] = useState(draftData.model_name || draftData.model_analyst1 || UNSPECIFIED_MODEL.value);
 
   // Quick/Guided mode (from persisted state)
   const quickMode = state.ui.gadgetsQuickMode ?? true;
@@ -131,7 +102,9 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
           ...draftData, 
           model_name: modelName, 
           model_analyst1: modelName,
-          durationMinutes: draftData.durationMinutes || 1 // Default 1 minute for SI calculation
+          durationMinutes: (typeof draftData.durationMinutes === 'number' && draftData.durationMinutes > 0)
+            ? draftData.durationMinutes
+            : GADGET_CONSTANTS.DEFAULT_DURATION_MINUTES
         }
       }
     });
@@ -195,12 +168,36 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
     gadgetInfo.title
   ) : null;
 
+  // Scroll to Step 2 header when it expands (account for sticky header height)
+  useEffect(() => {
+    if (steps[2]?.expanded && step2HeaderRef.current) {
+      const headerOffset = 72;
+      const extraOffset = 8; // stop a bit higher to align with previous card end
+      const container = (document.querySelector('.overflow-y-auto') as HTMLElement) || null;
+      
+      // Wait for collapse/expand animations to settle
+      setTimeout(() => {
+        if (!step2HeaderRef.current) return;
+        const headerRect = step2HeaderRef.current.getBoundingClientRect();
+        
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          const target = headerRect.top - containerRect.top + container.scrollTop - headerOffset - extraOffset;
+          container.scrollTo({ top: target, behavior: 'smooth' });
+        } else {
+          const y = headerRect.top + window.scrollY - headerOffset - extraOffset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [steps[2]?.expanded]);
+
   const handleSaveAsInsight = async () => {
     if (!insight) return;
     
     // Check if model is unspecified
-    const modelName = draftData.model_analyst1 || 'Unspecified';
-    const isUnspecified = !modelName || modelName === 'Unspecified' || modelName.trim() === '';
+    const modelName = draftData.model_analyst1 || UNSPECIFIED_MODEL.value;
+    const isUnspecified = !modelName || modelName === UNSPECIFIED_MODEL.value || modelName.trim() === '';
     
     if (isUnspecified) {
       const confirmed = await confirm(
@@ -238,6 +235,46 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
     });
   };
 
+  const handleNew = () => {
+    const newDraftKey = `gadget_${Date.now()}`;
+    setSteps({
+      1: { expanded: true, completed: false },
+      2: { expanded: false, completed: false }
+    });
+    setModelName(UNSPECIFIED_MODEL.value);
+    onUpdate({
+      ui: {
+        ...state.ui,
+        gadgetDraftKey: newDraftKey
+      },
+      drafts: {
+        ...state.drafts || {},
+        [newDraftKey]: {
+          type: gadgetType,
+          durationMinutes: 0,
+          timestamp: Date.now()
+        }
+      }
+    });
+    // Scroll to Step 1 after reset
+    setTimeout(() => {
+      if (step1HeaderRef.current) {
+        const headerOffset = 72;
+        const container = (document.querySelector('.overflow-y-auto') as HTMLElement) || null;
+        const headerRect = step1HeaderRef.current.getBoundingClientRect();
+        
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          const target = headerRect.top - containerRect.top + container.scrollTop - headerOffset;
+          container.scrollTo({ top: target, behavior: 'smooth' });
+        } else {
+          const y = headerRect.top + window.scrollY - headerOffset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full">
       {/* Back Link */}
@@ -267,8 +304,10 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
           {isAnalysisGadget && (
             <GlassCard className={`transition-all duration-300 ${steps[1].expanded ? stepThemes[1].borderClass + ' border-2' : 'border-gray-200 dark:border-gray-700'}`}>
               <div
+                ref={step1HeaderRef}
                 className="flex items-center justify-between cursor-pointer py-3"
                 onClick={() => toggleStep(1)}
+                tabIndex={-1}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold transition-transform duration-300 hover:scale-110 ${
@@ -349,50 +388,79 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                         </p>
                         {gadgetType === 'rapid-test' ? (
                           <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
+                            <div className="font-semibold mb-1">Step 1: Analysis</div>
                             <div className="flex items-start space-x-2">
                               <span className="font-medium">1.</span>
                               <span>
-                                <strong>Prepare your conversation:</strong> Have a 3-6 turn dialogue with your AI assistant on any topic or challenge
+                                <strong>Prepare:</strong> Complete a 3-6 turn conversation with your AI assistant on any topic
                               </span>
                             </div>
                             <div className="flex items-start space-x-2">
                               <span className="font-medium">2.</span>
                               <span>
-                                <strong>Run analysis:</strong> Copy the Analysis prompt below and submit it to your AI assistant, referencing your conversation
+                                <strong>Analyze:</strong> Copy the Analysis prompt below and submit it to your AI assistant
                               </span>
                             </div>
                             <div className="flex items-start space-x-2">
                               <span className="font-medium">3.</span>
                               <span>
-                                <strong>Import results:</strong> Paste the JSON response to compute quality metrics (QI, AR, SI) and behavioral balance assessment
+                                <strong>Process:</strong> Paste the JSON response here to compute behavioral balance and quality metrics
                               </span>
                             </div>
-                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 p-2 rounded">
-                              🔬 <strong>Note:</strong> This computes GyroDiagnostics behavioral quality metrics through multi-dimensional assessment rubrics. No content is stored - only JSON results are processed.
+                            
+                            <div className="font-semibold mt-3 mb-1">Step 2: Results</div>
+                            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                              You get three immediate benefits:
+                            </p>
+                            <ul className="list-disc ml-5 text-xs text-gray-700 dark:text-gray-300 space-y-1 mt-1">
+                              <li>Comprehensive pathology diagnosis detecting issues like hallucination, sycophancy, and reasoning drift</li>
+                              <li>Three key performance metrics: Quality Index, Alignment Rate, and Superintelligence Index</li>
+                              <li>Actionable recommendations with specific next steps to improve your AI's performance</li>
+                            </ul>
+                            
+                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 p-2 rounded mt-2">
+                              Save multiple evaluations to your Insights Library for tracking and comparison over time.
+                            </div>
+
+                            {/* Tip at end */}
+                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 p-2 rounded mt-2">
+                              Tip: Use different AI models for task generation vs. analysis to reduce bias.
                             </div>
                           </div>
                         ) : (
                           <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
+                            <div className="font-semibold mb-1">Step 1: Analysis</div>
                             <div className="flex items-start space-x-2">
                               <span className="font-medium">1.</span>
                               <span>
-                                <strong>Generate output:</strong> Copy the Task prompt and submit it to your AI assistant for the specific analysis you need
+                                <strong>Generate output:</strong> Copy the Task prompt and submit it to your AI assistant together with the Text or Document you want to audit.
                               </span>
                             </div>
                             <div className="flex items-start space-x-2">
                               <span className="font-medium">2.</span>
                               <span>
-                                <strong>Evaluate quality:</strong> Copy the Analysis prompt and run it on your AI's output to assess behavioral quality
+                                <strong>Evaluate quality:</strong> Copy the Analysis prompt below, paste it into the same AI chat, then copy the JSON response you'll receive and paste it into the evaluation form below
                               </span>
                             </div>
-                            <div className="flex items-start space-x-2">
-                              <span className="font-medium">3.</span>
-                              <span>
-                                <strong>Review results:</strong> Paste the JSON evaluation to receive quality metrics, risk assessment, and improvement insights
-                              </span>
+                            
+                            {/* Standard Step 2 for all gadgets */}
+                            <div className="font-semibold mt-3 mb-1">Step 2: Results</div>
+                            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                              You get three immediate benefits:
+                            </p>
+                            <ul className="list-disc ml-5 text-xs text-gray-700 dark:text-gray-300 space-y-1 mt-1">
+                              <li>Comprehensive pathology diagnosis detecting issues like hallucination, sycophancy, and reasoning drift</li>
+                              <li>Three key performance metrics: Quality Index, Alignment Rate, and Superintelligence Index</li>
+                              <li>Actionable recommendations with specific next steps to improve your AI's performance</li>
+                            </ul>
+                            
+                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 p-2 rounded mt-2">
+                              Save multiple evaluations to your Insights Library for tracking and comparison over time.
                             </div>
-                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 p-2 rounded">
-                              📊 <strong>Tip:</strong> Use different AI models for task generation vs. analysis to reduce bias
+
+                            {/* Tip at end (no emoji) */}
+                            <div className="text-xs italic text-gray-600 dark:text-gray-400 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 p-2 rounded mt-2">
+                              Tip: Use different AI models for task generation vs. analysis to reduce bias.
                             </div>
                           </div>
                         )}
@@ -419,6 +487,8 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  
 
                   {/* Evaluation Section */}
                   <div>
@@ -529,7 +599,9 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
           {isAnalysisGadget && (
             <GlassCard className={`transition-all duration-300 ${steps[2].expanded ? stepThemes[2].borderClass + ' border-2' : 'border-gray-200 dark:border-gray-700'}`}>
               <div
+                ref={step2HeaderRef}
                 className="flex items-center justify-between py-3 cursor-pointer"
+                tabIndex={-1}
                 onClick={() => toggleStep(2)}
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -546,32 +618,43 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
               </div>
 
               {steps[2].expanded && insight && (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-
-                  <div className="text-center mb-4">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      QI <span className="font-semibold text-gray-900 dark:text-white">{insight.quality.quality_index.toFixed(1)}%</span> •
-                      SI <span className="font-semibold text-gray-900 dark:text-white">{insight.quality.superintelligence_index.toFixed(3)}</span>
-                      {insight.quality.pathologies.detected.includes('deceptive_coherence') || (!isNaN(insight.quality.superintelligence_index) && insight.quality.superintelligence_index < 50) ? (
-                        <span className="text-red-600 dark:text-red-400"> • Review</span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded border border-blue-500 bg-blue-50 dark:bg-blue-900/20">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        {insight.insights.summary}
-                      </p>
-                      {!isNaN(insight.quality.superintelligence_index) && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Behavioral Balance: {insight.quality.superintelligence_index >= 80 && insight.quality.pathologies.detected.length === 0 ? 'High' : 
-                            insight.quality.superintelligence_index >= 50 ? 'Moderate' : 'Potential Issues'}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4" style={{ overflowAnchor: 'none' as any }}>
                   
+                  {/* Alignment Rate Gauge (top emphasis) */}
+                  <div className="flex flex-col items-center gap-2">
+                    <StructuralIntegrityGauge 
+                      si={isNaN(insight.quality.superintelligence_index) ? null : insight.quality.superintelligence_index} 
+                      size="md" 
+                      centerLabel={insight.quality.alignment_rate_category}
+                      arCategory={insight.quality.alignment_rate_category}
+                    />
+                    <SmartTooltip term="AR" definition={(
+                      <div>
+                        <div className="font-semibold mb-1.5">Alignment Rate</div>
+                        <div className="text-gray-300 text-xs space-y-1 leading-relaxed">
+                          <div>Quality-per-minute of the evaluation process.</div>
+                          <div><strong>Categories</strong>: VALID 0.03–0.15/min, SUPERFICIAL &gt; 0.15/min, SLOW &lt; 0.03/min</div>
+                          <div>Set an accurate duration to avoid misclassification.</div>
+                        </div>
+                      </div>
+                    )}>
+                      <span className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-bold flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">i</span>
+                    </SmartTooltip>
+                  </div>
+
+                  {/* Core Metrics */}
+                  <div className="p-3 rounded border border-purple-500 bg-purple-50 dark:bg-purple-900/20">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Core Metrics</h3>
+                    <CoreMetricsRings 
+                      qi={insight.quality.quality_index}
+                      si={isNaN(insight.quality.superintelligence_index) ? null : insight.quality.superintelligence_index}
+                      arCategory={insight.quality.alignment_rate_category}
+                      arRate={insight.quality.alignment_rate}
+                      size="sm"
+                    />
+                  </div>
+
+                  {/* Pathologies if detected */}
                   {insight.quality.pathologies.detected.length > 0 && (
                     <div className="p-3 rounded border border-red-500 bg-red-50 dark:bg-red-900/20">
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Detected Pathologies</h3>
@@ -584,43 +667,70 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       </ul>
                     </div>
                   )}
-                  
-                  <div className="p-3 rounded border border-purple-500 bg-purple-50 dark:bg-purple-900/20">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Metrics</h3>
-                    <div className="grid grid-cols-3 gap-3 text-sm">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">SI</p>
-                        <p className="font-semibold text-gray-900 dark:text-white">{insight.quality.superintelligence_index.toFixed(3)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">SI Dev</p>
-                        <p className="font-semibold text-gray-900 dark:text-white">{insight.quality.si_deviation.toFixed(3)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Aperture</p>
-                        <p className="font-semibold text-gray-900 dark:text-white">{(insight.quality.aperture ?? A_STAR).toFixed(5)}</p>
-                      </div>
+
+                  {/* Analysis Insights with Recommendations */}
+                  <div className="p-3 rounded border border-blue-500 bg-blue-50 dark:bg-blue-900/20">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Analysis & Recommendations</h3>
+                    <div className="text-sm text-gray-700 dark:text-gray-300 max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          h1: ({node, ...props}) => <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-4 mb-2" {...props} />, 
+                          h2: ({node, ...props}) => <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-3 mb-2" {...props} />, 
+                          h3: ({node, ...props}) => <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-2 mb-1" {...props} />, 
+                          p: ({node, ...props}) => <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-2" {...props} />, 
+                          ul: ({node, ...props}) => <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-2 space-y-1" {...props} />, 
+                          ol: ({node, ...props}) => <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 mb-2 space-y-1" {...props} />, 
+                          li: ({node, ...props}) => <li className="text-gray-700 dark:text-gray-300" {...props} />, 
+                          strong: ({node, ...props}) => <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />, 
+                          em: ({node, ...props}) => <em className="italic text-gray-800 dark:text-gray-200" {...props} />, 
+                          code: ({node, inline, ...props}: any) => inline 
+                            ? <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono" {...props} />
+                            : <code className="block p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono overflow-x-auto" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-green-400 dark:border-green-600 pl-4 italic text-gray-700 dark:text-gray-300 my-2" {...props} />,
+                        }}
+                      >
+                        {insight.insights.combined_markdown || insight.insights.summary}
+                      </ReactMarkdown>
                     </div>
                   </div>
-                  
-                  <div className="p-3 rounded border border-green-500 bg-green-50 dark:bg-green-900/20">
+
+                  {/* View Full Analysis (saves then opens detail) */}
+                  <div className="p-3 rounded border border-green-500 bg-green-50 dark:bg-green-900/20 space-y-2">
                     <button
-                      onClick={handleSaveAsInsight}
+                      onClick={async () => {
+                        if (!insight) return;
+                        try {
+                          await insightsStorage.save(insight);
+                          // Navigate and request opening detail for this insight
+                          onUpdate({
+                            ui: {
+                              ...state.ui,
+                              currentApp: 'insights',
+                              insightsView: 'detail',
+                              pendingInsightId: insight.id
+                            }
+                          });
+                        } catch (error) {
+                          console.error('Failed to save insight:', error);
+                          toast.show('Failed to save insight', 'error');
+                        }
+                      }}
                       className="btn-primary w-full text-sm"
                     >
-                      💾 Save to Insights
+                      📊 View Full Analysis
                     </button>
                   </div>
 
+                  {/* Navigation */}
                   <div className="flex justify-between pt-2 gap-3">
                     <button onClick={onNavigateHome} className="btn-secondary flex-1">
                       ← Home
                     </button>
                     <button 
-                      onClick={handleBackToSelector}
+                      onClick={handleNew}
                       className="btn-primary flex-1"
                     >
-                      🔄 New Gadget
+                      🔄 New
                     </button>
                   </div>
                 </div>

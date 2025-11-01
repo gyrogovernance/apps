@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { NotebookState, AnalystResponse } from '../../../types';
-import { useToast } from '../../shared/Toast';
 import AnalystEvaluationForm from '../../shared/AnalystEvaluationForm';
 import GlassCard from '../../shared/GlassCard';
 
@@ -24,7 +23,6 @@ const GadgetAnalyst: React.FC<GadgetAnalystProps> = ({
   onBack,
   draftKey
 }) => {
-  const toast = useToast();
 
   if (!draftKey || !state.drafts || !state.drafts[draftKey]) {
     return (

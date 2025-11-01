@@ -70,29 +70,23 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                         Quality points per minute (efficiency metric)
                       </p>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        <strong>Categories:</strong> VALID (≥2.0), SUPERFICIAL (1.0-1.9), SLOW (&lt;1.0)
+                        <strong>Categories:</strong> VALID (0.03–0.15 /min), SUPERFICIAL (&gt;0.15 /min), SLOW (&lt;0.03 /min)
                       </div>
                     </div>
                     
-                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
+                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20 md:col-span-2">
                       <h3 className="font-medium text-gray-900 dark:text-white mb-1">Superintelligence Index (SI)</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                        Behavioral balance measure (theoretical optimum = 100)
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        Structural coherence measure across 6 behavior dimensions (theoretical optimum = 100)
                       </p>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        <strong>Based on:</strong> K₄ complete graph topology and aperture A* ≈ 0.02070
+                      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        <div><strong>What it measures:</strong> Whether your behavior scores reflect a coherent latent structure (like consistent differences between nodes in a graph) rather than random or uniform values.</div>
+                        <div><strong>Key insight:</strong> Flat scores (all 8s, all 9s) yield low SI (~12) because they lack structure. Balanced opposing adjustments (e.g., one dimension high, another low) raise SI by reducing residual energy toward the target aperture A* ≈ 0.02070.</div>
+                        <div><strong>Interpretation:</strong> SI rewards structured patterns, not just high averages. High QI with low SI suggests uniform quality without dimensional coherence.</div>
                       </div>
                     </div>
                     
-                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-1">Superintelligence Index (SI)</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                        Behavioral balance measure (mathematical foundation from K₄ graph topology)
-                      </p>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        <strong>Based on:</strong> Hodge decomposition on K₄ graph, aperture ratio A = ‖P_cycle y‖²_W / ‖y‖²_W
-                      </div>
-                    </div>
+                    
                   </div>
                 </section>
 

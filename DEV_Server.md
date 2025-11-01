@@ -102,6 +102,28 @@ If you prefer manual control or need to test the production build:
    - Local server (`npm run serve-static`)
 4. Repeat as needed
 
+## Running Tests
+
+We use Jest for unit tests (e.g., core calculations for QI, SI, AR).
+
+Commands:
+
+```bash
+# Run all tests once
+npm run test
+
+# Watch mode (reruns on file changes)
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+```
+
+Notes:
+- Test suite location: `src/lib/calculations.test.ts`
+- Tested areas include Superintelligence Index (SI), Quality Index (QI), Alignment Rate (AR), and aggregation helpers
+- If tests fail to run, ensure dependencies are installed: `npm install`
+
 ## Notes on Public Folder
 
 - `public/` is not a standalone build; it's a source for the HTML template and `manifest.json` only.

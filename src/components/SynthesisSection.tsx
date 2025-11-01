@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NotebookState, TurnNumber } from '../types';
 import { generateSynthesisPrompt, generateContinuePrompt } from '../lib/prompts';
 import { parseManualPaste } from '../lib/parsing';
@@ -13,6 +13,7 @@ import { CopyableDetails } from './shared/CopyableDetails';
 import { TurnsSummary } from './shared/TurnsSummary';
 import { ModelSelect } from './shared/ModelSelect';
 import { SESSION_CONSTANTS } from '../lib/constants';
+import { UNSPECIFIED_MODEL } from '../lib/model-list';
 
 interface SynthesisSectionProps {
   state: NotebookState;
@@ -52,6 +53,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
   const [duration, setDuration] = useState(epoch.duration_minutes);
   const [durationDisplay, setDurationDisplay] = useState('00:00');
   const [autoRecordedMinutes, setAutoRecordedMinutes] = useState<number | null>(null);
+  const hasCapturedRef = useRef<boolean>(false);
 
   // Helper: Convert decimal minutes to mm:ss format
   const minutesToMMSS = (decimalMinutes: number): string => {
@@ -73,7 +75,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
   useEffect(() => {
     return () => {
       // When component unmounts, ensure timer state is saved to session
-      if (session?.id && epoch.turns.length < SESSION_CONSTANTS.TURNS_PER_EPOCH) {
+      if (session?.id && epoch.turns.length < SESSION_CONSTANTS.TURNS_PER_EPOCH && !hasCapturedRef.current) {
         try {
           const saved = loadTimerState(session.id, epochKey);
           if (saved && saved.elapsedSeconds > 0) {
@@ -81,6 +83,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
             // Fetch fresh session before writing to avoid overwriting turns
             sessions.getById(session.id).then(fresh => {
               if (!fresh) return;
+              hasCapturedRef.current = true;
               sessions.update(session.id, {
                 epochs: {
                   ...fresh.epochs,
@@ -102,13 +105,14 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
   // Auto-capture and stop timer when all turns are complete
   useEffect(() => {
     if (!session?.id) return;
-    if (epoch.turns.length === SESSION_CONSTANTS.TURNS_PER_EPOCH && autoRecordedMinutes === null) {
+    if (epoch.turns.length === SESSION_CONSTANTS.TURNS_PER_EPOCH && autoRecordedMinutes === null && !hasCapturedRef.current) {
       try {
         const saved = loadTimerState(session.id, epochKey);
         const minutes = secondsToMinutesPrecise(saved?.elapsedSeconds || 0);
         setDuration(minutes);
         setDurationDisplay(minutesToMMSS(minutes));
         setAutoRecordedMinutes(minutes);
+        hasCapturedRef.current = true;
         // Stop and clear timer state so it doesn't keep ticking
         clearTimerState(session.id, epochKey);
       } catch {
@@ -184,7 +188,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
 
       const modelKey = epochKey === 'epoch1' ? 'model_epoch1' : 'model_epoch2';
       const modelValue = epochKey === 'epoch1' 
-        ? (modelName.trim() || session.process[modelKey] || 'Unspecified')
+        ? (modelName.trim() || session.process[modelKey] || UNSPECIFIED_MODEL.value)
         : session.process.model_epoch1; // Use Epoch 1 model for Epoch 2
       
       const newState = await sessions.update(session.id, {

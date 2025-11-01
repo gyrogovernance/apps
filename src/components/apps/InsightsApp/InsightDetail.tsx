@@ -118,7 +118,7 @@ const InsightDetail: React.FC<InsightDetailProps> = ({ insight, onBack }) => {
           <div className="flex items-center gap-2">
             <span className="text-2xl">💡</span>
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              Insights on the Governance Challenge
+              Insights
             </h2>
           </div>
         </div>

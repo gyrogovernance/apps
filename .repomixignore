@@ -145,3 +145,10 @@ src/styles/
 
 # Specific files to exclude
 src/lib/prompts.ts
+
+.aichignore
+.cursorrules
+.repomixignore
+jest.config.js
+package.json
+src/background.ts

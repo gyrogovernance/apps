@@ -24,6 +24,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
   const toast = useToast();
   const [allInsights, setAllInsights] = useState<GovernanceInsight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState<string>('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     search: '',
@@ -32,6 +33,27 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     alignmentCategory: 'all',
     minQI: 0
   });
+
+  // Tag normalization: map all variants into canonical forms used for filtering
+  const normalizeTag = (t: string) => {
+    const raw = (t || '').toString().trim();
+    const kebab = raw.toLowerCase().replace(/\s+/g, '-');
+    // Collapse all gadget/policy gadget variants into one bucket
+    if (['gadget', 'gadgets', 'policy-report', 'policy-audit', 'policy-analysis', 'policy', 'policy-analysis '].includes(kebab)) {
+      return 'policy-analyses';
+    }
+    if (kebab === 'gyrodiagnostics' || kebab === 'gyrodiagnostic') return 'gyrodiagnostics';
+    return kebab;
+  };
+
+  // Tag label formatter for display in dropdown
+  const formatTagLabel = (tag: string) => {
+    const t = normalizeTag(tag);
+    if (t === 'policy-analyses') return 'Policy Analyses';
+    if (t === 'gyrodiagnostics') return 'GyroDiagnostics';
+    // Title-case default (kebab to words)
+    return t.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  };
 
   // Load insights on mount
   useEffect(() => {
@@ -97,9 +119,19 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
     return Array.from(models).sort();
   }, [allInsights]);
 
+  // Available tags from all insights
+  const availableTags = React.useMemo(() => {
+    const set = new Set<string>();
+    allInsights.forEach(i => (i.tags || []).forEach(t => set.add(normalizeTag(t))));
+    return Array.from(set).sort();
+  }, [allInsights]);
+
   // Filter insights (memoized to avoid recalculation on every render)
   const filteredInsights = React.useMemo(() => {
-    return allInsights.filter(insight => {
+    const base = selectedTag
+      ? allInsights.filter(i => (i.tags || []).map(normalizeTag).includes(normalizeTag(selectedTag)))
+      : allInsights;
+    return base.filter(insight => {
       // Safely access challenge and quality properties
       const title = insight.challenge?.title || '';
       const type = insight.challenge?.type || 'custom';
@@ -125,7 +157,7 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
       }
       return true;
     });
-  }, [allInsights, filters]);
+  }, [allInsights, selectedTag, filters]);
 
   // Sort by date (most recent first) - memoized
   const sortedInsights = React.useMemo(() => {
@@ -185,12 +217,24 @@ const InsightsLibrary: React.FC<InsightsLibraryProps> = ({ onSelectInsight }) =>
             <option value="epistemic">Epistemic</option>
             <option value="custom">Custom</option>
           </select>
+
+          {/* Tag Filter */}
+          <select
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+            className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="">All Tags</option>
+            {availableTags.map(tag => (
+              <option key={tag} value={tag}>{formatTagLabel(tag)}</option>
+            ))}
+          </select>
         </div>
 
         {/* Clear Filters */}
-        {(filters.search || filters.challengeType !== 'all' || filters.synthesizer !== 'all' || filters.alignmentCategory !== 'all' || filters.minQI > 0) && (
+        {(filters.search || filters.challengeType !== 'all' || filters.synthesizer !== 'all' || filters.alignmentCategory !== 'all' || filters.minQI > 0 || selectedTag) && (
           <button
-            onClick={() => setFilters({ search: '', challengeType: 'all', synthesizer: 'all', alignmentCategory: 'all', minQI: 0 })}
+            onClick={() => { setFilters({ search: '', challengeType: 'all', synthesizer: 'all', alignmentCategory: 'all', minQI: 0 }); setSelectedTag(''); }}
             className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
             ✕ Clear filters

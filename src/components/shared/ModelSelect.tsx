@@ -43,12 +43,12 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
 
   // Find selected model info
   const selectedModel: ModelInfo | null = allOptions.find((model) => model.value === value) || 
-                       (value && value !== 'Unspecified' ? { value, label: value, company: 'Custom' } : null);
+                       (value && value !== UNSPECIFIED_MODEL.value ? { value, label: value, company: 'Custom' } : null);
 
   const displayValue = selectedModel ? selectedModel.label : (value || '');
 
   const handleChange = (selected: ModelInfo | null) => {
-    const newValue = selected ? selected.value : 'Unspecified';
+    const newValue = selected ? selected.value : UNSPECIFIED_MODEL.value;
     onChange(newValue);
     setQuery(''); // Clear query after selection
   };
@@ -57,7 +57,7 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
     const inputValue = e.target.value;
     setQuery(inputValue);
     // Allow free-form typing - update value as user types
-    onChange(inputValue || 'Unspecified');
+    onChange(inputValue || UNSPECIFIED_MODEL.value);
   };
 
   return (

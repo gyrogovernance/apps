@@ -25,15 +25,15 @@ const TOOLTIP_REGISTRY: Record<string, { definition: string | React.ReactNode; l
   'SI': {
     definition: (
       <div className="space-y-2">
-        <div><span className="font-bold text-blue-300">Superintelligence Index</span> - Behavioral balance</div>
+        <div><span className="font-bold text-blue-300">Superintelligence Index</span></div>
         <div className="text-gray-400 text-xs">
-          Measures balance via K₄ graph topology
+          80-100: Excellent balance
         </div>
         <div className="text-gray-400 text-xs">
-          Target aperture: <span className="text-green-300 font-semibold">A* ≈ 0.020701</span>
+          50-79: Moderate balance
         </div>
         <div className="text-gray-400 text-xs">
-          Lower deviation = more balanced reasoning
+          Below 50: Needs improvement
         </div>
       </div>
     ),
@@ -98,7 +98,7 @@ export const SmartTooltip: React.FC<SmartTooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   
-  const info = TOOLTIP_REGISTRY[term] || { definition: definition || term };
+  const info = definition ? { definition } : (TOOLTIP_REGISTRY[term] || { definition: term });
 
   return (
     <span className="relative inline-block">
@@ -113,7 +113,7 @@ export const SmartTooltip: React.FC<SmartTooltipProps> = ({
       {isVisible && (
         <>
           {/* Fixed tooltip at bottom of viewport */}
-          <div className="fixed bottom-4 left-4 right-4 z-[100] max-w-md mx-auto p-3 bg-gray-900 text-white text-xs rounded-lg shadow-2xl">
+          <div className="fixed bottom-2 left-2 right-2 z-[100] max-w-md mx-auto p-3 bg-gray-800 text-white text-xs rounded-lg border border-gray-700 shadow-2xl">
             {typeof info.definition === 'string' ? (
               <>
                 <div className="font-semibold mb-1.5">{term}</div>

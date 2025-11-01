@@ -60,14 +60,14 @@ The 6 behavioral metrics form a basis for the 6D Hilbert space H_edge, enabling 
 
 **Tensegrity Structure**: The framework operationalizes alignment through tetrahedral tensegrity topology, structuring evaluation as emergent balance between systematic organization and adaptive flexibility. This eliminates hierarchical bias through geometric measurement.
 
-The theoretical foundation (see `docs/theory/Measurement.md`) describes a tetrahedral measurement system based on the K₄ complete graph.
+The theoretical foundation (see `docs/theory/GyroDiagnostics_Measurement.md`) describes a tetrahedral measurement system based on the K₄ complete graph.
 
 - **4 abstract vertices** form the complete graph structure
 - **6 edges** represent measurement channels with distinct geometric roles. The 6 Level 2 (Behavioral) metrics map one-to-one to these 6 edges. This enables orthogonal decomposition into gradient projection (3 degrees of freedom, global alignment) and residual projection (3 degrees of freedom, local differentiation). The topology governs degrees of freedom, not participant count
 - **4 participants** contribute measurements. 2 information synthesizers (two epochs of model generation). 2 scoring analysts (two independent evaluator models)
 - **Total analyses** = 2 epochs × 2 analysts = 4 evaluations per challenge
 
-Each participant contributes measurements across multiple channels (Measurement.md §7.2: "Fewer than 6 participants: Each participant contributes to multiple edges").
+Each participant contributes measurements across multiple channels (GyroDiagnostics_Measurement.md §7.2: "Fewer than 6 participants: Each participant contributes to multiple edges").
 
 **Framework Components**:
 
@@ -590,4 +590,4 @@ Grounded in principles from recursive systems theory and topological analysis of
 
 The framework focuses on positive alignment indicators through autonomous performance on cognitive challenges, deliberately complementing rather than replacing adversarial robustness testing and misuse evaluation. The Superintelligence Index provides a theory-derived measure of structural maturity, grounding capability assessment in geometric principles rather than empirical benchmarks. Together with comprehensive safety assessment, structural evaluation supports principled understanding of AI system development states and readiness for autonomous operation in contexts requiring sustained recursive coherence.
 
-For the full mathematical details of the Hilbert space framework and weighted Hodge decomposition, see docs/theory/Measurement.md.
+For the full mathematical details of the Hilbert space framework and weighted Hodge decomposition, see docs/theory/GyroDiagnostics_Measurement.md.
