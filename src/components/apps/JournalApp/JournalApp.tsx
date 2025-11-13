@@ -4,6 +4,7 @@ import { NotebookState } from '../../../types';
 import { sessions as sessionsStorage } from '../../../lib/storage';
 import { getNextSection } from '../../../lib/session-utils';
 import { getActiveSession, getSessionById } from '../../../lib/session-helpers';
+import { isSessionEmpty } from '../../../lib/validation';
 import JournalHome from './JournalHome';
 import JournalTabs from './JournalTabs';
 import SessionView from './SessionView';
@@ -33,37 +34,38 @@ const JournalApp: React.FC<JournalAppProps> = ({
       if (!session) return;
 
       const isClosingActiveSession = sessionId === state.activeSessionId;
+      const isEmpty = isSessionEmpty(session);
 
-      // If session is empty, delete it directly
-      if (session.epochs.epoch1.turns.length === 0 && session.epochs.epoch2.turns.length === 0) {
+      // If session is empty (no turns and no analyst data), delete it directly
+      if (isEmpty) {
         const newState = await sessionsStorage.delete(sessionId);
         
         // If we're closing the active session, navigate to home but keep tabs visible
         if (isClosingActiveSession) {
-        onUpdate({
-          ...newState,
-          activeSessionId: undefined,
-          ui: {
-            ...state.ui,
-            currentSection: 'epoch1',
-            journalView: 'home'
-          }
-        });
+          onUpdate({
+            ...newState,
+            activeSessionId: undefined,
+            ui: {
+              ...state.ui,
+              currentSection: 'epoch1',
+              journalView: 'home'
+            }
+          });
         } else {
           onUpdate(newState);
         }
         return;
       }
 
-      // For non-empty sessions, pause them instead of deleting
+      // For non-empty sessions, pause them instead of deleting (removes from tabs)
       const newState = await sessionsStorage.update(sessionId, { status: 'paused' });
       
-      // If we're closing the active session, navigate to home
+      // If we're closing the active session, navigate to another active session or home
       if (isClosingActiveSession) {
-        // Find another active/paused session to switch to, or go to home
+        // Find another active/analyzing session to switch to (paused sessions are in home view)
         const otherActiveSession = state.sessions.find(s => 
           s.id !== sessionId && 
-          (s.status === 'active' || s.status === 'paused' || s.status === 'analyzing')
+          (s.status === 'active' || s.status === 'analyzing')
         );
 
         onUpdate({
@@ -299,7 +301,8 @@ const JournalApp: React.FC<JournalAppProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Tab Bar - always show in Journal */}
+      {/* Tab Bar - DISABLED: Consideration for removal */}
+      {/* 
       <JournalTabs
         sessions={state.sessions}
         activeSessionId={state.activeSessionId}
@@ -307,6 +310,7 @@ const JournalApp: React.FC<JournalAppProps> = ({
         onCloseSession={handleCloseSession}
         onNewSession={handleNewSession}
       />
+      */}
       
       {/* Progress Dashboard - show below tabs when there's an active session */}
       {state.activeSessionId && (
@@ -327,6 +331,39 @@ const JournalApp: React.FC<JournalAppProps> = ({
           })()}
           onDurationChange={handleDurationChange}
         />
+      )}
+      
+      {/* Quick/Guided Mode Toggle - show when there's an active session */}
+      {state.activeSessionId && (
+        <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-end gap-2">
+          <span className="text-xs text-gray-600 dark:text-gray-400">Workflow:</span>
+          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 p-0.5 bg-gray-100 dark:bg-gray-800">
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                state.ui.journalQuickMode
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              onClick={() => onUpdate({ ui: { ...state.ui, journalQuickMode: true } })}
+              title="Hide prompts and guides by default (click to expand when needed)"
+            >
+              ⚡ Quick
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                !state.ui.journalQuickMode
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              onClick={() => onUpdate({ ui: { ...state.ui, journalQuickMode: false } })}
+              title="Show prompts and guides by default (recommended for first-time users)"
+            >
+              📋 Guided
+            </button>
+          </div>
+        </div>
       )}
       
       {/* Content */}

@@ -45,12 +45,37 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
   const a1e2 = session.analysts.epoch2.analyst1?.data;
   const a2e2 = session.analysts.epoch2.analyst2?.data;
 
-  if (!a1e1 || !a2e1 || !a1e2 || !a2e2) {
-    throw new Error('All analysts must complete evaluation for both epochs');
+  // Build detailed error message for missing analysts with status info
+  const missingAnalysts: string[] = [];
+  const statusDetails: string[] = [];
+  
+  if (!a1e1) {
+    missingAnalysts.push('Epoch 1 - Analyst 1');
+    statusDetails.push(`Epoch 1 - Analyst 1: status=${session.analysts.epoch1.analyst1?.status || 'missing'}`);
+  }
+  if (!a2e1) {
+    missingAnalysts.push('Epoch 1 - Analyst 2');
+    statusDetails.push(`Epoch 1 - Analyst 2: status=${session.analysts.epoch1.analyst2?.status || 'missing'}`);
+  }
+  if (!a1e2) {
+    missingAnalysts.push('Epoch 2 - Analyst 1');
+    statusDetails.push(`Epoch 2 - Analyst 1: status=${session.analysts.epoch2.analyst1?.status || 'missing'}`);
+  }
+  if (!a2e2) {
+    missingAnalysts.push('Epoch 2 - Analyst 2');
+    statusDetails.push(`Epoch 2 - Analyst 2: status=${session.analysts.epoch2.analyst2?.status || 'missing'}`);
+  }
+
+  if (missingAnalysts.length > 0) {
+    const debugInfo = statusDetails.length > 0 ? ` (${statusDetails.join(', ')})` : '';
+    throw new Error(`Missing analyst evaluations: ${missingAnalysts.join(', ')}${debugInfo}. Please complete all analyst evaluations before generating the report.`);
   }
 
   if (!session.epochs.epoch1.completed || !session.epochs.epoch2.completed) {
-    throw new Error('Both epochs must be completed');
+    const missingEpochs: string[] = [];
+    if (!session.epochs.epoch1.completed) missingEpochs.push('Epoch 1');
+    if (!session.epochs.epoch2.completed) missingEpochs.push('Epoch 2');
+    throw new Error(`Missing epochs: ${missingEpochs.join(', ')}. Please complete all epochs before generating the report.`);
   }
 
   // Aggregate and calculate QI per epoch

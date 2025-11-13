@@ -201,7 +201,12 @@ const PromptWorkshop: React.FC<PromptWorkshopProps> = ({
               {improvementTools.map(tool => (
                 <button
                   key={tool.label}
-                  onClick={() => handleApplyTool(tool.template)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleApplyTool(tool.template);
+                  }}
                   className="p-3 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
                 >
                   <div className="text-xl mb-1">{tool.icon}</div>

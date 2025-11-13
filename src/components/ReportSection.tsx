@@ -31,13 +31,18 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
 
   const generateReport = async () => {
     try {
-      const session = getActiveSession(state);
-      if (!session) {
+      // Fetch fresh session from storage to ensure we have latest data
+      if (!state.activeSessionId) {
         throw new Error('No active session');
       }
+      
+      const freshSession = await sessions.getById(state.activeSessionId);
+      if (!freshSession) {
+        throw new Error('Session not found');
+      }
 
-      // Use centralized report generator (single source of truth)
-      const generatedInsight = await generateInsightFromSession(session);
+      // Use centralized report generator with fresh session data
+      const generatedInsight = await generateInsightFromSession(freshSession);
 
       // If part of a suite, add suite metadata
       if (state.currentSuiteRunId && state.gyroSuiteCurrentIndex !== undefined) {
@@ -49,8 +54,8 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
         generatedInsight.suiteMetadata = {
           suiteIndex: state.gyroSuiteCurrentIndex,
           totalChallenges: 5,
-          modelEvaluated: session.process.model_epoch1,
-          suiteStartedAt: firstSession?.createdAt || session.createdAt,
+          modelEvaluated: freshSession.process.model_epoch1,
+          suiteStartedAt: firstSession?.createdAt || freshSession.createdAt,
           suiteCompletedAt: state.gyroSuiteCurrentIndex === 4 ? new Date().toISOString() : undefined
         };
       }
@@ -60,8 +65,8 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
 
       // Check for existing insight from same session
       const allInsights = await insightsStorage.getAll();
-      const existingInsight = session.id 
-        ? allInsights.find(i => i.sessionId === session.id)
+      const existingInsight = freshSession.id 
+        ? allInsights.find(i => i.sessionId === freshSession.id)
         : null;
 
       if (existingInsight) {
@@ -93,7 +98,10 @@ const ReportSection: React.FC<ReportSectionProps> = ({ state, onUpdate, onBack, 
 
     } catch (error) {
       console.error('Error generating report:', error);
-      toast.show('Error generating report. Please ensure all sections are completed.', 'error');
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Error generating report. Please ensure all sections are completed.';
+      toast.show(errorMessage, 'error');
       setLoading(false);
     }
   };

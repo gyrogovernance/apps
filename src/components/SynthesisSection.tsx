@@ -41,6 +41,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
 
   const epoch = session.epochs[epochKey];
   const currentTurnNumber = (epoch.turns.length + 1) as TurnNumber;
+  const quickMode = state.ui.journalQuickMode;
   
   const { value: pastedText, setValue: setPastedText, clear: clearDraft } = useDrafts({
     sessionId: session.id,
@@ -176,6 +177,18 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
   };
 
   const handleSaveDuration = async () => {
+    // Validation for Epoch 1: model name is required
+    if (epochKey === 'epoch1' && !modelName.trim()) {
+      toast.show('Please enter a model name before proceeding', 'error');
+      return;
+    }
+
+    // Validate duration format
+    if (!durationDisplay.trim() || !/^\d{1,3}:[0-5][0-9]$/.test(durationDisplay)) {
+      toast.show('Please enter a valid duration in mm:ss format (e.g., 15:30)', 'error');
+      return;
+    }
+
     try {
       // Convert mm:ss display to decimal minutes
       let finalMinutes = mmssToMinutes(durationDisplay);
@@ -186,9 +199,15 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
         finalMinutes = secondsToMinutesPrecise(saved?.elapsedSeconds || 0);
       }
 
+      // Final validation: ensure we have a valid duration
+      if (!finalMinutes || finalMinutes <= 0) {
+        toast.show('Duration must be greater than 0. Please check the duration field.', 'error');
+        return;
+      }
+
       const modelKey = epochKey === 'epoch1' ? 'model_epoch1' : 'model_epoch2';
       const modelValue = epochKey === 'epoch1' 
-        ? (modelName.trim() || session.process[modelKey] || UNSPECIFIED_MODEL.value)
+        ? modelName.trim()
         : session.process.model_epoch1; // Use Epoch 1 model for Epoch 2
       
       const newState = await sessions.update(session.id, {
@@ -210,7 +229,11 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
       // Update parent state with partial to avoid clobbering UI
       onUpdate({ sessions: newState.sessions });
       toast.show(`${epochKey === 'epoch1' ? 'Epoch 1' : 'Epoch 2'} completed`, 'success');
-      onNext();
+      
+      // Small delay to allow toast to show before navigation
+      setTimeout(() => {
+        onNext();
+      }, 300);
     } catch (error) {
       console.error('Failed to finalize epoch:', error);
       toast.show('Failed to finalize epoch', 'error');
@@ -247,16 +270,16 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
         </span>
       </h2>
 
-      {/* Instructions - only show when collecting turns */}
-      {!allTurnsComplete && (
+      {/* Guides - only show in Guided mode when collecting turns */}
+      {!allTurnsComplete && !quickMode && (
         <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-3 mb-4 text-sm">
-          <p className="font-medium mb-1 text-gray-900 dark:text-gray-100">Instructions:</p>
-          <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
-            <li>Copy the prompt below and paste it into your AI chat</li>
-            <li>Copy the AI's response and paste it here</li>
-            <li>Repeat for all {SESSION_CONSTANTS.TURNS_PER_EPOCH} turns</li>
-            <li>Enter the model name and confirm the duration</li>
-          </ol>
+          <p className="font-medium mb-2 text-gray-900 dark:text-gray-100">📋 Guides:</p>
+          <div className="space-y-2 text-gray-700 dark:text-gray-300">
+            <p><strong>Step 1:</strong> Copy the prompt for Turn {currentTurnNumber}</p>
+            <p><strong>Step 2:</strong> Paste it into your AI chat and copy the AI's response</p>
+            <p><strong>Step 3:</strong> Paste the response back here and submit</p>
+            <p><strong>Step 4:</strong> Repeat for all {SESSION_CONSTANTS.TURNS_PER_EPOCH} turns, then enter the model name and confirm duration</p>
+          </div>
         </div>
       )}
 
@@ -272,6 +295,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
               title="View Full Prompt"
               content={getPromptForTurn(currentTurnNumber)}
               rows={6}
+              quickMode={quickMode}
             />
           </div>
 
@@ -376,15 +400,6 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
               ⏱️ Auto-captured from timer. Format: minutes:seconds (e.g., 15:30)
             </p>
           </div>
-
-          {/* View Transcript */}
-          <CopyableDetails
-            title="View Full Transcript"
-            content={epoch.turns.map((turn, index) => 
-              `Turn ${index + 1}:\n${turn.content}`
-            ).join('\n\n')}
-            rows={12}
-          />
         </div>
       )}
 

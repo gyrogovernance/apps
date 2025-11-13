@@ -44,9 +44,9 @@ const JournalTabs: React.FC<JournalTabsProps> = ({
       };
     }
   }, [sessions.length]);
-  // Show tabs for active/paused/analyzing sessions (even if empty)
+  // Show tabs only for active/analyzing sessions (paused sessions go to home view)
   const tabSessions = sessions.filter(s =>
-    s.status === 'active' || s.status === 'paused' || s.status === 'analyzing'
+    s.status === 'active' || s.status === 'analyzing'
   );
   
   // Sort by last updated (most recent first) without mutating

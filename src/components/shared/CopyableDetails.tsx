@@ -1,5 +1,5 @@
 // Reusable component for collapsible details with copy button
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useClipboard } from '../../hooks/useClipboard';
 
 interface CopyableDetailsProps {
@@ -9,6 +9,7 @@ interface CopyableDetailsProps {
   rows?: number;
   className?: string;
   defaultOpen?: boolean;
+  quickMode?: boolean; // Quick mode: closed by default, Guided mode: open by default
 }
 
 export const CopyableDetails: React.FC<CopyableDetailsProps> = ({ 
@@ -17,10 +18,21 @@ export const CopyableDetails: React.FC<CopyableDetailsProps> = ({
   onCopy,
   rows = 8,
   className = '',
-  defaultOpen = true
+  defaultOpen,
+  quickMode
 }) => {
   const { copy, status } = useClipboard();
-  const [open, setOpen] = useState<boolean>(!!defaultOpen);
+  // If quickMode is provided, use it to determine default state (quick=closed, guided=open)
+  // Otherwise use explicit defaultOpen, or default to false for backward compatibility
+  const initialOpenState = quickMode !== undefined ? !quickMode : (defaultOpen !== undefined ? defaultOpen : false);
+  const [open, setOpen] = useState<boolean>(initialOpenState);
+
+  // Update open state when quickMode changes
+  useEffect(() => {
+    if (quickMode !== undefined) {
+      setOpen(!quickMode); // quick=true means closed, guided=false means open
+    }
+  }, [quickMode]);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();

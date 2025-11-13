@@ -163,7 +163,7 @@ const Notebook: React.FC = () => {
         ui: {
           ...freshState.ui,
           currentApp: 'journal',
-          journalView: 'home', // Show Journal Home, not inside session
+          journalView: 'session', // Go directly to session view (Epoch 1)
           currentSection: 'epoch1'
         }
       });
@@ -220,7 +220,7 @@ const Notebook: React.FC = () => {
         ui: {
           ...freshState.ui,
           currentApp: 'journal',
-          journalView: 'home', // Show Journal Home, not inside session
+          journalView: 'session', // Go directly to session view (Epoch 1)
           currentSection: 'epoch1'
         }
       });

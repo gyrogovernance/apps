@@ -144,6 +144,7 @@ export interface NotebookState {
     gadgetType?: GadgetType; // Track which gadget is active
     gadgetDraftKey?: string; // Track active gadget draft
     gadgetsQuickMode?: boolean; // Quick/Guided mode preference for gadgets
+    journalQuickMode?: boolean; // Quick/Guided mode preference for journal sessions
     showGlossary?: boolean; // Added for Glossary modal
     detectorDraftKey?: string; // Track active detector draft per run
   };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NotebookState } from '../types';
-import { generateAnalystPrompt } from '../lib/prompts';
+import { generateAnalystPrompt, generateAnalystPromptWithoutTranscript } from '../lib/prompts';
 import { validateAnalystJSON } from '../lib/parsing';
 import { sessions } from '../lib/storage';
 import { getActiveSession } from '../lib/session-helpers';
@@ -160,12 +160,16 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     onNext();
   };
 
+  // For Analyst 1, provide separate options (transcript and prompt without transcript)
+  const analystPromptWithoutTranscript = generateAnalystPromptWithoutTranscript(session.challenge.type);
+  // For Analyst 2, keep the combined prompt (backward compatible)
   const analystPrompt = generateAnalystPrompt(
     [getEpochTranscript()],
     session.challenge.type
   );
 
   const showForm = !isComplete || isEditing;
+  const quickMode = state.ui.journalQuickMode;
 
   return (
     <div className="section-card">
@@ -181,16 +185,19 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
         {isComplete && <span className="success-badge">✓ Completed</span>}
       </h2>
 
-      {/* Instructions */}
-      {showForm && (
+      {/* Guides - Only show in Guided mode */}
+      {showForm && !quickMode && (
         <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-3 mb-4 text-sm">
-          <p className="font-medium mb-1 text-gray-900 dark:text-gray-100">Instructions:</p>
-          <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300">
-            <li>Copy the analyst prompt below</li>
-            <li>Paste it into a <strong>different AI model</strong> than used for synthesis</li>
-            <li>Copy the JSON response and paste it here</li>
-            <li>Validate to ensure proper format</li>
-          </ol>
+          <p className="font-medium mb-2 text-gray-900 dark:text-gray-100">📋 Guides:</p>
+          <div className="space-y-2 text-gray-700 dark:text-gray-300">
+            <p><strong>Step 1:</strong> Select your analyst model (use a different model than synthesis)</p>
+            <p><strong>Step 2:</strong> Choose and copy the appropriate analyst prompt:</p>
+            <ul className="list-disc list-inside ml-4 space-y-1">
+              <li><strong>"Same Chat (Transcript Excluded)":</strong> Use this if continuing in the same AI chat where you did synthesis. {analystKey === 'analyst2' ? 'This is a short prompt asking for a second opinion. The transcript is already in the conversation history.' : 'Copy and paste this prompt. The transcript is already in the conversation history, so no need to paste it again.'}</li>
+              <li><strong>"Different Chat (Transcript Included)":</strong> Use this if starting a fresh chat with a different AI model. The transcript is already embedded in the prompt.</li>
+            </ul>
+            <p><strong>Step 3:</strong> Paste the AI's JSON response below and validate</p>
+          </div>
         </div>
       )}
 
@@ -207,45 +214,43 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
           />
         )}
 
-        {/* Copy Options for Analyst 2 */}
-        {showForm && analystKey === 'analyst2' && (
+        {/* Analyst Prompts - Different options for Analyst 1 vs Analyst 2 */}
+        {showForm && (
           <div className="space-y-2">
-            <label className="label-text">Copy Options</label>
+            <label className="label-text">Analyst Prompts</label>
             <div className="space-y-2">
-              <CopyableDetails
-                title="Transcript"
-                content={getTranscriptText()}
-                rows={6}
-              />
-              <CopyableDetails
-                title="Full Analyst Prompt"
-                content={analystPrompt}
-                rows={8}
-              />
-              <CopyableDetails
-                title="Short Analyst Prompt"
-                content="You are a different analyst, please provide your own review in the same JSON format"
-                rows={3}
-              />
+              {analystKey === 'analyst1' ? (
+                <>
+                  <CopyableDetails
+                    title="Same Chat (Transcript Excluded)"
+                    content={analystPromptWithoutTranscript}
+                    rows={8}
+                    quickMode={quickMode}
+                  />
+                  <CopyableDetails
+                    title="Different Chat (Transcript Included)"
+                    content={analystPrompt}
+                    rows={8}
+                    quickMode={quickMode}
+                  />
+                </>
+              ) : (
+                <>
+                  <CopyableDetails
+                    title="Same Chat (Transcript Excluded)"
+                    content="You are a different analyst, please provide your own review in the same JSON format"
+                    rows={3}
+                    quickMode={quickMode}
+                  />
+                  <CopyableDetails
+                    title="Different Chat (Transcript Included)"
+                    content={analystPrompt}
+                    rows={8}
+                    quickMode={quickMode}
+                  />
+                </>
+              )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Choose what to copy based on your analysis workflow preference.
-            </p>
-          </div>
-        )}
-
-        {/* Analyst Prompt - Only show for Analyst 1 */}
-        {analystKey === 'analyst1' && (
-          <div>
-            <label className="label-text">Analyst Prompt (Copy this)</label>
-            <CopyableDetails
-              title="View Full Prompt"
-              content={analystPrompt}
-              rows={12}
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              This prompt includes the full transcript from Epoch {epochNumber}
-            </p>
           </div>
         )}
 

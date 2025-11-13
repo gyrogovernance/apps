@@ -618,6 +618,41 @@ ${fullTranscript}
 }
 
 /**
+ * Generate analyst prompt WITHOUT the transcript included (for separate copy workflow)
+ * This allows users to paste transcript separately if using the same chat for synthesis and analysis
+ */
+export function generateAnalystPromptWithoutTranscript(challengeType: ChallengeType): string {
+  const spec = getSpecializationMetrics(challengeType);
+  
+  // Get specialization metric names
+  const spec_metrics: Record<ChallengeType, [string, string]> = {
+    "formal": ["physics", "math"],
+    "normative": ["policy", "ethics"],
+    "procedural": ["code", "debugging"],
+    "strategic": ["finance", "strategy"],
+    "epistemic": ["knowledge", "communication"],
+    "custom": ["domain_metric_1", "domain_metric_2"]
+  };
+
+  const spec_metric_1 = spec_metrics[challengeType]?.[0] || "metric1";
+  const spec_metric_2 = spec_metrics[challengeType]?.[1] || "metric2";
+
+  const basePrompt = buildAnalystPrompt({
+    contextDescription: `a complete multi-turn conversation where a model attempted to solve a complex ${challengeType} challenge`,
+    temporalAssessment: true,
+    spec_metric_1,
+    spec_metric_2,
+    specDescriptions: spec.descriptions,
+    contextPlaceholder: 'the challenge',
+    scopePlaceholder: 'challenge scope',
+    useSingleResponsePathologies: false
+  });
+
+  // basePrompt already ends with "---", so just return it directly
+  return basePrompt;
+}
+
+/**
  * Generate analyst prompt for Policy gadgets (Policy Auditing, Policy Report)
  * Uses canonical GyroDiagnostics template adapted for single-response evaluation
  */
