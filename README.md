@@ -156,27 +156,45 @@ Compatible with ChatGPT, Claude, Gemini, LMArena, Poe, or any chat interface - n
 ### 💾 Local-First Storage
 All insights are stored locally in your browser extension. Export findings as needed for your own analysis and research.
 
-### 🔬 Rapid Test
-**NEW**: Rapid multi-dimensional quality assessment via JSON workflow. Provide an evaluation prompt to your AI and receive structured JSON scoring to compute behavioral quality metrics (QI, AR, SI) through rubric-based assessment across 12 evaluation criteria.
+### 🔧 Gadgets App
+**NEW**: Six specialized AI assessment tools for different use cases (3-10 minutes each).
+
+#### Analysis Tools (3-Step Workflow)
+**🔬 Rapid Test**: Rapid multi-dimensional quality assessment via JSON workflow
+- Provide evaluation prompt and receive structured JSON scoring
+- Behavioral Balance Gauge with Superintelligence Index (SI)
+- Pathology detection and multi-criteria evaluation
+- Save as insights or export reports
+
+**📊 Policy Auditing**: Extract claims & evidence from documents
+- Structured Claims & Evidence Graph extraction
+- Traceability mapping for policy documents
+
+**📋 Policy Reporting**: Create executive synthesis with attribution
+- Executive summaries with proper attribution
+- Key recommendations with rationale
+
+#### Treatment Tools (Pipeline Workflow)
+**🔍 Meta-Evaluation**: Evaluations of AI Evaluations for AI Safety
+- **3-Pass Sequential Pipeline**: 
+  - Pass 1: Analysis (Authority/Agency classifications, displacement patterns)
+  - Pass 2: Governance Mapping (Information, Inference, Intelligence, Governance flows)
+  - Pass 3: Improvement Suggestions (surgical recommendations with formatted summary)
+- **Dynamic THM Documentation**: Automatically includes THM framework docs in prompts
+- **Structured Output**: Visual risk bars showing displacement risk instances (GTD, IVD, IAD, IID)
+- **Perfect for**: Peer review meta-evaluation, AI safety alignment assessment
+
+**🦠 AI Infection Sanitization**: Remove hidden patterns and normalize text
+- Unicode normalization, whitespace standardization, pattern breaking
+
+**💊 Pathologies Immunity Boost**: Enhance content quality across 12 metrics
+- Structure and behavior metrics improvement
 
 **Key Features:**
-- **Behavioral Balance Gauge**: Visual indicator showing Superintelligence Index (SI) and behavioral balance status
-- **Multi-criteria Evaluation**: Rubric-based assessment across 12 quality dimensions
-- **Behavioral Quality Assessment**: Measures behavioral qualities through multi-dimensional assessment rubrics
-- **Pathology Detection**: Identifies specific behavioral failure modes through pattern analysis
-- **Single Analyst Evaluation**: One AI model provides structured JSON evaluation response
-- **Export Options**: Save results as insights or export Markdown/JSON reports
-
-**Perfect for**: Verifying AI responses, assessing behavioral quality, quality assurance for AI-generated content.
-
-**How It Works:**
-1. **Provide Prompt**: Copy the evaluation prompt to your AI interface (references your conversation/topic)
-2. **Receive JSON**: AI returns structured JSON with scoring data following the rubric
-3. **Automated Processing**: System calculates Quality Index (QI), Alignment Rate (AR), and Superintelligence Index (SI) from the JSON evaluation
-4. **Visual Results**: Behavioral Balance Gauge shows SI and balance status at a glance
-5. **Detailed Report**: Full scoring analysis and technical details
-
-**Note**: JSON-only workflow; no transcript storage or handling. Single analyst evaluation pattern.
+- **Progressive Disclosure**: Accordion interface prevents information overload
+- **Quick/Guided Modes**: Flexible workflow instructions
+- **Platform Agnostic**: Works with any AI chat interface
+- **Export Options**: Save results or export detailed reports
 
 ---
 

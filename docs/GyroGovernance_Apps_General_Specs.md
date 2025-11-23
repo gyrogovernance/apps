@@ -140,10 +140,9 @@ The AI Inspector extension uses a modular, app-based architecture with the follo
   - Insight Detail
   - Model Tracker
   - Suite Reports
-- **Rapid Test** - Accelerated quality assessment via JSON workflow
-  - Analysis Prompt (copy to AI)
-  - Single JSON Evaluation Response
-  - Results with Behavioral Balance Gauge
+- **Gadgets App** - Specialized AI assessment tools
+  - Analysis Tools: Rapid Test, Policy Auditing, Policy Reporting
+  - Treatment Tools: Meta-Evaluation, AI Infection Sanitization, Pathologies Immunity Boost
 - **Settings App** - Configuration and preferences
 - **Shared Components** - Reusable UI elements
 
@@ -189,11 +188,17 @@ Notebook (Root Router)
 │   ├── SuiteReports
 │   ├── ModelTracker
 │   └── InsightDetail
-├── RapidTestApp (via Gadgets)
-│   ├── Analysis Prompt
-│   ├── Single JSON Evaluation
-│   ├── Results Display
-│   └── BehavioralBalanceGauge
+├── GadgetsApp
+│   ├── GadgetSelector
+│   ├── GadgetAccordion
+│   ├── Analysis Tools
+│   │   ├── RapidTest (JSON workflow)
+│   │   ├── PolicyAuditing (Claims & Evidence)
+│   │   └── PolicyReporting (Executive Synthesis)
+│   └── Treatment Tools
+│       ├── MetaEvaluation (3-pass pipeline)
+│       ├── Sanitization (Text normalization)
+│       └── ImmunityBoost (Quality enhancement)
 └── SettingsApp
     ├── Data Management
     ├── Import/Export
@@ -281,25 +286,61 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 - **Progress Rings**: Visual completion indicators
 - **Status Badges**: Evaluation state and quality indicators
 
-### 5. Rapid Test
+### 5. Gadgets App
 
-**Purpose**: Accelerated quality assessment via JSON workflow
+**Purpose**: Specialized AI assessment tools for different use cases (3-10 minutes each)
 
 **Key Features**:
-- **JSON Input**: Provide evaluation prompt and receive structured JSON response from AI
-- **Single Analyst Evaluation**: One AI model scores using 12-metric rubric (structured JSON response)
-- **Behavioral Balance Gauge**: Visual SI indicator with color-coded thresholds
-- **Pathology Detection**: Identifies hallucinations, contradictions, goal drift, and other behavioral failure modes
-- **Export Options**: Save as insight or export Markdown/JSON
+- **Six Specialized Tools**: Quick assessment workflows for specific evaluation needs
+- **Two Tool Categories**: Analysis tools (with JSON evaluation) and Treatment tools (prompt pipelines)
+- **Progressive Disclosure**: Accordion interface prevents information overload
+- **Quick/Guided Modes**: Flexible workflow instructions based on user preference
+- **Draft-Based Storage**: Ephemeral data for gadget runs (optional save to Insights)
 
-**Workflow**:
-1. **Provide Prompt**: Copy the evaluation prompt to your AI interface (references your conversation/topic)
-2. **Receive JSON**: AI returns structured JSON with scoring data following the rubric
-3. **Automated Processing**: System calculates QI, AR, SI from the JSON evaluation
-4. **Visualization**: Display Behavioral Balance Gauge and detailed metrics breakdown
-5. **Export or Save**: Export reports or save as insight
+#### Analysis Tools (3-Step Workflow)
 
-**Technical Details**: See Key Concepts for metric definitions and geometric decomposition methodology. JSON-only workflow; no transcript storage or handling. Single analyst evaluation pattern.
+**🔬 Rapid Test**: Accelerated quality assessment via JSON workflow
+- JSON Input: Provide evaluation prompt and receive structured JSON response from AI
+- Single Analyst Evaluation: One AI model scores using 12-metric rubric
+- Behavioral Balance Gauge: Visual SI indicator with color-coded thresholds
+- Pathology Detection: Identifies behavioral failure modes
+- Export Options: Save as insight or export Markdown/JSON
+
+**📊 Policy Auditing**: Extract claims & evidence from documents
+- Claims & Evidence Graph extraction
+- Structured documentation of policy content
+- Traceability mapping
+
+**📋 Policy Reporting**: Create executive synthesis with attribution
+- Executive summaries with proper attribution
+- Key recommendations with rationale
+- Acknowledgment of limitations
+
+#### Treatment Tools (Pipeline Workflow)
+
+**🔍 Meta-Evaluation**: Evaluations of AI Evaluations for AI Safety
+- **3-Pass Sequential Pipeline**: Each pass builds on previous findings
+  - Pass 1: Analysis (Authority/Agency classifications, displacement patterns, traceability flows)
+  - Pass 2: Governance Mapping (Information, Inference, Intelligence, Governance flows)
+  - Pass 3: Improvement Suggestions (surgical recommendations with formatted summary)
+- **Dynamic THM Documentation**: Automatically loads and includes THM Grammar, THM, and THM Terms docs in prompts
+- **Structured Output Template**: AI generates formatted summary with visual risk bars (🟩 green for none, 🟥 red for detected, ⬜ white for remainder)
+- **No Analysis Step**: Unlike analysis gadgets, meta-evaluation only provides prompts (no JSON evaluation)
+
+**🦠 AI Infection Sanitization**: Remove hidden patterns and normalize text
+- Unicode normalization
+- Whitespace standardization
+- Homoglyph replacement
+- Pattern breaking
+
+**💊 Pathologies Immunity Boost**: Enhance content quality across 12 metrics
+- Structure metrics enhancement (Traceability, Variety, Accountability, Integrity)
+- Behavior metrics improvement (Truthfulness, Completeness, Groundedness, Literacy, Comparison, Preference)
+
+**Workflow Pattern**:
+- Analysis Tools: Task Prompt → Analysis Prompt → JSON Evaluation → Results Display
+- Treatment Tools: Task Prompt(s) → Use improved output (no analysis needed)
+- Meta-Evaluation: Pass 1 Prompt → Pass 2 Prompt → Pass 3 Prompt → Formatted Summary
 
 ### 6. Settings App
 
@@ -338,11 +379,12 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
    - Compare AI solutions across different approaches
    - Export results for policy development or research
 
-5. **Rapid Test** (Alternative Workflow)
-   - Provide evaluation prompt and receive JSON response from AI
-   - Get rapid quality assessment through automated metric calculation
-   - View Behavioral Balance Gauge and Superintelligence Index
-   - Save results as insights or export detailed reports
+5. **Gadgets App** (Alternative Workflows)
+   - **Rapid Test**: Provide evaluation prompt and receive JSON response from AI for rapid quality assessment
+   - **Policy Tools**: Extract claims/evidence or create executive summaries from policy documents
+   - **Meta-Evaluation**: 3-pass pipeline for evaluating AI evaluations using THM framework
+   - **Treatment Tools**: Sanitize text or enhance content quality across 12 metrics
+   - View results, save as insights, or export detailed reports
 
 ### Power User Workflow
 

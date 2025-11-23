@@ -1,5 +1,5 @@
-// Treatment Selector - Shows treatment gadgets in a two-step accordion
-// Users select between AI Infection Sanitization and Pathologies Immunity Boost
+// Treatment Selector - Shows treatment gadgets in an accordion
+// Users select between Meta-Evaluation, AI Infection Sanitization, and Pathologies Immunity Boost
 
 import React, { useState } from 'react';
 import { NotebookState, GadgetType } from '../../../types';
@@ -20,6 +20,13 @@ const TREATMENT_GADGETS: Array<{
   taskPrompt: string;
   icon: string;
 }> = [
+  {
+    id: 'meta-evaluation',
+    title: 'Meta-Evaluation',
+    description: 'Evaluations of AI Evaluations for AI Safety',
+    taskPrompt: '', // Handled specially with 3-pass prompts
+    icon: '🔍'
+  },
   {
     id: 'immunity-boost',
     title: 'Pathologies Immunity Boost',
@@ -124,20 +131,46 @@ const TreatmentSelector: React.FC<TreatmentSelectorProps> = ({
 
                 {isExpanded && (
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3 space-y-3">
-                    <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-2.5">
-                      <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
-                        <li>Copy prompt</li>
-                        <li>Paste into AI</li>
-                        <li>Add your content</li>
-                      </ol>
-                    </div>
+                    {gadget.id === 'meta-evaluation' ? (
+                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-2.5">
+                        <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
+                          Meta-Evaluation uses a 3-pass pipeline workflow. Click the card to start the full workflow.
+                        </p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdate({
+                              ui: {
+                                ...state.ui,
+                                gadgetType: 'meta-evaluation',
+                                gadgetView: 'accordion',
+                                gadgetDraftKey: `gadget_meta-evaluation_${Date.now()}`
+                              }
+                            });
+                          }}
+                          className="btn-primary w-full text-xs"
+                        >
+                          Start Meta-Evaluation Workflow
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-2.5">
+                          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
+                            <li>Copy prompt</li>
+                            <li>Paste into AI</li>
+                            <li>Add your content</li>
+                          </ol>
+                        </div>
 
-                    <div className="bg-gray-100 dark:bg-gray-800 rounded p-2.5">
-                      <CopyableDetails
-                        title="Prompt"
-                        content={gadget.taskPrompt}
-                      />
-                    </div>
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded p-2.5">
+                          <CopyableDetails
+                            title="Prompt"
+                            content={gadget.taskPrompt}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </GlassCard>

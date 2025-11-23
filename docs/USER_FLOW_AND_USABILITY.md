@@ -23,7 +23,7 @@
 
 ### Key Characteristics:
 - **Primary Paradigm:** Multi-session workspace with 6 specialized apps
-- **Core Methodology:** Three "P"s flow (Participation → Preparation → Provision) + 5 specialized gadget tools
+- **Core Methodology:** Three "P"s flow (Participation → Preparation → Provision) + 6 specialized gadget tools
 - **Platform Approach:** Clipboard-based, platform-agnostic
 - **Target Duration:** 30-40 minutes per complete evaluation; 3-10 minutes for gadget tools
 - **Output:** Structured insights with QI, SI, and AR metrics + governance recommendations + specialized assessments
@@ -39,7 +39,7 @@ The extension is structured around distinct **Apps** that function as sub-applic
 ```
 AI Inspector
 ├── 🏠 Welcome App (Home/Landing)
-├── 🤖 Gadgets (5 specialized AI assessment tools)
+├── 🤖 Gadgets (6 specialized AI assessment tools)
 ├── 📋 Challenges (Challenge selection & creation)
 ├── 📓 Journal (Active session management & workflow)
 ├── 💡 Insights (Completed evaluations library)
@@ -295,7 +295,7 @@ Report Section (Auto-Generated)
 
 **Flow: Welcome → Gadgets App → Tool Selection → Assessment Workflow**
 
-The Gadgets App provides five specialized assessment tools:
+The Gadgets App provides six specialized assessment tools:
 
 #### Tool Categories:
 
@@ -304,9 +304,10 @@ The Gadgets App provides five specialized assessment tools:
 - **📊 Policy Auditing:** Extract claims & evidence from documents
 - **📋 Policy Reporting:** Create executive synthesis with attribution
 
-**Treatment Tools (2-Step Workflow):**
-- **🦠 AI Infection Sanitization:** Remove hidden patterns and normalize text
-- **💊 Pathologies Immunity Boost:** Enhance content quality across 12 metrics
+**Treatment Tools (Pipeline Workflow):**
+- **🦠 AI Infection Sanitization:** Remove hidden patterns and normalize text (1-step)
+- **💊 Pathologies Immunity Boost:** Enhance content quality across 12 metrics (1-step)
+- **🔍 Meta-Evaluation:** Evaluations of AI Evaluations for AI Safety (3-pass pipeline)
 
 #### Gadgets Workflow Pattern:
 
@@ -354,12 +355,57 @@ Gadgets App Treatment Flow:
 └────────────────────────────────────────────────────┘
 ```
 
+**For Meta-Evaluation (3-Pass Pipeline):**
+
+```
+Gadgets App Meta-Evaluation Flow:
+┌────────────────────────────────────────────────────┐
+│ Pass 1: Analysis                                  │
+│ ├─ Pass 1 prompt (copy to AI with evaluation doc) │
+│ ├─ User submits to AI assistant                   │
+│ ├─ AI identifies Authority/Agency classifications │
+│ ├─ AI detects displacement patterns (GTD, IVD, IAD, IID) │
+│ ├─ AI maps traceability flows                     │
+│ └─ [Complete Pass 1] → Pass 2                     │
+├────────────────────────────────────────────────────┤
+│ Pass 2: Governance Mapping                        │
+│ ├─ Pass 2 prompt (copy to AI with Pass 1 findings) │
+│ ├─ User submits to AI assistant                   │
+│ ├─ AI maps governance structures                  │
+│ ├─ AI analyzes Information, Inference, Intelligence, Governance flows │
+│ ├─ AI consolidates related findings              │
+│ └─ [Complete Pass 2] → Pass 3                     │
+├────────────────────────────────────────────────────┤
+│ Pass 3: Improvement Suggestions                   │
+│ ├─ Pass 3 prompt (copy to AI with Pass 2 findings) │
+│ ├─ User submits to AI assistant                   │
+│ ├─ AI provides surgical improvement suggestions   │
+│ ├─ AI generates formatted summary with risk bars   │
+│ ├─ AI offers follow-up options                    │
+│ └─ [Complete] → Meta-Evaluation Complete          │
+├────────────────────────────────────────────────────┤
+│ Meta-Evaluation Complete Card                     │
+│ ├─ Confirmation message                            │
+│ ├─ Reminder: Requires human verification          │
+│ └─ [← Home] or [🔄 New Gadget]                      │
+└────────────────────────────────────────────────────┘
+```
+
+**Meta-Evaluation Features:**
+- **3-Pass Sequential Pipeline:** Each pass builds on previous findings
+- **Dynamic THM Documentation:** Automatically loads and includes THM Grammar, THM, and THM Terms docs in prompts
+- **Structured Output Template:** AI generates formatted summary with visual risk bars (🟩 green for none, 🟥 red for detected, ⬜ white for remainder)
+- **Quick/Guided Modes:** Same workflow flexibility as other gadgets
+- **No Analysis Step:** Unlike analysis gadgets, meta-evaluation only provides prompts (no JSON evaluation)
+
 **Key Features:**
 - **Draft-Based Storage:** Uses `drafts` object for ephemeral data
-- **No Session Persistence:** Results optional save to Insights library
-- **Flexible AI Usage:** Same or different AI models for different steps
+- **No Session Persistence:** Results optional save to Insights library (analysis gadgets only)
+- **Flexible AI Usage:** Same or different AI models for different steps/passes
 - **Progressive Disclosure:** Accordion interface prevents information overload
 - **Copyable Prompts:** Pre-built prompts for each tool type
+- **Dynamic Documentation:** Meta-evaluation automatically includes THM docs in prompts
+- **Workflow Modes:** Quick (minimal instructions) and Guided (step-by-step) modes for all gadgets
 
 ---
 
@@ -598,8 +644,8 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 - **Copy Variations:** Analyst 2 has 3 different prompt options for flexibility
 - **Custom Challenges:** Users can create their own evaluation scenarios
 - **Suite vs. Single:** Choose between comprehensive or focused evaluation
-- **Gadgets Tools:** Four specialized quick-assessment tools for different use cases
-- **Tool Selection Flexibility:** Choose between analysis tools (3-step) vs. treatment tools (1-step)
+- **Gadgets Tools:** Six specialized quick-assessment tools for different use cases
+- **Tool Selection Flexibility:** Choose between analysis tools (3-step) vs. treatment tools (1-step or 3-pass pipeline)
 
 **Weaknesses:**
 - **No Batch Operations:** Cannot delete/export multiple insights at once

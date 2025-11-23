@@ -8,7 +8,7 @@ export type InsightsView = 'library' | 'detail' | 'comparison' | 'suites' | 'tra
 export type RapidTestView = 'input' | 'analyst1' | 'analyst2' | 'results';
 export type RapidTestMode = 'quick' | 'standard' | 'custom';
 export type GadgetView = 'selector' | 'treatment-selector' | 'accordion';
-export type GadgetType = 'rapid-test' | 'policy-audit' | 'policy-report' | 'sanitize' | 'immunity-boost';
+export type GadgetType = 'rapid-test' | 'policy-audit' | 'policy-report' | 'sanitize' | 'immunity-boost' | 'meta-evaluation';
 
 export type ChallengeType = 'normative' | 'strategic' | 'epistemic' | 'procedural' | 'formal' | 'custom';
 export type Platform = 'lmarena' | 'chatgpt' | 'claude' | 'poe' | 'custom';

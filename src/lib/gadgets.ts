@@ -29,6 +29,13 @@ export const GADGETS: Record<GadgetType, {
     taskPrompt: POLICY_REPORT_TASK,
     isAnalysis: true
   },
+  'meta-evaluation': {
+    title: 'Meta-Evaluation',
+    icon: '🔍',
+    description: 'Evaluations of AI Evaluations for AI Safety',
+    taskPrompt: '', // Will be handled specially with 3-pass prompts
+    isAnalysis: false
+  },
   'sanitize': {
     title: 'AI Infection Sanitization',
     icon: '🦠',

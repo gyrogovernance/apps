@@ -78,7 +78,8 @@ module.exports = {
         { from: 'assets/media', to: 'assets/media', noErrorOnMissing: true },
         { from: 'assets/fonts', to: 'assets/fonts', noErrorOnMissing: true },
         { from: 'assets/files', to: 'assets/files', noErrorOnMissing: true },
-        { from: 'assets/icons', to: 'assets/icons', noErrorOnMissing: true }
+        { from: 'assets/icons', to: 'assets/icons', noErrorOnMissing: true },
+        { from: 'src/lib/thm-docs', to: 'lib/thm-docs', noErrorOnMissing: true }
       ]
     })
   ]
