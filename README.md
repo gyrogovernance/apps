@@ -36,7 +36,7 @@ Transform everyday AI conversations into rigorous governance analysis for UN Sus
 
 </div>
 
-![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
+![Ai Inspector Apps Overview](/assets/ai_inspector_screenshots_1280x800.png)
 
 ---
 
@@ -56,7 +56,7 @@ Transform everyday AI conversations into rigorous governance analysis for UN Sus
 
 **Two powerful workflows for governance analysis:**
 
-### 1. Full GyroDiagnostics Evaluation (30-40 min)
+### 1. Full GyroDiagnostics Evaluation (30-60 min)
 Validate AI policy recommendations and governance proposals.
 - **Protocol**: Participation (select challenge) → Preparation (synthesis) → Provision (inspection)
 - **Output**: Three key indices (Quality Index, Superintelligence Index, Alignment Rate) + 20 detailed metrics
