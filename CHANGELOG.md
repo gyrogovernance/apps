@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.0] - 2025-11-24
+## [1.1.0] - 2025-11-23
 
 ### Added
 
@@ -43,8 +43,6 @@ The Gadgets App provides six specialized tools for different AI assessment use c
 - **Documentation**: Updated all docs (README, USER_FLOW, SPECS) to reflect complete Gadgets App with all 6 tools
 - **TypeScript**: Fixed null safety issues in `report-generator.ts`
 - **Architecture**: Centralized gadget metadata in `src/lib/gadgets.ts` for maintainability
-
----
 
 ---
 
