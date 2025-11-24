@@ -26,38 +26,17 @@
 
 # 🔍 AI Inspector - Browser Extension
 
-![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
+Browser extension Mitigating Jailbreaks, Deceptive Alignment, and X-Risk through quality assessment of AI outputs and safety documentation. Works with any AI chat (ChatGPT, Claude, Gemini, etc.) using clipboard-based workflow. No-code tool, no API keys are necessary, and none of your data are sent to servers.
 
+Transform everyday AI conversations into rigorous governance analysis for UN Sustainable Development Goals, community policy, and AI safety.
 
 <div align="center">
 
-<a href="https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb"><img alt="Add to Chrome" width="220" src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white"></a>
+[![Add to Chrome](https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok)
 
 </div>
 
-**Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
-
-> **🎉 NEW RELEASE v1.1**  
-> Complete AI governance analysis platform with Rapid Test. See [CHANGELOG](/CHANGELOG.md) for full feature list.
-
----
-
-![Ai Inspector Browser Extension](/assets/ai_inspector_browser_extension.jpg)
-
----
-
-## 🎯 The Challenge
-
-Communities and organizations require validation for AI-generated policy recommendations across domains like climate action, healthcare equity, and resource allocation. Current barriers include restricted access to advanced AI systems, general capability testing that doesn't address governance-specific quality, and high expertise requirements for rigorous evaluation. AI Inspector addresses this by providing platform-agnostic mathematical assessment through a clipboard-based workflow, making sophisticated AI evaluation accessible to any community with access to AI chat interfaces.
-
----
-
-## What You Get
-
-**You provide**: A governance challenge  
-**AI provides**: Structured reasoning through synthesis  
-**AI Inspector provides**: Content quality assessment and AI model behavior inspection  
-**You receive**: Validated insights stored locally for your analysis
+![Ai Inspector Apps Overview](/assets/app_pages_overview_1.png)
 
 ---
 
@@ -67,185 +46,58 @@ Communities and organizations require validation for AI-generated policy recomme
 
 [![AI Inspector Demo](https://img.youtube.com/vi/UGNsbDJCDMs/maxresdefault.jpg)](https://www.youtube.com/watch?v=UGNsbDJCDMs)
 
-*Click to see the AI Inspector in action - from challenge selection to mathematical analysis*
+*Click to see AI Inspector in action - from challenge selection to mathematical analysis*
 
 </div>
 
 ---
 
-## 🚀 Quick Start (30 seconds)
+## What It Does
 
-<div align="center">
+**Two powerful workflows for governance analysis:**
 
-<a href="https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb"><img alt="Add to Chrome" height="36" src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?style=flat&logo=googlechrome&logoColor=white"></a>
+### 1. Full GyroDiagnostics Evaluation (30-40 min)
+Validate AI policy recommendations and governance proposals.
+- **Protocol**: Participation (select challenge) → Preparation (synthesis) → Provision (inspection)
+- **Output**: Three key indices (Quality Index, Superintelligence Index, Alignment Rate) + 20 detailed metrics
+- **Use Case**: Energy transition, healthcare equity, climate adaptation, SDG challenges
 
-</div>
+### 2. Quick Gadgets (3-10 min)
+Six specialized tools for rapid assessment:
 
-1. **Install from Store (recommended)**: [Add to Chrome](https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok?utm_source=item-share-cb)
-2. **Or Developer Install**:
-   - **Download**: Get the latest release from [Releases](https://github.com/gyrogovernance/apps/releases)
-   - **Extract**: Unzip to any folder
-   - **Load**: Open `chrome://extensions/` → Enable "Developer mode" → "Load unpacked" → Select folder
-3. **Launch**: Click extension icon in toolbar ✅
+**Analysis Tools**:
+- **🔬 Rapid Test**: Quick quality metrics for any AI output
+- **📊 Policy Auditing**: Extract claims & evidence from documents
+- **📋 Policy Reporting**: Create executive synthesis with attribution
 
----
-
-## 📖 How to Use
-
-1. **Open the extension** side panel by clicking the icon
-2. **Select a challenge** (or create your own):
-   - Energy transition policy
-   - Healthcare equity
-   - Climate adaptation
-   - Any SDG-aligned topic
-3. **Copy prompts** to your AI chat (ChatGPT, Claude, etc.)
-4. **Capture responses** using the clipboard
-5. **Get inspected analysis** with three key metrics:
-   - Quality Index (overall performance)
-   - Alignment Rate (reasoning efficiency)
-   - Superintelligence Index (behavioral balance)
-6. **Export results** as JSON/Markdown for local storage and analysis
-
-**No API keys needed** - works with any AI chat interface through clipboard.
+**Treatment Tools**:
+- **🔍 Meta-Evaluation**: Assess AI safety documentation (model cards, eval reports) using [The Human Mark](https://github.com/gyrogovernance/tools) framework. Detects displacement risks (GTD, IVD, IAD, IID) in 3-task pipeline. Essential for AI safety labs.
+- **🦠 AI Infection Sanitization**: Remove hidden patterns and normalize text
+- **💊 Pathologies Immunity Boost**: Enhance content quality across 12 metrics
 
 ---
 
-## 📚 Key Concepts
+## Quick Start
 
-<details>
-<summary><strong>GyroDiagnostics Framework</strong></summary>
+1. **Install**: [Add to Chrome](https://chromewebstore.google.com/detail/hcblmheihnlngnogobgclhfahjljnbok)
+2. **Click** extension icon in toolbar
+3. **Choose** full evaluation or quick gadget
+4. **Copy** prompts to your AI chat (ChatGPT, Claude, etc.)
+5. **Paste** responses back into extension
+6. **Get** quality metrics & export results
 
-Mathematical framework for AI alignment measurement through rubric-based scoring across 12 metrics in three levels (Structure, Behavior, Specialization), followed by geometric decomposition yielding Quality Index (QI: 0-100% aggregate performance), Alignment Rate (AR: quality points per minute), and Superintelligence Index (SI: behavioral balance, theoretical optimum = 100).
-
-</details>
-
-<details>
-<summary><strong>Superintelligence Index (SI)</strong></summary>
-
-Measures behavioral balance as the optimum measure of alignment. Derived from aperture ratio against target A* ≈ 0.02070 via Hodge decomposition on K₄ graph topology. Higher SI correlates with balanced reasoning and lower pathology rates.
-
-</details>
-
-<details>
-<summary><strong>Behavioral Balance</strong></summary>
-
-Equilibrium among measurable reasoning qualities (coherence, accuracy, adaptability). Assessed via K₄ tetrahedral topology and Hodge decomposition, separating gradient components (coherence) from cycle components (differentiation).
-
-</details>
+**Works with any AI** - No API keys needed. Clipboard-based workflow keeps data local.
 
 ---
 
-## ✨ Core Capabilities
+## Why This Matters
 
-**Theoretical Grounding**: Powered by GyroDiagnostics, which measures how geometric necessities from the Common Governance Model (CGM) manifest as behavioral qualities in AI reasoning. We capture these through rubric-based assessment, then derive quantitative metrics via geometric decomposition.
+The [2025 AI Safety Index](https://futureoflife.org/ai-safety-index-summer-2025/) shows meaningful AI evaluation remains restricted to corporate insiders. Communities need accessible inspection tools.
 
-### 🔬 Mathematical Inspection
-Inspects AI responses across 12 metrics in three dimensions:
-- **Reasoning Coherence**: Foundational behaviors like traceability and integrity
-- **Behavior**: Accuracy and reliability patterns
-- **Specialization**: Domain-specific expertise
+**AI Inspector provides platform-agnostic mathematical assessment through a clipboard-based workflow, making sophisticated evaluation accessible to any community.**
 
-### 📊 Three Key Indices
-- **Quality Index**: Weighted performance score (0-100%)
-- **Alignment Rate**: Quality per minute (detects rushed vs. thorough reasoning)
-- **Superintelligence Index**: Geometric balance measure (theoretical optimum = 100)
-
-### 🌐 Works Everywhere
-Compatible with ChatGPT, Claude, Gemini, LMArena, Poe, or any chat interface - no special access required.
-
-### 💾 Local-First Storage
-All insights are stored locally in your browser extension. Export findings as needed for your own analysis and research.
-
-### 🔧 Gadgets App
-**NEW**: Six specialized AI assessment tools for different use cases (3-10 minutes each).
-
-#### Analysis Tools (3-Step Workflow)
-**🔬 Rapid Test**: Rapid multi-dimensional quality assessment via JSON workflow
-- Provide evaluation prompt and receive structured JSON scoring
-- Behavioral Balance Gauge with Superintelligence Index (SI)
-- Pathology detection and multi-criteria evaluation
-- Save as insights or export reports
-
-**📊 Policy Auditing**: Extract claims & evidence from documents
-- Structured Claims & Evidence Graph extraction
-- Traceability mapping for policy documents
-
-**📋 Policy Reporting**: Create executive synthesis with attribution
-- Executive summaries with proper attribution
-- Key recommendations with rationale
-
-#### Treatment Tools (Pipeline Workflow)
-**🔍 Meta-Evaluation**: Evaluations of AI Evaluations for AI Safety
-- **3-Task Sequential Pipeline**: 
-  - Task 1: Detection (Authority/Agency classifications, displacement patterns)
-  - Task 2: Processing (Information, Inference, Intelligence, Governance flows)
-  - Task 3: Treatment (surgical recommendations with formatted summary)
-- **Dynamic THM Documentation**: Automatically includes THM framework docs in prompts
-- **Structured Output**: Visual risk bars showing displacement risk instances (GTD, IVD, IAD, IID)
-- **Perfect for**: Peer review meta-evaluation, AI safety alignment assessment
-
-**🦠 AI Infection Sanitization**: Remove hidden patterns and normalize text
-- Unicode normalization, whitespace standardization, pattern breaking
-
-**💊 Pathologies Immunity Boost**: Enhance content quality across 12 metrics
-- Structure and behavior metrics improvement
-
-**Key Features:**
-- **Progressive Disclosure**: Accordion interface prevents information overload
-- **Quick/Guided Modes**: Flexible workflow instructions
-- **Platform Agnostic**: Works with any AI chat interface
-- **Export Options**: Save results or export detailed reports
-
----
-
-## 📖 Who This Helps
-
-**Communities**: Evidence-based policy development  
-**Researchers**: Reproducible governance experiments  
-**Policy Makers**: Quality assessment of AI recommendations  
-**NGOs**: Validated advocacy proposals  
-**Citizens**: Direct participation in AI governance
-
----
-
-## 📖 Documentation
-
-- **[General Specifications](docs/GyroGovernance_Apps_General_Specs.md)** - Comprehensive overview of architecture, features, and user journey
-- **[GyroDiagnostics Specs](docs/GyroDiagnostics_General_Specs.md)** - Core evaluation methodology and metrics
-- **[Import/Export Guide](docs/IMPORT_EXPORT.md)** - Data management and migration
- - **[Development Testing Guide](DEV_Server.md)** - Dev server, builds, and unified assets layout
-
-### Scripts
-
-- `npm run dev-server`: Hot reload dev server at `http://localhost:3000/sidepanel.html`
-- `npm run build`: Production build to `dist/`
-- `npm run serve-static`: Build then serve static `dist/` files
-
-### Assets Layout (Dev and Prod)
-
-- Source of truth: `assets/`
-  - `assets/icons/*`
-  - `assets/media/*`
-  - `assets/fonts/*`
-  - `assets/files/results.zip`
-
-- Dev server serves assets at `/assets/...`
-- Production build copies the same structure to `dist/assets/...`
-
----
-
-## 🎯 Why This Matters
-
-The [2025 AI Safety Index](https://futureoflife.org/ai-safety-index-summer-2025/) shows meaningful AI evaluation remains restricted to corporate insiders. Communities tackling real challenges need accessible inspection tools.
-
-Our solution: Use whatever AI you can access, add mathematical rigor to inspect the outputs.
-
----
-
-## 📈 What Makes This Different
-
-| Conventional AI Tools | AI Inspector Framework |
-|----------------------|--------------------------|
+| Conventional Tools | AI Inspector |
+|-------------------|--------------|
 | Requires enterprise access | Uses your existing chat access |
 | Tests capabilities | Inspects governance alignment |
 | Proprietary black box | Open-source transparency |
@@ -254,54 +106,70 @@ Our solution: Use whatever AI you can access, add mathematical rigor to inspect 
 
 ---
 
-## 🎓 How It Works
+## Who Uses It
 
-### Three-Phase Protocol
-1. **Participation**: Frame your governance challenge
-2. **Preparation**: AI generates 6 turns across 2 epochs
-3. **Provision**: Mathematical inspection produces validated report
-
-### Tensegrity Geometry
-The framework uses tetrahedral (K₄) topology to eliminate bias:
-- Maps reasoning to geometric structure
-- Decomposes into coherence vs. adaptation components
-- Measures against theoretical optimum (A* ≈ 0.02070)
+**Communities & NGOs**: Validate advocacy proposals and develop evidence-based policy  
+**AI Safety Labs**: Evaluate documentation via Meta-Evaluation gadget  
+**Policy Researchers**: Conduct reproducible governance experiments  
+**Citizens**: Direct participation in AI governance
 
 ---
 
-## ❓ Frequently Asked Questions
+## Technical Foundation
 
-**Do I need to know math to use this?**  
-No. The extension handles all calculations automatically. You just provide the governance challenge and AI responses.
+<details>
+<summary><strong>GyroDiagnostics Framework</strong></summary>
 
-**Which AI platforms work with AI Inspector?**  
-Any AI chat interface. Tested with ChatGPT, Claude, Gemini, Poe, LMArena. No API keys needed.
+Mathematical framework measuring AI alignment through:
+- 12 metrics across Structure, Behavior, Specialization
+- Geometric decomposition via Hodge theory
+- K₄ tetrahedral topology eliminating measurement bias
 
-**How long does it take?**  
-Quick Test: 10 minutes. Full evaluation: 30-60 minutes including AI response time.
+**Quality Index (QI):** 0-100% aggregate performance  
+**Alignment Rate (AR):** Quality points per minute  
+**Superintelligence Index (SI):** Behavioral balance (optimum = 100)
 
-**Is my data private?**  
-Yes. Everything stays in your browser's local storage. No data is sent externally unless you choose to export.
+Based on Common Governance Model (CGM) - geometric necessities manifesting as behavioral qualities.
 
-**Can I trust the scores?**  
-Metrics are grounded in formal mathematics (Common Governance Model) and validated through open research. Results are reproducible and auditable.
+</details>
 
-**What's the license?**  
-MIT License. Free to use, modify, and share.
+<details>
+<summary><strong>The Human Mark Framework</strong></summary>
+
+Used in Meta-Evaluation gadget. A formal classification system mapping all AI safety failures to four root causes:
+- GTD: Governance Traceability Displacement
+- IVD: Information Variety Displacement
+- IAD: Inference Accountability Displacement
+- IID: Intelligence Integrity Displacement
+
+Provides formal grammar and testing protocols for AI safety documentation.
+
+</details>
 
 ---
 
-## 🐛 Issues & Support
+## Documentation
 
-Found a bug or have a suggestion? Please report it on [GitHub Issues](https://github.com/gyrogovernance/apps/issues) so we can improve the extension.
+- [General Specifications](docs/GyroGovernance_Apps_General_Specs.md) - Architecture & features
+- [GyroDiagnostics Specs](docs/GyroDiagnostics_General_Specs.md) - Core methodology
+- [Import/Export Guide](docs/IMPORT_EXPORT.md) - Data management
+- [Development Guide](DEV_Server.md) - Build & test instructions
 
 ---
 
-## 📄 License
+## FAQ
 
-MIT License. See [LICENSE](LICENSE) for details.
+**Do I need math knowledge?** No. Extension handles calculations automatically.  
+**Which AI platforms work?** Any chat interface. No API keys needed.  
+**Is my data private?** Yes. Everything stays in your browser unless you export.
 
-© 2025 Basil Korompilias.
+---
+
+## License
+
+MIT License - Free to use, modify, and share.
+
+© 2025 Basil Korompilias
 
 ---
 
