@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2025-11-24
+
+### Added
+
+**🤖 Gadgets App - Complete Suite of 6 Specialized AI Assessment Tools**
+
+The Gadgets App provides six specialized tools for different AI assessment use cases, each optimized for specific workflows:
+
+**Analysis Tools (3-Step Accordion Workflow):**
+- **🔬 Rapid Test**: Quick GyroDiagnostics metric computation for rapid AI output evaluation
+- **📊 Policy Auditing**: Extract claims & evidence from documents with structured analysis
+- **📋 Policy Reporting**: Create executive synthesis with attribution for policy documents
+
+**Treatment Tools:**
+- **🦠 AI Infection Sanitization**: Remove hidden patterns and normalize Unicode/whitespace in text (1-step workflow)
+- **💊 Pathologies Immunity Boost**: Enhance content quality across 12 GyroDiagnostics metrics (1-step workflow)
+- **🔍 Meta-Evaluation**: Evaluations of AI Evaluations for AI Safety using **The Human Mark** framework (3-task sequential pipeline)
+  - Task 1: Detection - Identify Authority/Agency classifications and displacement patterns (GTD, IVD, IAD, IID)
+  - Task 2: Processing - Map governance structures and analyze Information, Inference, Intelligence, Governance flows
+  - Task 3: Treatment - Provide surgical improvement suggestions with formatted summary and visual risk bars
+  - Dynamic THM documentation integration (Grammar, THM, Terms) loaded automatically into prompts
+  - Structured output template with visual risk indicators
+
+**Gadgets App Features:**
+- Unified accordion-based workflow for analysis tools (Task → Analysis → Results)
+- Simplified treatment workflows for quick content improvement
+- Progressive disclosure with step-by-step guidance
+- Draft-based storage for ephemeral gadget runs
+- Optional save to Insights library for analysis gadgets
+- Quick and Guided mode options for all gadgets
+- Platform-agnostic clipboard-based workflow (no API keys required)
+
+### Changed
+- **Documentation**: Updated all docs (README, USER_FLOW, SPECS) to reflect complete Gadgets App with all 6 tools
+- **TypeScript**: Fixed null safety issues in `report-generator.ts`
+- **Architecture**: Centralized gadget metadata in `src/lib/gadgets.ts` for maintainability
+
+---
+
+---
+
 ## [1.0.4] - 2025-10-01
 
 ### Changed

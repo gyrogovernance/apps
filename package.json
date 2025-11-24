@@ -1,6 +1,6 @@
 {
   "name": "ai-inspector",
-  "version": "1.0",
+  "version": "1.1.0",
   "description": "Browser extension to inspect AI outputs for truth, alignment, and governance quality using mathematical assessment",
   "scripts": {
     "dev-server": "webpack serve --config webpack.dev.config.js",
