@@ -36,7 +36,7 @@ Transform everyday AI conversations into rigorous governance analysis for UN Sus
 
 </div>
 
-![Ai Inspector Apps Overview](/assets/ai_inspector_screenshots_1280x800.png)
+![Ai Inspector Apps Overview](/assets/ai_inspector_screenshots_1280x800.jpg)
 
 ---
 
