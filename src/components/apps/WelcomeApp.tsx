@@ -237,7 +237,7 @@ const WelcomeApp: React.FC<WelcomeAppProps> = ({
                   </div>
                   <div className="p-2 bg-white/40 dark:bg-gray-800/60 rounded text-xs">
                     <div className="font-semibold text-red-700 dark:text-red-300 mb-0.5">🤖 Gadgets</div>
-                    <div className="text-gray-600 dark:text-gray-300">Quick AI assessment tools (Rapid Test, Policy Analysis, AI ContentTreatment)</div>
+                    <div className="text-gray-600 dark:text-gray-300">Quick AI assessment tools (Rapid Test, Policy Analysis, Meta-Evals, AI Content Treatment)</div>
                   </div>
                 </div>
 

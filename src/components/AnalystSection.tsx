@@ -102,7 +102,7 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
     }
     
     if (!modelName.trim()) {
-      toast.show('Please enter a model name', 'error');
+      toast.show('Add model name to proceed', 'error');
       return;
     }
     
@@ -362,18 +362,13 @@ const AnalystSection: React.FC<AnalystSectionProps> = ({
             <button
               onClick={handleValidate}
               className="btn-primary mt-3"
-              disabled={!jsonInput.trim() || !modelName.trim()}
+              disabled={!jsonInput.trim()}
             >
               Next
             </button>
-            {(!jsonInput.trim() || !modelName.trim()) && (
+            {!jsonInput.trim() && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {!jsonInput.trim() && !modelName.trim() 
-                  ? 'Please paste JSON response and enter model name'
-                  : !jsonInput.trim() 
-                    ? 'Please paste JSON response'
-                    : 'Please enter model name'
-                }
+                Please paste JSON response to continue
               </p>
             )}
           </div>

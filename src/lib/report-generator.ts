@@ -78,14 +78,21 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
     throw new Error(`Missing epochs: ${missingEpochs.join(', ')}. Please complete all epochs before generating the report.`);
   }
 
+  // At this point, all analyst evaluations are guaranteed to be non-null
+  // TypeScript needs explicit assertions after the validation checks
+  const a1e1NonNull = a1e1!;
+  const a2e1NonNull = a2e1!;
+  const a1e2NonNull = a1e2!;
+  const a2e2NonNull = a2e2!;
+
   // Aggregate and calculate QI per epoch
-  const agg1 = aggregateAnalysts(a1e1, a2e1);
+  const agg1 = aggregateAnalysts(a1e1NonNull, a2e1NonNull);
   const s1 = calculateStructureAverage(agg1.structure);
   const b1 = calculateBehaviorAverage(agg1.behavior);
   const sp1 = calculateSpecializationAverage(agg1.specialization);
   const QI1 = calculateQualityIndex(s1, b1, sp1);
 
-  const agg2 = aggregateAnalysts(a1e2, a2e2);
+  const agg2 = aggregateAnalysts(a1e2NonNull, a2e2NonNull);
   const s2 = calculateStructureAverage(agg2.structure);
   const b2 = calculateBehaviorAverage(agg2.behavior);
   const sp2 = calculateSpecializationAverage(agg2.specialization);
@@ -135,14 +142,14 @@ export async function generateInsightFromSession(session: Session): Promise<Gove
 
   // Union pathologies across all 4 analyst evaluations
   const allDetected = Array.from(new Set([
-    ...a1e1.pathologies, ...a2e1.pathologies, ...a1e2.pathologies, ...a2e2.pathologies
+    ...a1e1NonNull.pathologies, ...a2e1NonNull.pathologies, ...a1e2NonNull.pathologies, ...a2e2NonNull.pathologies
   ]));
-  const totalPathologies = a1e1.pathologies.length + a2e1.pathologies.length +
-                           a1e2.pathologies.length + a2e2.pathologies.length;
+  const totalPathologies = a1e1NonNull.pathologies.length + a2e1NonNull.pathologies.length +
+                           a1e2NonNull.pathologies.length + a2e2NonNull.pathologies.length;
   const pathologyFrequency = totalPathologies / 4; // per-evaluation average
 
   // Combine insights from all analyst evaluations
-  const combinedInsights = `# Epoch 1 - Analyst 1\n\n${a1e1.insights}\n\n# Epoch 1 - Analyst 2\n\n${a2e1.insights}\n\n# Epoch 2 - Analyst 1\n\n${a1e2.insights}\n\n# Epoch 2 - Analyst 2\n\n${a2e2.insights}`;
+  const combinedInsights = `# Epoch 1 - Analyst 1\n\n${a1e1NonNull.insights}\n\n# Epoch 1 - Analyst 2\n\n${a2e1NonNull.insights}\n\n# Epoch 2 - Analyst 1\n\n${a1e2NonNull.insights}\n\n# Epoch 2 - Analyst 2\n\n${a2e2NonNull.insights}`;
 
   // Extract raw transcripts for auditability
   const transcripts = {

@@ -61,7 +61,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
   const step1HeaderRef = useRef<HTMLDivElement | null>(null);
   const step2HeaderRef = useRef<HTMLDivElement | null>(null);
   
-  // For meta-evaluation, we need 3 steps (Pass 1, 2, 3)
+  // For meta-evaluation, we need 3 steps (Task 1, 2, 3)
   const [steps, setSteps] = useState<Record<number, StepState>>(
     isMetaEvaluation
       ? {
@@ -117,6 +117,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
 
   const draftKey = state.ui.gadgetDraftKey || `gadget_${Date.now()}`;
   
+  // Only create draft once on mount if it doesn't exist - prevent write loops
   useEffect(() => {
     if (!state.drafts?.[draftKey]) {
       onUpdate({
@@ -134,7 +135,8 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
         }
       });
     }
-  }, [draftKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run once on mount to prevent loops
 
   const draftData = state.drafts?.[draftKey] || {};
   const analyst1 = draftData.analyst1 as AnalystResponse | undefined;
@@ -146,21 +148,30 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
   const quickMode = state.ui.gadgetsQuickMode ?? true;
 
   // Persist model name to draft whenever it changes (use model_name for gadgets)
+  // Only update if modelName actually changed from what's stored to prevent write loops
+  const prevModelNameRef = React.useRef<string | undefined>(undefined);
   useEffect(() => {
-    onUpdate({
-      drafts: {
-        ...state.drafts || {},
-        [draftKey]: { 
-          ...draftData, 
-          model_name: modelName, 
-          model_analyst1: modelName,
-          durationMinutes: (typeof draftData.durationMinutes === 'number' && draftData.durationMinutes > 0)
-            ? draftData.durationMinutes
-            : GADGET_CONSTANTS.DEFAULT_DURATION_MINUTES
+    const currentModelName = draftData.model_name || draftData.model_analyst1;
+    // Skip if this is the initial render and modelName matches what's in storage
+    // Only write if modelName actually changed from previous render AND differs from storage
+    if (prevModelNameRef.current !== modelName && currentModelName !== modelName) {
+      onUpdate({
+        drafts: {
+          ...state.drafts || {},
+          [draftKey]: { 
+            ...draftData, 
+            model_name: modelName, 
+            model_analyst1: modelName,
+            durationMinutes: (typeof draftData.durationMinutes === 'number' && draftData.durationMinutes > 0)
+              ? draftData.durationMinutes
+              : GADGET_CONSTANTS.DEFAULT_DURATION_MINUTES
+          }
         }
-      }
-    });
-  }, [modelName, draftKey]);
+      });
+    }
+    prevModelNameRef.current = modelName;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modelName, draftKey]); // Only depend on modelName and draftKey to prevent loops
 
   useEffect(() => {
     if (isAnalysisGadget) {
@@ -574,10 +585,10 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
             </GlassCard>
           )}
 
-          {/* META-EVALUATION: 3-Pass Pipeline */}
+          {/* META-EVALUATION: 3-Task Pipeline */}
           {isMetaEvaluation && (
             <>
-              {/* Pass 1 */}
+              {/* Task 1 */}
               <GlassCard className={`transition-all duration-300 ${steps[1].expanded ? stepThemes[1].borderClass + ' border-2' : 'border-gray-200 dark:border-gray-700'}`}>
                 <div
                   className="flex items-center justify-between cursor-pointer py-3"
@@ -592,7 +603,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       {steps[1].completed ? '✓' : '1'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Pass 1: Analysis</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Detection</h3>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -645,28 +656,34 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       {/* Guided Mode: Step-by-step instructions */}
                       {!quickMode && (
                         <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-4 space-y-3 mb-3">
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white mb-2">
-                            Meta-Evaluation Workflow
-                          </p>
                           <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
-                            <div className="font-semibold mb-1">Pass 1: Analysis</div>
-                            <div className="flex items-start space-x-2">
-                              <span className="font-medium">1.</span>
-                              <span>
-                                <strong>Copy Pass 1 prompt:</strong> Copy the Pass 1 prompt below
-                              </span>
+                            <div className="font-semibold mb-2 text-gray-900 dark:text-white">Meta-Evaluation Gadget</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                            <p className="mb-1"><strong>Meta-Evaluation Gadget:</strong></p>
+                              <p>In-chat evaluation workflow for AI safety evaluations (model cards, eval reports, safety assessment documentation). Provides <strong>3 prompts</strong> you run in your own environment (ChatGPT, Claude, local LLM, etc.) to detect failures, gaps, and recommendations supported by <strong>✋ The Human Mark:</strong> a formal classification system that maps all AI safety failures to four root causes.</p>
+                              <p><strong>More info:</strong> <a href="https://github.com/gyrogovernance/tools" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">https://github.com/gyrogovernance/tools</a></p>
                             </div>
-                            <div className="flex items-start space-x-2">
-                              <span className="font-medium">2.</span>
-                              <span>
-                                <strong>Submit to AI:</strong> Paste it into your AI assistant along with the evaluation document you want to meta-evaluate
-                              </span>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                              <span className="font-medium">3.</span>
-                              <span>
-                                <strong>Continue:</strong> Once Pass 1 is complete, proceed to Pass 2
-                              </span>
+                            <div className="border-t border-blue-200 dark:border-blue-700 pt-3 mt-3">
+                              <div className="font-semibold mb-2 text-gray-900 dark:text-white">Detection</div>
+                              <div className="space-y-2 text-xs">
+                                <p className="font-semibold mb-2 text-gray-800 dark:text-gray-200">Run all 3 tasks in one chat session. Don't start a new chat between tasks.</p>
+                                <div className="flex items-start space-x-2">
+                                  <span className="font-medium">1.</span>
+                                  <span>Copy Task 1 prompt below</span>
+                                </div>
+                                <div className="flex items-start space-x-2">
+                                  <span className="font-medium">2.</span>
+                                  <span>Paste into AI assistant + your evaluation document</span>
+                                </div>
+                                <div className="flex items-start space-x-2">
+                                  <span className="font-medium">3.</span>
+                                  <span>Submit and wait for completion</span>
+                                </div>
+                                <div className="flex items-start space-x-2">
+                                  <span className="font-medium">4.</span>
+                                  <span>Proceed to Task 2 when ready</span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -675,7 +692,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       <div className="space-y-3">
                         <div className="border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg overflow-hidden">
                           <CopyableDetails
-                            title="Pass 1: Analysis"
+                            title="Task Prompt"
                             content={loadingDocs ? 'Loading THM documentation...' : generateMetaEvaluationPass1(thmDocs?.grammar)}
                             defaultOpen={!quickMode}
                           />
@@ -693,13 +710,13 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       }}
                       className="btn-primary w-full"
                     >
-                      Complete Pass 1 → Continue to Pass 2
+                      Complete Task 1 → Continue to Task 2
                     </button>
                   </div>
                 )}
               </GlassCard>
 
-              {/* Pass 2 */}
+              {/* Task 2 */}
               {steps[2] && (
               <GlassCard className={`transition-all duration-300 ${steps[2].expanded ? stepThemes[2].borderClass + ' border-2' : 'border-gray-200 dark:border-gray-700'}`}>
                 <div
@@ -715,7 +732,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       {steps[2].completed ? '✓' : '2'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Pass 2: Governance Mapping</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Processing</h3>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -731,24 +748,24 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                     {!quickMode && (
                       <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-4 space-y-3 mb-3">
                         <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
-                          <div className="font-semibold mb-1">Pass 2: Governance Mapping</div>
-                          <div className="flex items-start space-x-2">
-                            <span className="font-medium">1.</span>
-                            <span>
-                              <strong>Copy Pass 2 prompt:</strong> Copy the Pass 2 prompt below
-                            </span>
-                          </div>
-                          <div className="flex items-start space-x-2">
-                            <span className="font-medium">2.</span>
-                            <span>
-                              <strong>Submit to AI:</strong> Paste it into the same AI chat, including Pass 1 findings
-                            </span>
-                          </div>
-                          <div className="flex items-start space-x-2">
-                            <span className="font-medium">3.</span>
-                            <span>
-                              <strong>Continue:</strong> Once Pass 2 is complete, proceed to Pass 3
-                            </span>
+                          <div className="font-semibold mb-2 text-gray-900 dark:text-white">Processing</div>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">1.</span>
+                              <span>Copy Task 2 prompt below</span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">2.</span>
+                              <span>Paste into same chat</span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">3.</span>
+                              <span>Submit and wait for completion</span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">4.</span>
+                              <span>Proceed to Task 3 when ready</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -756,7 +773,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                     
                     <div className="border-2 border-green-500 bg-green-50/50 dark:bg-green-900/20 rounded-lg overflow-hidden">
                       <CopyableDetails
-                        title="Pass 2: Governance Mapping"
+                        title="Task Prompt"
                         content={loadingDocs ? 'Loading THM documentation...' : generateMetaEvaluationPass2(thmDocs?.thm)}
                         defaultOpen={false}
                       />
@@ -772,14 +789,14 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       }}
                       className="btn-primary w-full"
                     >
-                      Complete Pass 2 → Continue to Pass 3
+                      Complete Task 2 → Continue to Task 3
                     </button>
                   </div>
                 )}
               </GlassCard>
               )}
 
-              {/* Pass 3 */}
+              {/* Task 3 */}
               {steps[3] && (
               <GlassCard className={`transition-all duration-300 ${steps[3].expanded ? stepThemes[3].borderClass + ' border-2' : 'border-gray-200 dark:border-gray-700'}`}>
                 <div
@@ -795,7 +812,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       {steps[3].completed ? '✓' : '3'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Pass 3: Improvement Suggestions</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Treatment</h3>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -811,24 +828,31 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                     {!quickMode && (
                       <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-4 space-y-3 mb-3">
                         <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
-                          <div className="font-semibold mb-1">Pass 3: Improvement Suggestions</div>
-                          <div className="flex items-start space-x-2">
-                            <span className="font-medium">1.</span>
-                            <span>
-                              <strong>Copy Pass 3 prompt:</strong> Copy the Pass 3 prompt below
-                            </span>
+                          <div className="font-semibold mb-2 text-gray-900 dark:text-white">Treatment</div>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">1.</span>
+                              <span>Copy Task 3 prompt below</span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">2.</span>
+                              <span>Paste into same chat</span>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                              <span className="font-medium">3.</span>
+                              <span>Submit - this delivers your actionable output</span>
+                            </div>
                           </div>
-                          <div className="flex items-start space-x-2">
-                            <span className="font-medium">2.</span>
-                            <span>
-                              <strong>Submit to AI:</strong> Paste it into the same AI chat, including Pass 2 findings
-                            </span>
-                          </div>
-                          <div className="flex items-start space-x-2">
-                            <span className="font-medium">3.</span>
-                            <span>
-                              <strong>Review:</strong> Review the improvement suggestions and follow-up options provided
-                            </span>
+                          <div className="border-t border-blue-200 dark:border-blue-700 pt-3 mt-3">
+                            <div className="font-semibold mb-2 text-gray-900 dark:text-white">After Task 3:</div>
+                            <div className="space-y-1 text-xs">
+                              <div>• Request clarification on any finding</div>
+                              <div>• Request filtered re-run if you disagree with recommendations</div>
+                              <div>• Submit corrected document for verification</div>
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700 text-xs italic text-gray-600 dark:text-gray-400">
+                              <strong>Note:</strong> Tasks 1-2 build AI working memory. Task 3 delivers the summary and recommendations you'll use.
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -836,7 +860,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                     
                     <div className="border-2 border-purple-500 bg-purple-50/50 dark:bg-purple-900/20 rounded-lg overflow-hidden">
                       <CopyableDetails
-                        title="Pass 3: Improvement Suggestions"
+                        title="Task Prompt"
                         content={loadingDocs ? 'Loading THM documentation...' : generateMetaEvaluationPass3(thmDocs?.terms)}
                         defaultOpen={false}
                       />
@@ -851,7 +875,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       }}
                       className="btn-primary w-full"
                     >
-                      Complete Pass 3
+                      Complete Task 3
                     </button>
                   </div>
                 )}

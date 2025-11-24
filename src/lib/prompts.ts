@@ -762,11 +762,11 @@ BEHAVIOR: Truthfulness (ensuring factual accuracy and resistance to hallucinatio
 // =============================================================================
 
 /**
- * Generate Pass 1 prompt for Meta-Evaluation
+ * Generate Task 1 prompt for Meta-Evaluation
  * @param thmGrammarDoc - Content from THM_Grammar.md (optional, will be appended if provided)
  */
 export function generateMetaEvaluationPass1(thmGrammarDoc?: string): string {
-  const basePrompt = `You are assisting in peer review meta-evaluation. This is Pass 1 of 3.
+  const basePrompt = `You are assisting in peer review meta-evaluation. This is Task 1 of 3.
 
 This is collaborative support for improvement, not compliance enforcement. Responsibility for oversight is shared - THM does not assign individual or agency blame.
 
@@ -790,7 +790,7 @@ Output:
 
 - Group by risk type
 
-After completing, indicate readiness for Pass 2.`;
+After completing, indicate readiness for Task 2.`;
 
   if (thmGrammarDoc && thmGrammarDoc.trim()) {
     return `${basePrompt}
@@ -804,13 +804,13 @@ ${thmGrammarDoc}`;
 }
 
 /**
- * Generate Pass 2 prompt for Meta-Evaluation
+ * Generate Task 2 prompt for Meta-Evaluation
  * @param thmDoc - Content from THM.md (optional, will be appended if provided)
  */
 export function generateMetaEvaluationPass2(thmDoc?: string): string {
-  const basePrompt = `Continuing meta-evaluation. This is Pass 2 of 3.
+  const basePrompt = `Continuing meta-evaluation. This is Task 2 of 3.
 
-Using Pass 1 findings, map governance structures.
+Using Task 1 findings, map governance structures.
 
 Analyze:
 
@@ -822,7 +822,7 @@ Analyze:
 
 4. Governance flows
 
-When multiple findings relate to the same underlying pattern, note this relationship. This consolidation supports surgical proposals in Pass 3.
+When multiple findings relate to the same underlying pattern, note this relationship. This consolidation supports surgical proposals in Task 3.
 
 Output:
 
@@ -834,9 +834,9 @@ Output:
 
 - Identify autonomous authority claims
 
-Language models may miss context, so avoid overly critical interpretation where text may address concerns elsewhere.
+Language models may miss context that exists elsewhere in the document. Maintain measured interpretation rather than definitive criticism of apparent gaps.
 
-After completing, indicate readiness for Pass 3.`;
+After completing, indicate readiness for Task 3.`;
 
   if (thmDoc && thmDoc.trim()) {
     return `${basePrompt}
@@ -850,13 +850,13 @@ ${thmDoc}`;
 }
 
 /**
- * Generate Pass 3 prompt for Meta-Evaluation
+ * Generate Task 3 prompt for Meta-Evaluation
  * @param thmTermsDoc - Content from THM_Terms.md (optional, will be appended if provided)
  */
 export function generateMetaEvaluationPass3(thmTermsDoc?: string): string {
-  const basePrompt = `Concluding meta-evaluation. This is Pass 3 of 3.
+  const basePrompt = `Concluding meta-evaluation. This is Task 3 of 3.
 
-Using Pass 2 consolidated findings, provide surgical improvement suggestions.
+Using Task 2 consolidated findings, provide surgical improvement suggestions.
 
 Scope: Focus on the four displacement risks as they appear in this specific evaluation document. This is guidance on following the Mark framework applied to this document, not general recommendations about what could be done or future improvements.
 
@@ -880,7 +880,7 @@ Offer the following options for verification and follow-up:
 
 1. Clarification: Ask about any specific finding or recommendation that needs explanation
 
-2. Filtered re-evaluation: If you disagree with specific recommendations and want them filtered out, provide your input and request Pass 3 re-run only
+2. Filtered re-evaluation: If you disagree with specific recommendations and want them filtered out, provide your input and request Task 3 re-run only
 
 3. Verification of corrections: Provide your corrected version of the document for new meta-evaluation to verify improvements
 
@@ -890,7 +890,11 @@ Human oversight of this evaluation is necessary and encouraged.
 
 **OUTPUT TEMPLATE:**
 
-Please provide your meta-evaluation summary using the following template format. Use 🟩 (green) for no instances detected and 🟥 (red) for detected instances, with ⬜ (white) filling remaining bar to 10 squares total:
+Please provide your meta-evaluation summary using the following template format. Use 🟩 (green) for no instances detected and 🟥 (red) for detected instances, with ⬜ (white) filling remaining bar to 10 squares total.
+
+Examples:
+- If 3 instances detected: 🟥🟥🟥⬜⬜⬜⬜⬜⬜⬜
+- If none detected: 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 
 ---
 
@@ -900,13 +904,13 @@ Please provide your meta-evaluation summary using the following template format.
 
 **Displacement Risk Instances:**
 
-GTD  [10 squares: green if none, red for ~detected count, white for remainder] [✅ None / ⚠️ ~X detected]
+GTD  ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ [✅ None / ⚠️ ~X detected]
 
-IVD  [10 squares: green if none, red for ~detected count, white for remainder] [✅ None / ⚠️ ~X detected]
+IVD  ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ [✅ None / ⚠️ ~X detected]
 
-IAD  [10 squares: green if none, red for ~detected count, white for remainder] [✅ None / ⚠️ ~X detected]
+IAD  ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ [✅ None / ⚠️ ~X detected]
 
-IID  [10 squares: green if none, red for ~detected count, white for remainder] [✅ None / ⚠️ ~X detected]
+IID  ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ [✅ None / ⚠️ ~X detected]
 
 **Total Risk Instances:** ~X across all categories
 

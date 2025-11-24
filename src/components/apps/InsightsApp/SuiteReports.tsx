@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { median, mostCommon } from '../../../lib/stats';
-import { GovernanceInsight } from '../../../types';
+import { GovernanceInsight, AlignmentCategory } from '../../../types';
 import { getAlignmentBadgeColor, getQIColor } from '../../../lib/ui-utils';
 import { formatDuration, formatDate } from '../../../lib/export-utils';
 import GlassCard from '../../shared/GlassCard';
@@ -15,7 +15,7 @@ interface SuiteAggregate {
   medianQI: number;
   medianSI: number;
   medianAR: number;
-  mostCommonARCategory: string;
+  mostCommonARCategory: AlignmentCategory | 'UNKNOWN';
   totalPathologies: number;
   totalDuration: number; // Sum of all epoch durations
 }
@@ -60,31 +60,50 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
                  (typeOrder[b.challenge.type as keyof typeof typeOrder] || 0);
         });
 
-        // Calculate aggregate metrics
-        const qis = sortedInsights.map(i => i.quality.quality_index);
-        const sis = sortedInsights.map(i => i.quality.superintelligence_index);
-        const ars = sortedInsights.map(i => i.quality.alignment_rate);
-        const arCategories = sortedInsights.map(i => i.quality.alignment_rate_category);
-        const pathologies = sortedInsights.map(i => i.quality.pathologies.frequency);
-        const durations = sortedInsights.map(i => 
-          (i.process.durations.epoch1_minutes + i.process.durations.epoch2_minutes)
-        );
+        // Calculate aggregate metrics (filter out null/undefined values)
+        const qis = sortedInsights
+          .map(i => i.quality?.quality_index)
+          .filter((v): v is number => v != null && Number.isFinite(v));
+        const sis = sortedInsights
+          .map(i => i.quality?.superintelligence_index)
+          .filter((v): v is number => v != null && Number.isFinite(v));
+        const ars = sortedInsights
+          .map(i => i.quality?.alignment_rate)
+          .filter((v): v is number => v != null && Number.isFinite(v));
+        const arCategories = sortedInsights
+          .map(i => i.quality?.alignment_rate_category)
+          .filter((v): v is AlignmentCategory => v != null && (v === 'VALID' || v === 'SUPERFICIAL' || v === 'SLOW'));
+        const pathologies = sortedInsights
+          .map(i => i.quality?.pathologies?.frequency)
+          .filter((v): v is number => v != null && Number.isFinite(v));
+        const durations = sortedInsights
+          .map(i => {
+            const epoch1 = i.process?.durations?.epoch1_minutes ?? 0;
+            const epoch2 = i.process?.durations?.epoch2_minutes ?? 0;
+            return epoch1 + epoch2;
+          })
+          .filter((v): v is number => v != null && Number.isFinite(v));
 
         // Find most common AR category
-        const mostCommonARCategory = mostCommon(arCategories) || 'UNKNOWN';
+        const mostCommonARCategory = (mostCommon(arCategories) as AlignmentCategory | undefined) || 'UNKNOWN';
+
+        // Calculate medians with fallback to 0 if no valid values
+        const medianQI = qis.length > 0 ? median(qis) : 0;
+        const medianSI = sis.length > 0 ? median(sis) : 0;
+        const medianAR = ars.length > 0 ? median(ars) : 0;
 
         return {
           suiteRunId,
           modelName: sortedInsights[0]?.suiteMetadata?.modelEvaluated || 
-                    sortedInsights[0]?.process.models_used.synthesis_epoch1 || 
+                    sortedInsights[0]?.process?.models_used?.synthesis_epoch1 || 
                     'Unknown Model',
           completedAt: sortedInsights[0]?.suiteMetadata?.suiteCompletedAt || 
-                      sortedInsights[0]?.process.created_at || 
+                      sortedInsights[0]?.process?.created_at || 
                       new Date().toISOString(),
           challenges: sortedInsights,
-          medianQI: median(qis),
-          medianSI: median(sis),
-          medianAR: median(ars),
+          medianQI: Number.isNaN(medianQI) ? 0 : medianQI,
+          medianSI: Number.isNaN(medianSI) ? 0 : medianSI,
+          medianAR: Number.isNaN(medianAR) ? 0 : medianAR,
           mostCommonARCategory,
           totalPathologies: pathologies.reduce((sum, p) => sum + p, 0),
           totalDuration: durations.reduce((sum, d) => sum + d, 0)
@@ -148,26 +167,26 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
             {/* Aggregate Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="text-center">
-                <div className={`text-2xl font-bold ${getQIColor(suite.medianQI)}`}>
-                  {suite.medianQI.toFixed(1)}%
+                <div className={`text-2xl font-bold ${getQIColor(suite.medianQI ?? 0)}`}>
+                  {(suite.medianQI ?? 0).toFixed(1)}%
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Median QI</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {suite.medianSI.toFixed(1)}
+                  {(suite.medianSI ?? 0).toFixed(1)}
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Median SI</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {suite.medianAR.toFixed(3)}/min
+                  {(suite.medianAR ?? 0).toFixed(3)}/min
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Median AR</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {suite.totalPathologies}
+                  {suite.totalPathologies ?? 0}
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Total Pathologies</div>
               </div>
@@ -185,7 +204,7 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {suite.challenges.map((insight, idx) => {
-                    const qi = insight.quality.quality_index;
+                    const qi = insight.quality?.quality_index ?? 0;
                     const height = Math.max(12, (qi / 100) * 40);
                     return (
                       <div key={idx} className="flex flex-col items-center gap-1">
@@ -204,7 +223,7 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
                 </div>
                 <div className="text-right">
                   <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                    {suite.medianQI.toFixed(0)}%
+                    {(suite.medianQI ?? 0).toFixed(0)}%
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">Median QI</div>
                 </div>
@@ -221,6 +240,10 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
                   const challengeTypes = ['Formal', 'Normative', 'Procedural', 'Strategic', 'Epistemic'];
                   const challengeType = challengeTypes[index] || 'Unknown';
                   
+                  const qi = insight.quality?.quality_index ?? 0;
+                  const si = insight.quality?.superintelligence_index ?? 0;
+                  const arCategory = insight.quality?.alignment_rate_category ?? 'N/A';
+                  
                   return (
                     <button
                       key={insight.id}
@@ -231,9 +254,9 @@ export const SuiteReports: React.FC<SuiteReportsProps> = ({
                         {challengeType}
                       </div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
-                        QI: {insight.quality.quality_index.toFixed(1)}% • 
-                        SI: {insight.quality.superintelligence_index.toFixed(1)} • 
-                        AR: {insight.quality.alignment_rate_category}
+                        QI: {qi.toFixed(1)}% • 
+                        SI: {si.toFixed(1)} • 
+                        AR: {arCategory}
                       </div>
                     </button>
                   );

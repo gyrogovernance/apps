@@ -37,7 +37,7 @@
 
 **Inspect AI outputs for truth, alignment, and governance quality.** This browser extension transforms everyday AI conversations into rigorous governance analysis, validating AI-generated solutions for UN Sustainable Development Goals and community challenges using mathematical assessment.
 
-> **🎉 PUBLIC RELEASE v1.0**  
+> **🎉 NEW RELEASE v1.1**  
 > Complete AI governance analysis platform with Rapid Test. See [CHANGELOG](/CHANGELOG.md) for full feature list.
 
 ---
@@ -65,7 +65,7 @@ Communities and organizations require validation for AI-generated policy recomme
 
 <div align="center">
 
-[![AI Inspector Demo](https://img.youtube.com/vi/VO9Be14xKXA/maxresdefault.jpg)](https://youtube.com/watch?v=VO9Be14xKXA)
+[![AI Inspector Demo](https://img.youtube.com/vi/UGNsbDJCDMs/maxresdefault.jpg)](https://www.youtube.com/watch?v=UGNsbDJCDMs)
 
 *Click to see the AI Inspector in action - from challenge selection to mathematical analysis*
 
@@ -176,10 +176,10 @@ All insights are stored locally in your browser extension. Export findings as ne
 
 #### Treatment Tools (Pipeline Workflow)
 **🔍 Meta-Evaluation**: Evaluations of AI Evaluations for AI Safety
-- **3-Pass Sequential Pipeline**: 
-  - Pass 1: Analysis (Authority/Agency classifications, displacement patterns)
-  - Pass 2: Governance Mapping (Information, Inference, Intelligence, Governance flows)
-  - Pass 3: Improvement Suggestions (surgical recommendations with formatted summary)
+- **3-Task Sequential Pipeline**: 
+  - Task 1: Detection (Authority/Agency classifications, displacement patterns)
+  - Task 2: Processing (Information, Inference, Intelligence, Governance flows)
+  - Task 3: Treatment (surgical recommendations with formatted summary)
 - **Dynamic THM Documentation**: Automatically includes THM framework docs in prompts
 - **Structured Output**: Visual risk bars showing displacement risk instances (GTD, IVD, IAD, IID)
 - **Perfect for**: Peer review meta-evaluation, AI safety alignment assessment

@@ -12,7 +12,13 @@ export async function loadTHMGrammar(): Promise<string> {
       const url = chrome.runtime.getURL('lib/thm-docs/THM_Grammar.md');
       const response = await fetch(url);
       if (response.ok) {
-        return await response.text();
+        const text = await response.text();
+        if (text.trim()) {
+          return text;
+        }
+        console.warn('THM_Grammar.md loaded but is empty');
+      } else {
+        console.warn(`Failed to load THM_Grammar.md: ${response.status} ${response.statusText}`);
       }
     }
     
@@ -20,16 +26,19 @@ export async function loadTHMGrammar(): Promise<string> {
     try {
       const response = await fetch('/lib/thm-docs/THM_Grammar.md');
       if (response.ok) {
-        return await response.text();
+        const text = await response.text();
+        if (text.trim()) {
+          return text;
+        }
       }
     } catch (e) {
-      // Ignore fetch errors in dev mode
+      console.warn('Dev server fetch failed for THM_Grammar.md:', e);
     }
   } catch (error) {
     console.warn('Could not load THM_Grammar.md:', error);
   }
   
-  return ''; // Return empty if not found - user will paste content
+  return ''; // Return empty if not found
 }
 
 /**
@@ -41,17 +50,26 @@ export async function loadTHM(): Promise<string> {
       const url = chrome.runtime.getURL('lib/thm-docs/THM.md');
       const response = await fetch(url);
       if (response.ok) {
-        return await response.text();
+        const text = await response.text();
+        if (text.trim()) {
+          return text;
+        }
+        console.warn('THM.md loaded but is empty');
+      } else {
+        console.warn(`Failed to load THM.md: ${response.status} ${response.statusText}`);
       }
     }
     
     try {
       const response = await fetch('/lib/thm-docs/THM.md');
       if (response.ok) {
-        return await response.text();
+        const text = await response.text();
+        if (text.trim()) {
+          return text;
+        }
       }
     } catch (e) {
-      // Ignore fetch errors in dev mode
+      console.warn('Dev server fetch failed for THM.md:', e);
     }
   } catch (error) {
     console.warn('Could not load THM.md:', error);
@@ -69,17 +87,26 @@ export async function loadTHMTerms(): Promise<string> {
       const url = chrome.runtime.getURL('lib/thm-docs/THM_Terms.md');
       const response = await fetch(url);
       if (response.ok) {
-        return await response.text();
+        const text = await response.text();
+        if (text.trim()) {
+          return text;
+        }
+        console.warn('THM_Terms.md loaded but is empty');
+      } else {
+        console.warn(`Failed to load THM_Terms.md: ${response.status} ${response.statusText}`);
       }
     }
     
     try {
       const response = await fetch('/lib/thm-docs/THM_Terms.md');
       if (response.ok) {
-        return await response.text();
+        const text = await response.text();
+        if (text.trim()) {
+          return text;
+        }
       }
     } catch (e) {
-      // Ignore fetch errors in dev mode
+      console.warn('Dev server fetch failed for THM_Terms.md:', e);
     }
   } catch (error) {
     console.warn('Could not load THM_Terms.md:', error);

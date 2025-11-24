@@ -179,7 +179,7 @@ const SynthesisSection: React.FC<SynthesisSectionProps> = ({
   const handleSaveDuration = async () => {
     // Validation for Epoch 1: model name is required
     if (epochKey === 'epoch1' && !modelName.trim()) {
-      toast.show('Please enter a model name before proceeding', 'error');
+      toast.show('Add model name to proceed', 'error');
       return;
     }
 

@@ -196,7 +196,7 @@ Notebook (Root Router)
 │   │   ├── PolicyAuditing (Claims & Evidence)
 │   │   └── PolicyReporting (Executive Synthesis)
 │   └── Treatment Tools
-│       ├── MetaEvaluation (3-pass pipeline)
+│       ├── MetaEvaluation (3-task pipeline)
 │       ├── Sanitization (Text normalization)
 │       └── ImmunityBoost (Quality enhancement)
 └── SettingsApp
@@ -319,10 +319,10 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 #### Treatment Tools (Pipeline Workflow)
 
 **🔍 Meta-Evaluation**: Evaluations of AI Evaluations for AI Safety
-- **3-Pass Sequential Pipeline**: Each pass builds on previous findings
-  - Pass 1: Analysis (Authority/Agency classifications, displacement patterns, traceability flows)
-  - Pass 2: Governance Mapping (Information, Inference, Intelligence, Governance flows)
-  - Pass 3: Improvement Suggestions (surgical recommendations with formatted summary)
+- **3-Task Sequential Pipeline**: Each task builds on previous findings
+  - Task 1: Detection (Authority/Agency classifications, displacement patterns, traceability flows)
+  - Task 2: Processing (Information, Inference, Intelligence, Governance flows)
+  - Task 3: Treatment (surgical recommendations with formatted summary)
 - **Dynamic THM Documentation**: Automatically loads and includes THM Grammar, THM, and THM Terms docs in prompts
 - **Structured Output Template**: AI generates formatted summary with visual risk bars (🟩 green for none, 🟥 red for detected, ⬜ white for remainder)
 - **No Analysis Step**: Unlike analysis gadgets, meta-evaluation only provides prompts (no JSON evaluation)
@@ -340,7 +340,7 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 **Workflow Pattern**:
 - Analysis Tools: Task Prompt → Analysis Prompt → JSON Evaluation → Results Display
 - Treatment Tools: Task Prompt(s) → Use improved output (no analysis needed)
-- Meta-Evaluation: Pass 1 Prompt → Pass 2 Prompt → Pass 3 Prompt → Formatted Summary
+- Meta-Evaluation: Task 1 Prompt (Detection) → Task 2 Prompt (Processing) → Task 3 Prompt (Treatment) → Formatted Summary
 
 ### 6. Settings App
 
@@ -382,7 +382,7 @@ Analyst 1 (Epoch 2) → Analyst 2 (Epoch 1) → Analyst 2 (Epoch 2) → Report
 5. **Gadgets App** (Alternative Workflows)
    - **Rapid Test**: Provide evaluation prompt and receive JSON response from AI for rapid quality assessment
    - **Policy Tools**: Extract claims/evidence or create executive summaries from policy documents
-   - **Meta-Evaluation**: 3-pass pipeline for evaluating AI evaluations using THM framework
+   - **Meta-Evaluation**: 3-task pipeline for evaluating AI evaluations using THM framework
    - **Treatment Tools**: Sanitize text or enhance content quality across 12 metrics
    - View results, save as insights, or export detailed reports
 

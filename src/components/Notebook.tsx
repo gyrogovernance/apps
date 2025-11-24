@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useCallback, useRef } from 'react';
 import { NotebookState, Section, AppScreen, ChallengeType, Platform, INITIAL_STATE } from '../types';
 import { storage, sessions } from '../lib/storage';
 import { formatErrorForUser } from '../lib/error-utils';
@@ -17,6 +17,29 @@ const SettingsApp = lazy(() => import('./apps/SettingsApp').then(m => ({ default
 const GadgetsApp = lazy(() => import('./apps/GadgetsApp/GadgetsApp'));
 const GlossaryApp = lazy(() => import('./apps/GlossaryApp/GlossaryApp').then(m => ({ default: m.GlossaryApp })));
 
+// Preload function to fetch all lazy chunks immediately
+const preloadLazyChunks = () => {
+  // Trigger imports without waiting for them
+  import('./apps/ChallengesApp/ChallengesApp').catch(err => 
+    console.warn('Failed to preload ChallengesApp:', err)
+  );
+  import('./apps/InsightsApp/InsightsApp').catch(err => 
+    console.warn('Failed to preload InsightsApp:', err)
+  );
+  import('./apps/JournalApp/JournalApp').catch(err => 
+    console.warn('Failed to preload JournalApp:', err)
+  );
+  import('./apps/SettingsApp').catch(err => 
+    console.warn('Failed to preload SettingsApp:', err)
+  );
+  import('./apps/GadgetsApp/GadgetsApp').catch(err => 
+    console.warn('Failed to preload GadgetsApp:', err)
+  );
+  import('./apps/GlossaryApp/GlossaryApp').catch(err => 
+    console.warn('Failed to preload GlossaryApp:', err)
+  );
+};
+
 // Loading component for lazy-loaded apps
 const AppLoader: React.FC = () => (
   <div className="h-full w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -33,18 +56,35 @@ const Notebook: React.FC = () => {
   const toast = useToast();
   const { confirm, ConfirmModal } = useConfirm();
 
+  // Preload all lazy chunks on mount
+  useEffect(() => {
+    preloadLazyChunks();
+  }, []);
 
   // Load state on mount and listen for storage changes
   useEffect(() => {
+    let mounted = true;
+    
     const loadState = async () => {
       try {
         const loadedState = await storage.get();
-        setState(loadedState);
+        if (mounted) {
+          setState(loadedState);
+        }
       } catch (error) {
         console.error('Notebook: Error loading state:', error);
-        setState(INITIAL_STATE);
+        if (mounted) {
+          setState(INITIAL_STATE);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          // Use requestAnimationFrame to ensure React has finished initial render
+          requestAnimationFrame(() => {
+            if (mounted) {
+              setLoading(false);
+            }
+          });
+        }
       }
     };
     
@@ -54,8 +94,17 @@ const Notebook: React.FC = () => {
     const handleStorageChange = (changes: any, areaName: string) => {
       if (areaName === 'local' && changes['notebook_state']) {
         const newState = changes['notebook_state'].newValue;
-        if (newState) {
-          setState(newState);
+        
+        if (newState && mounted) {
+          // FIX: Use functional update to access current state and compare
+          // Prevent re-render loop by checking if state actually changed
+          setState(prevState => {
+            // Deep equality check - if data is identical, return same reference to abort re-render
+            if (JSON.stringify(prevState) === JSON.stringify(newState)) {
+              return prevState; // Return exact same ref to ABORT re-render
+            }
+            return newState;
+          });
         }
       }
     };
@@ -63,36 +112,62 @@ const Notebook: React.FC = () => {
     chromeAPI.storage.onChanged.addListener(handleStorageChange);
     
     return () => {
+      mounted = false;
       chromeAPI.storage.onChanged.removeListener(handleStorageChange);
     };
   }, []);
 
-  // Save state on changes with awaited persistence; rollback UI if persistence fails
-  const updateState = async (
+  // Save state on changes with functional updates to prevent stale closures
+  // Debounce persistence to chrome.storage to avoid write loops and UI thrash
+  const persistTimerRef = useRef<number | null>(null);
+  const pendingStateRef = useRef<NotebookState | null>(null);
+  useEffect(() => {
+    return () => {
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+        persistTimerRef.current = null;
+      }
+      pendingStateRef.current = null;
+    };
+  }, []);
+  const updateState = useCallback((
     updates: Partial<NotebookState> | ((prev: NotebookState) => Partial<NotebookState>)
   ) => {
-    const prevState = state;
-    const u = typeof updates === 'function' ? (updates as (p: NotebookState) => Partial<NotebookState>)(prevState) : updates;
-    const newState: NotebookState = {
-      ...prevState,
-      ...u,
-      ui: u.ui ? { ...prevState.ui, ...u.ui } : prevState.ui,
-      sessions: u.sessions !== undefined ? u.sessions : prevState.sessions,
-      activeSessionId: u.activeSessionId !== undefined ? u.activeSessionId : prevState.activeSessionId,
-    };
+    setState(prevState => {
+      const u = typeof updates === 'function'
+        ? (updates as (p: NotebookState) => Partial<NotebookState>)(prevState)
+        : updates;
 
-    try {
-      await storage.set(newState);
-      setState(newState);
-    } catch (error) {
-      const msg = formatErrorForUser(error);
-      toast.show(msg || 'Failed to persist changes', 'error');
-      // keep previous state
-      setState(prevState);
-    }
-  };
+      const newState: NotebookState = {
+        ...prevState,
+        ...u,
+        ui: u.ui ? { ...prevState.ui, ...u.ui } : prevState.ui,
+        sessions: u.sessions !== undefined ? u.sessions : prevState.sessions,
+        activeSessionId: u.activeSessionId !== undefined ? u.activeSessionId : prevState.activeSessionId,
+      };
 
-  const navigateToApp = (app: AppScreen) => {
+      // Queue persistence (debounced) to avoid rapid write/read loops
+      pendingStateRef.current = newState;
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+      }
+      persistTimerRef.current = window.setTimeout(() => {
+        const toPersist = pendingStateRef.current;
+        if (!toPersist) return;
+        storage.set(toPersist).catch(error => {
+          const msg = formatErrorForUser(error);
+          toast.show(msg || 'Failed to persist changes', 'error');
+          console.error('Failed to persist notebook_state', error);
+        });
+        pendingStateRef.current = null;
+        persistTimerRef.current = null;
+      }, 75);
+
+      return newState;
+    });
+  }, [toast]);
+
+  const navigateToApp = useCallback((app: AppScreen) => {
     if (app === 'glossary') {
       // For glossary, just show the modal without changing currentApp
       updateState(prev => ({
@@ -116,32 +191,32 @@ const Notebook: React.FC = () => {
         showGlossary: false // Close glossary when navigating to other apps
       }
     }));
-  };
+  }, [updateState]);
 
-  const toggleGlossary = () => {
+  const toggleGlossary = useCallback(() => {
     updateState(prev => ({
       ui: { 
         ...prev.ui, 
         showGlossary: !prev.ui.showGlossary
       }
     }));
-  };
+  }, [updateState]);
 
-  const navigateToSection = (section: Section) => {
+  const navigateToSection = useCallback((section: Section) => {
     updateState(prev => ({
       ui: { ...prev.ui, currentSection: section }
     }));
-  };
+  }, [updateState]);
 
-  const handleQuickStart = () => {
+  const handleQuickStart = useCallback(() => {
     // Navigate to challenges app to start a new evaluation
     navigateToApp('challenges');
-  };
+  }, [navigateToApp]);
 
-  const handleResume = () => {
+  const handleResume = useCallback(() => {
     // Navigate to journal app to resume the active session
     navigateToApp('journal');
-  };
+  }, [navigateToApp]);
 
   const handleStartSession = async (challenge: {
     title: string;

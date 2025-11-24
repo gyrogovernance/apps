@@ -39,6 +39,7 @@ function renderApp() {
     }
     
     reactRoot = createRoot(root);
+    
     reactRoot.render(
       <React.StrictMode>
         <ToastProvider>
@@ -68,11 +69,19 @@ function initializeApp() {
   renderApp();
 }
 
-// Wait for DOM to be ready
+// Wait for DOM to be ready and ensure React has time to mount
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
+  document.addEventListener('DOMContentLoaded', () => {
+    // Use requestAnimationFrame to ensure DOM is fully ready
+    requestAnimationFrame(() => {
+      setTimeout(initializeApp, 0);
+    });
+  });
 } else {
-  setTimeout(initializeApp, 0);
+  // Use requestAnimationFrame to ensure DOM is fully ready
+  requestAnimationFrame(() => {
+    setTimeout(initializeApp, 0);
+  });
 }
 
 // Hot Module Replacement (HMR)

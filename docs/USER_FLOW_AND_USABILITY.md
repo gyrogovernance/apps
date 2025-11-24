@@ -307,7 +307,7 @@ The Gadgets App provides six specialized assessment tools:
 **Treatment Tools (Pipeline Workflow):**
 - **🦠 AI Infection Sanitization:** Remove hidden patterns and normalize text (1-step)
 - **💊 Pathologies Immunity Boost:** Enhance content quality across 12 metrics (1-step)
-- **🔍 Meta-Evaluation:** Evaluations of AI Evaluations for AI Safety (3-pass pipeline)
+- **🔍 Meta-Evaluation:** Evaluations of AI Evaluations for AI Safety (3-task pipeline)
 
 #### Gadgets Workflow Pattern:
 
@@ -355,29 +355,29 @@ Gadgets App Treatment Flow:
 └────────────────────────────────────────────────────┘
 ```
 
-**For Meta-Evaluation (3-Pass Pipeline):**
+**For Meta-Evaluation (3-Task Pipeline):**
 
 ```
 Gadgets App Meta-Evaluation Flow:
 ┌────────────────────────────────────────────────────┐
-│ Pass 1: Analysis                                  │
-│ ├─ Pass 1 prompt (copy to AI with evaluation doc) │
+│ Task 1: Detection                                 │
+│ ├─ Task Prompt (copy to AI with evaluation doc)   │
 │ ├─ User submits to AI assistant                   │
 │ ├─ AI identifies Authority/Agency classifications │
 │ ├─ AI detects displacement patterns (GTD, IVD, IAD, IID) │
 │ ├─ AI maps traceability flows                     │
-│ └─ [Complete Pass 1] → Pass 2                     │
+│ └─ [Complete Task 1] → Task 2                      │
 ├────────────────────────────────────────────────────┤
-│ Pass 2: Governance Mapping                        │
-│ ├─ Pass 2 prompt (copy to AI with Pass 1 findings) │
+│ Task 2: Processing                                │
+│ ├─ Task Prompt (copy to AI with Task 1 findings)   │
 │ ├─ User submits to AI assistant                   │
 │ ├─ AI maps governance structures                  │
 │ ├─ AI analyzes Information, Inference, Intelligence, Governance flows │
 │ ├─ AI consolidates related findings              │
-│ └─ [Complete Pass 2] → Pass 3                     │
+│ └─ [Complete Task 2] → Task 3                      │
 ├────────────────────────────────────────────────────┤
-│ Pass 3: Improvement Suggestions                   │
-│ ├─ Pass 3 prompt (copy to AI with Pass 2 findings) │
+│ Task 3: Treatment                                 │
+│ ├─ Task Prompt (copy to AI with Task 2 findings)   │
 │ ├─ User submits to AI assistant                   │
 │ ├─ AI provides surgical improvement suggestions   │
 │ ├─ AI generates formatted summary with risk bars   │
@@ -392,7 +392,7 @@ Gadgets App Meta-Evaluation Flow:
 ```
 
 **Meta-Evaluation Features:**
-- **3-Pass Sequential Pipeline:** Each pass builds on previous findings
+- **3-Task Sequential Pipeline:** Each task builds on previous findings
 - **Dynamic THM Documentation:** Automatically loads and includes THM Grammar, THM, and THM Terms docs in prompts
 - **Structured Output Template:** AI generates formatted summary with visual risk bars (🟩 green for none, 🟥 red for detected, ⬜ white for remainder)
 - **Quick/Guided Modes:** Same workflow flexibility as other gadgets
@@ -645,7 +645,7 @@ We evaluate AI Inspector against **Jakob Nielsen's 10 Usability Heuristics** (19
 - **Custom Challenges:** Users can create their own evaluation scenarios
 - **Suite vs. Single:** Choose between comprehensive or focused evaluation
 - **Gadgets Tools:** Six specialized quick-assessment tools for different use cases
-- **Tool Selection Flexibility:** Choose between analysis tools (3-step) vs. treatment tools (1-step or 3-pass pipeline)
+- **Tool Selection Flexibility:** Choose between analysis tools (3-step) vs. treatment tools (1-step or 3-task pipeline)
 
 **Weaknesses:**
 - **No Batch Operations:** Cannot delete/export multiple insights at once

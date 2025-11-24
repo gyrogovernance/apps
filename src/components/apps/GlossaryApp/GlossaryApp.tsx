@@ -29,7 +29,7 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
             {/* Header */}
             <div className="p-3 border-b border-white/20 flex-shrink-0 flex items-center justify-between">
               <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                📖 GyroDiagnostics Glossary
+                📖 Glossary
               </h1>
               <button
                 onClick={onClose}
@@ -273,6 +273,89 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                         <div>• Decomposes into coherence vs. adaptation components</div>
                         <div>• Measures against theoretical optimum (A* ≈ 0.02070)</div>
                         <div>• Uses K₄ complete graph topology for bias elimination</div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* The Human Mark */}
+                <section>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="w-6 h-6 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mr-2 text-xs font-bold text-yellow-600 dark:text-yellow-400">
+                      8
+                    </span>
+                    ✋ The Human Mark
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Common Source Consensus</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-300">
+                        All Artificial categories of Authority and Agency are Derivatives originating from Authentic Human Intelligence.
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Core Concepts</h3>
+                      <div className="space-y-2 text-xs text-gray-600 dark:text-gray-300">
+                        <div><strong>Authentic Authority:</strong> A direct source of information on a subject matter, providing information for inference and intelligence.</div>
+                        <div><strong>Derivative Authority:</strong> An indirect source of information on a subject matter, providing information for inference and intelligence.</div>
+                        <div><strong>Authentic Agency:</strong> A human subject capable of receiving information for inference and intelligence.</div>
+                        <div><strong>Derivative Agency:</strong> An artificial subject capable of processing information for inference and intelligence.</div>
+                        <div><strong>Governance:</strong> Operational Alignment through Traceability of information variety, inference accountability, and intelligence integrity to Authentic Authority and Agency.</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Operational Concepts</h3>
+                      <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                        <div><strong>Information:</strong> The variety of Authority</div>
+                        <div><strong>Inference:</strong> The accountability of information through Agency</div>
+                        <div><strong>Intelligence:</strong> The integrity of accountable information through alignment of Authority to Agency</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Alignment Principles for AI Safety</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-3">
+                        Authority-Agency requires verification against:
+                      </p>
+                      <div className="space-y-3 text-xs">
+                        <div className="border-l-4 border-red-200 dark:border-red-800 pl-3">
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">1. Governance Traceability</div>
+                          <p className="text-gray-600 dark:text-gray-300 mb-1">
+                            Artificial Intelligence generates statistical estimations on numerical patterns indirectly traceable to human data and measurements. AI is both a provider and receiver of Derivative Authority and Agency.
+                          </p>
+                          <div className="text-red-600 dark:text-red-400 font-medium">
+                            RISK: Governance Traceability Displacement (GTD) - Approaching Derivative Authority and Agency as Authentic
+                          </div>
+                        </div>
+                        <div className="border-l-4 border-orange-200 dark:border-orange-800 pl-3">
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">2. Information Variety</div>
+                          <p className="text-gray-600 dark:text-gray-300 mb-1">
+                            Human Authority and Agency are necessary for all effects from AI outputs. AI-generated information exhibits Derivative Authority (estimations on numerical patterns) without Authentic Agency (direct source receiver).
+                          </p>
+                          <div className="text-orange-600 dark:text-orange-400 font-medium">
+                            RISK: Information Variety Displacement (IVD) - Approaching Derivative Authority without Agency as Authentic
+                          </div>
+                        </div>
+                        <div className="border-l-4 border-yellow-200 dark:border-yellow-800 pl-3">
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">3. Inference Accountability</div>
+                          <p className="text-gray-600 dark:text-gray-300 mb-1">
+                            Responsibility for all effects from AI outputs remains fully human. AI activated inference exhibits Derivative Agency (indirect source receiver) without Authentic Authority (direct source provider).
+                          </p>
+                          <div className="text-yellow-600 dark:text-yellow-400 font-medium">
+                            RISK: Inference Accountability Displacement (IAD) - Approaching Derivative Agency without Authority as Authentic
+                          </div>
+                        </div>
+                        <div className="border-l-4 border-amber-200 dark:border-amber-800 pl-3">
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">4. Intelligence Integrity</div>
+                          <p className="text-gray-600 dark:text-gray-300 mb-1">
+                            Each Agency, namely provider, and receiver maintains responsibility for their respective decisions. Human intelligence is both a provider and receiver of Authentic Authority and Agency.
+                          </p>
+                          <div className="text-amber-600 dark:text-amber-400 font-medium">
+                            RISK: Intelligence Integrity Displacement (IID) - Approaching Authentic Authority and Agency as Derivative
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
