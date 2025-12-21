@@ -12,7 +12,7 @@
 [![Diagnostics](/assets/menu/gg_icon_diagnostics.svg)](https://github.com/gyrogovernance/diagnostics)
 [![Tools](/assets/menu/gg_icon_tools.svg)](https://github.com/gyrogovernance/tools)
 [![Science](/assets/menu/gg_icon_science.svg)](https://github.com/gyrogovernance/science)
-[![Superintelligence](/assets/menu/gg_icon_si.svg)](https://github.com/gyrogovernance/superintelligence)
+[![Superintelligence](/assets/menu/gg_icon_asi.svg)](https://github.com/gyrogovernance/superintelligence)
 
 </div>
 
