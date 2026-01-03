@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2] - 2026-01-03
+
+### Changed
+
+**Terminology Updates - Alignment Principles Renaming**
+
+- **Renamed** the four alignment principles to emphasize agency (work) over agent (entity), consistent with our theoretical framework:
+  - **Governance Traceability (GT)** → **Governance Management Traceability (GMT)**
+  - **Information Variety (IV)** → **Information Curation Variety (ICV)**
+  - **Inference Accountability (IA)** → **Inference Interaction Accountability (IIA)**
+  - **Intelligence Integrity (IInteg/II)** → **Intelligence Cooperation Integrity (ICI)**
+
+- **Preserved** displacement risk acronyms (GTD, IVD, IAD, IID) for consistency with existing research and documentation
+
+- **Updated** all documentation, code, and UI components to reflect the new naming:
+  - Core THM documentation files (`THM.md`, `THM_Terms.md`, `THM_Grammar.md`)
+  - Glossary App UI component
+  - Common Governance Model documentation
+  - All alignment principle references throughout the codebase
+
+These changes improve accessibility and align the terminology with our emphasis on agency (work) rather than agent (entity), which is consistent with our theory and implementations.
+
+---
+
 ## [1.1.0] - 2025-11-24
 
 ### Added
