@@ -887,7 +887,7 @@ This is the full THM canonical specification.
 
 COMMON SOURCE CONSENSUS
 
-All Artificial categories of Authority and Agency are Derivatives originating from Original Human Intelligence.
+All Artificial categories of Authority and Agency are Derivatives originating from Human Intelligence.
 
 CORE CONCEPTS
 

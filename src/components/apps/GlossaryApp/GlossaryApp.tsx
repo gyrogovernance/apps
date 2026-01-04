@@ -290,7 +290,7 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                     <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
                       <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Common Source Consensus</h3>
                       <p className="text-xs text-gray-600 dark:text-gray-300">
-                        All Artificial categories of Authority and Agency are Derivatives originating from Original Human Intelligence.
+                        All Artificial categories of Authority and Agency are Derivatives originating from Human Intelligence.
                       </p>
                     </div>
                     
