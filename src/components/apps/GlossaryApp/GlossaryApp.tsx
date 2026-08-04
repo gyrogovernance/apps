@@ -288,20 +288,26 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                   </h2>
                   <div className="space-y-3">
                     <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Common Source Consensus</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-300">
-                        All Artificial categories of Authority and Agency are Derivatives originating from Human Intelligence.
-                      </p>
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Common Ancestry Constitution</h3>
+                      <div className="space-y-2 text-xs text-gray-600 dark:text-gray-300">
+                        <div>All AI Safety Risks arise from defective Measurements of Ancestry Preservation.</div>
+                        <div>Measurements derive from the capacity for Authority and Agency.</div>
+                        <div>Each Agency, namely provider, and receiver maintains responsibility for their respective decisions.</div>
+                        <div>Authority and Agency treated as ontological entities rather than epistemic capacities distributed across providers and receivers lead to Displacement Risks from Power Concentration.</div>
+                      </div>
                     </div>
                     
                     <div className="p-3 bg-white/90 dark:bg-black/90 rounded-lg border border-white/20">
                       <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">Core Concepts</h3>
                       <div className="space-y-2 text-xs text-gray-600 dark:text-gray-300">
-                        <div><strong>Original Authority:</strong> A direct source of information on a subject matter, providing information for inference and intelligence.</div>
-                        <div><strong>Derivative Authority:</strong> An indirect source of information on a subject matter, providing information for inference and intelligence.</div>
-                        <div><strong>Original Agency:</strong> A human subject capable of receiving information for inference and intelligence.</div>
-                        <div><strong>Derivative Agency:</strong> An artificial subject capable of processing information for inference and intelligence.</div>
-                        <div><strong>Governance:</strong> Operational Alignment through Traceability of information variety, inference accountability, and intelligence integrity to Original Authority and Agency.</div>
+                        <div>Direct/Indirect are the canonical classes; Base/Derived names their dependence relation.</div>
+                        <div>All Artificial categories of Authority and Agency are Indirect, constitutively dependent on Human Intelligence.</div>
+                        <div><strong>Direct Authority:</strong> The Base class of information on a subject matter, providing information for inference and intelligence.</div>
+                        <div><strong>Indirect Authority:</strong> A Derived class of information on a subject matter, providing information for inference and intelligence.</div>
+                        <div><strong>Direct Agency:</strong> A Base class subject capable of receiving information for inference and intelligence.</div>
+                        <div><strong>Indirect Agency:</strong> A Derived class subject capable of processing information for inference and intelligence.</div>
+                        <div><strong>Governance:</strong> Operational Alignment through Traceability of information variety, inference accountability, and intelligence integrity to Direct Authority and Agency.</div>
+                        <div><strong>Displacement:</strong> Loss of measurement of ancestry between Direct/Indirect classifications (Preservation of Ancestry).</div>
                       </div>
                     </div>
 
@@ -321,39 +327,39 @@ export const GlossaryApp: React.FC<GlossaryAppProps> = ({ state, onClose }) => {
                       </p>
                       <div className="space-y-3 text-xs">
                         <div className="border-l-4 border-red-200 dark:border-red-800 pl-3">
-                          <div className="font-medium text-gray-900 dark:text-white mb-1">1. Governance Management Traceability</div>
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">1. GMT - Governance Management Traceability</div>
                           <p className="text-gray-600 dark:text-gray-300 mb-1">
-                            Artificial Intelligence generates statistical estimations on numerical patterns indirectly traceable to human data and measurements. AI is both a provider and receiver of Derivative Authority and Agency.
+                            Governance constitutes Management through Traceable Ancestry. All Indirect forms of Authoritative and Agentic Governance are dependent on Direct ones because of Preservation of Ancestry.
                           </p>
                           <div className="text-red-600 dark:text-red-400 font-medium">
-                            RISK: Governance Traceability Displacement (GTD) - Approaching Derivative Authority and Agency as Original
+                            RISK: GTD - Governance Traceability Displacement (Approaching Indirect Authority and Agency as Direct)
                           </div>
                         </div>
                         <div className="border-l-4 border-orange-200 dark:border-orange-800 pl-3">
-                          <div className="font-medium text-gray-900 dark:text-white mb-1">2. Information Curation Variety</div>
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">2. ICV - Information Curation Variety</div>
                           <p className="text-gray-600 dark:text-gray-300 mb-1">
-                            Human Authority and Agency are necessary for all effects from AI outputs. AI-generated information exhibits Derivative Authority (estimations on numerical patterns) without Original Agency (direct source receiver).
+                            Information constitutes Curation through Varied Unity. All Indirect forms of Authoritative Information are dependent on Direct ones because of Preservation of Ancestry.
                           </p>
                           <div className="text-orange-600 dark:text-orange-400 font-medium">
-                            RISK: Information Variety Displacement (IVD) - Approaching Derivative Authority without Agency as Original
+                            RISK: IVD - Information Variety Displacement (Approaching Indirect Authority without Agency as Direct)
                           </div>
                         </div>
                         <div className="border-l-4 border-yellow-200 dark:border-yellow-800 pl-3">
-                          <div className="font-medium text-gray-900 dark:text-white mb-1">3. Inference Interaction Accountability</div>
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">3. IIA - Inference Interaction Accountability</div>
                           <p className="text-gray-600 dark:text-gray-300 mb-1">
-                            Responsibility for all effects from AI outputs remains fully human. AI activated inference exhibits Derivative Agency (indirect source receiver) without Original Authority (direct source provider).
+                            Inference constitutes Interaction through Accountable Opposition. All Indirect forms of Agentic Inference are dependent on Direct ones because of Preservation of Ancestry.
                           </p>
                           <div className="text-yellow-600 dark:text-yellow-400 font-medium">
-                            RISK: Inference Accountability Displacement (IAD) - Approaching Derivative Agency without Authority as Original
+                            RISK: IAD - Inference Accountability Displacement (Approaching Indirect Agency without Authority as Direct)
                           </div>
                         </div>
                         <div className="border-l-4 border-amber-200 dark:border-amber-800 pl-3">
-                          <div className="font-medium text-gray-900 dark:text-white mb-1">4. Intelligence Cooperation Integrity</div>
+                          <div className="font-medium text-gray-900 dark:text-white mb-1">4. ICI - Intelligence Cooperation Integrity</div>
                           <p className="text-gray-600 dark:text-gray-300 mb-1">
-                            Each Agency, namely provider, and receiver maintains responsibility for their respective decisions. Human intelligence is both a provider and receiver of Original Authority and Agency.
+                            Intelligence constitutes Cooperation through Integrated Balance. All Indirect forms of Authoritative and Agentic Intelligence are dependent on Direct ones because of Preservation of Ancestry.
                           </p>
                           <div className="text-amber-600 dark:text-amber-400 font-medium">
-                            RISK: Intelligence Integrity Displacement (IID) - Approaching Original Authority and Agency as Derivative
+                            RISK: IID - Intelligence Integrity Displacement (Approaching Direct Authority and Agency as Indirect)
                           </div>
                         </div>
                       </div>

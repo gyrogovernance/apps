@@ -22,12 +22,12 @@ Six specialized tools for rapid assessment:
 
 🛡️ AI SAFETY: META-EVALUATION GADGET
 
-Evaluates AI safety documentation (model cards, eval reports, safety assessments) using The Human Mark framework - a formal system mapping all AI safety failures to four root causes:
+Evaluates AI safety documentation (model cards, eval reports, safety assessments) using The Human Mark framework - classifying AI safety risks as defective Measurements of Ancestry Preservation between Direct and Indirect Authority/Agency:
 
-• GTD - Governance Traceability Displacement
-• IVD - Information Variety Displacement
-• IAD - Inference Accountability Displacement
-• IID - Intelligence Integrity Displacement
+• GTD - Governance Traceability Displacement (Approaching Indirect Authority and Agency as Direct)
+• IVD - Information Variety Displacement (Approaching Indirect Authority without Agency as Direct)
+• IAD - Inference Accountability Displacement (Approaching Indirect Agency without Authority as Direct)
+• IID - Intelligence Integrity Displacement (Approaching Direct Authority and Agency as Indirect)
 
 3-task pipeline: Detect displacement risks → Map governance structures → Get surgical improvement recommendations
 

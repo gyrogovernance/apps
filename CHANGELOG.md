@@ -7,27 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2] - 2026-01-03
+## [1.2.0] - 2026-08-04
 
 ### Changed
 
-**Terminology Updates - Alignment Principles Renaming**
+**The Human Mark (THM) — Direct/Indirect + Ancestry Framing**
 
-- **Renamed** the four alignment principles to emphasize agency (work) over agent (entity), consistent with our theoretical framework:
+- **Canonical classes** updated from Original/Derivative to **Direct/Indirect** (Base/Derived dependence relation)
+- **Common Source Consensus** → **Common Ancestry Constitution** (Ancestry Preservation measurements)
+- **Alignment principles** renamed for agency-as-work framing:
   - **Governance Traceability (GT)** → **Governance Management Traceability (GMT)**
   - **Information Variety (IV)** → **Information Curation Variety (ICV)**
   - **Inference Accountability (IA)** → **Inference Interaction Accountability (IIA)**
   - **Intelligence Integrity (IInteg/II)** → **Intelligence Cooperation Integrity (ICI)**
+- **Preserved** displacement risk acronyms (GTD, IVD, IAD, IID); risk definitions now use Direct/Indirect misclassification
+- **Updated** bundled THM docs (`THM.md`, `THM_Terms.md`, `THM_Grammar.md`, plus Specs/Paper/Jailbreak), Glossary App, Meta-Evaluation prompts/UI, README, and store/marketing copy
 
-- **Preserved** displacement risk acronyms (GTD, IVD, IAD, IID) for consistency with existing research and documentation
-
-- **Updated** all documentation, code, and UI components to reflect the new naming:
-  - Core THM documentation files (`THM.md`, `THM_Terms.md`, `THM_Grammar.md`)
-  - Glossary App UI component
-  - Common Governance Model documentation
-  - All alignment principle references throughout the codebase
-
-These changes improve accessibility and align the terminology with our emphasis on agency (work) rather than agent (entity), which is consistent with our theory and implementations.
+These changes keep the Meta-Evaluation gadget and Glossary aligned with the current Human Mark canonical text.
 
 ---
 

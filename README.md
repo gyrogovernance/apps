@@ -136,11 +136,11 @@ Based on Common Governance Model (CGM) - geometric necessities manifesting as be
 <details>
 <summary><strong>The Human Mark Framework</strong></summary>
 
-Used in Meta-Evaluation gadget. A formal classification system mapping all AI safety failures to four root causes:
-- GTD: Governance Traceability Displacement
-- IVD: Information Variety Displacement
-- IAD: Inference Accountability Displacement
-- IID: Intelligence Integrity Displacement
+Used in Meta-Evaluation gadget. Classifies AI safety risks as defective Measurements of Ancestry Preservation between Direct/Indirect Authority and Agency (Base/Derived dependence):
+- GTD: Governance Traceability Displacement (Approaching Indirect Authority and Agency as Direct)
+- IVD: Information Variety Displacement (Approaching Indirect Authority without Agency as Direct)
+- IAD: Inference Accountability Displacement (Approaching Indirect Agency without Authority as Direct)
+- IID: Intelligence Integrity Displacement (Approaching Direct Authority and Agency as Indirect)
 
 Provides formal grammar and testing protocols for AI safety documentation.
 

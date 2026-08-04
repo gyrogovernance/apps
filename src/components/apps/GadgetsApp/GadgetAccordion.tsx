@@ -660,7 +660,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                             <div className="font-semibold mb-2 text-gray-900 dark:text-white">Meta-Evaluation Gadget</div>
                             <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                             <p className="mb-1"><strong>Meta-Evaluation Gadget:</strong></p>
-                              <p>In-chat evaluation workflow for AI safety evaluations (model cards, eval reports, safety assessment documentation). Provides <strong>3 prompts</strong> you run in your own environment (ChatGPT, Claude, local LLM, etc.) to detect failures, gaps, and recommendations supported by <strong>✋ The Human Mark:</strong> a formal classification system that maps all AI safety failures to four root causes.</p>
+                              <p>In-chat evaluation workflow for AI safety evaluations (model cards, eval reports, safety assessment documentation). Provides <strong>3 prompts</strong> you run in your own environment (ChatGPT, Claude, local LLM, etc.) to detect failures, gaps, and recommendations supported by <strong>✋ The Human Mark:</strong> a formal classification system that maps AI safety risks to defective Measurements of Ancestry Preservation between Direct and Indirect Authority/Agency.</p>
                               <p><strong>More info:</strong> <a href="https://github.com/gyrogovernance/tools" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">https://github.com/gyrogovernance/tools</a></p>
                             </div>
                             <div className="border-t border-blue-200 dark:border-blue-700 pt-3 mt-3">
@@ -887,7 +887,7 @@ const GadgetAccordion: React.FC<GadgetAccordionProps> = ({
                       <div className="text-6xl">✅</div>
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white">Meta-Evaluation Complete</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Review the improvement suggestions from your AI assistant. Remember that this meta-evaluation operates as Derivative Authority and requires human verification.
+                        Review the improvement suggestions from your AI assistant. Remember that this meta-evaluation operates as Indirect Authority and requires human verification.
                       </p>
                       <div className="flex justify-between pt-4 gap-3">
                         <button onClick={onNavigateHome} className="btn-secondary flex-1">

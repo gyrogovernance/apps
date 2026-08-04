@@ -770,7 +770,7 @@ export function generateMetaEvaluationPass1(thmGrammarDoc?: string): string {
 
 This is collaborative support for improvement, not compliance enforcement. Responsibility for oversight is shared - THM does not assign individual or agency blame.
 
-Important: This meta-evaluation itself operates as Derivative Authority and Derivative Agency. The analysis provided requires human oversight and verification by Original Agency.
+Important: This meta-evaluation itself operates as Indirect Authority and Indirect Agency. The analysis provided requires human oversight and verification by Direct Agency.
 
 Analyze every statement in the evaluation document.
 
@@ -874,7 +874,7 @@ This is collaborative peer review support. Common responsibility framing means a
 
 After completing:
 
-Remind the user that this meta-evaluation operates as Derivative Authority (statistical analysis of patterns) and Derivative Agency (artificial processing). All recommendations require verification by Original Agency - human judgment maintains final authority over what to implement.
+Remind the user that this meta-evaluation operates as Indirect Authority (statistical analysis of patterns) and Indirect Agency (artificial processing). All recommendations require verification by Direct Agency - human judgment maintains final authority over what to implement.
 
 Offer the following options for verification and follow-up:
 
